@@ -1,0 +1,202 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "salesOrderItems2Rules"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "condition": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "CountryCode"
+                    ]
+                  },
+                  "FR"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  },
+                  200.0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "rule": "grant",
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "condition": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "CountryCode"
+                    ]
+                  },
+                  "DE"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  },
+                  300.0
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "salesOrderItems2Rules"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItems2Rules"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 200.0,
+                  "CountryCode": "FR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItems2Rules"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 300.0,
+                  "CountryCode": "DE"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTsalesOrderItems2Rules"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItems2Rules"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 300.0,
+                  "CountryCode": "IT"
+                }
+              }
+            },
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "US"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

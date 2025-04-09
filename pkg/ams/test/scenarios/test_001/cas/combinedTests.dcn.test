@@ -1,0 +1,674 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "StarOnStar"
+      ],
+      "rules": [
+        {
+          "rule": "grant"
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "StarOnSingleResource"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "resources": [
+            "Resource1"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "SingleActionOnStar"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "Action1"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "SingleActionOnSingleResource"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource1"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "MultiActionOnSingleResource"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "Action1",
+            "Action2"
+          ],
+          "resources": [
+            "Resource1"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "SingleActionOnMultiResource"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource1",
+            "Resource2"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "MultiActionOnMultiResource"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "Action1",
+            "Action2"
+          ],
+          "resources": [
+            "Resource1",
+            "Resource2"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "UseSingleActionOnSingleResource"
+      ],
+      "uses": [
+        {
+          "use": [
+            "cas",
+            "SingleActionOnSingleResource"
+          ],
+          "restrictions": []
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "ActionResource"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "policies": [
+            [
+              "cas",
+              "StarOnStar"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {}
+            }
+          ]
+        },
+        {
+          "expect": true,
+          "policies": [
+            [
+              "cas",
+              "StarOnSingleResource"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {}
+            }
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnStar"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {}
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnStar"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {}
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnStar"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {}
+            }
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action2"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action2"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1",
+            "Action2"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action1",
+            "Action3"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action1",
+            "Action2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource1",
+            "Resource2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource1",
+            "Resource3"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "resources": [
+            "Resource1",
+            "Resource2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "SingleActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action2"
+          ],
+          "resources": [
+            "Resource2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1",
+            "Action2"
+          ],
+          "resources": [
+            "Resource2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1",
+            "Action2"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": true,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource1",
+            "Resource2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "resources": [
+            "Resource1",
+            "Resource2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action3"
+          ],
+          "resources": [
+            "Resource1",
+            "Resource2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action1",
+            "Action2"
+          ],
+          "resources": [
+            "Resource3"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnMultiResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action1",
+            "Action2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "MultiActionOnMultiResource"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "UsePolicy"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseSingleActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action2"
+          ],
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseSingleActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action1"
+          ],
+          "resources": [
+            "Resource2"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseSingleActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "resources": [
+            "Resource1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseSingleActionOnSingleResource"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "Action1"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseSingleActionOnSingleResource"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

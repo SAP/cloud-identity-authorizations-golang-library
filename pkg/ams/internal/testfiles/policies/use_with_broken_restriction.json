@@ -1,0 +1,122 @@
+[
+    {
+        "policy": [
+            "simple",
+            "name"
+        ],
+        "rules": [
+            {
+                "rule": "grant",
+                "resources": [
+                    "data"
+                ],
+                "actions": [
+                    "read"
+                ],
+                "condition": {
+                    "call": [
+                        "and"
+                    ],
+                    "args": [
+                        {
+                            "call": [
+                                "restricted"
+                            ],
+                            "args": [
+                                {
+                                    "ref": [
+                                        "x"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "call": [
+                                "not_restricted"
+                            ],
+                            "args": [
+                                {
+                                    "ref": [
+                                        "y"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "rule": "grant",
+                "resources": [
+                    "data"
+                ],
+                "actions": [
+                    "write"
+                ]
+            }
+        ]
+    },
+    {
+        "policy": [
+            "simple",
+            "use"
+        ],
+        "uses": [
+            {
+                "use": [
+                    "simple",
+                    "name"
+                ],
+                "restrictions": [
+                    [
+                        {
+                            "call": [
+                                "unknown"
+                            ],
+                            "args": [
+                                {
+                                    "ref": [
+                                        "x"
+                                    ]
+                                },
+                                "foo"
+                            ]
+                        },
+                        {
+                            "call": [
+                                "eq"
+                            ],
+                            "args": [
+                                {
+                                    "ref": [
+                                        "y"
+                                    ]
+                                },
+                                "bar"
+                            ]
+                        }
+                    ],
+                    [
+                        {
+                            "call": [
+                                "eq"
+                            ],
+                            "args": [
+                                {
+                                    "ref": [
+                                        "x"
+                                    ]
+                                },
+                                {
+                                    "ref": [
+                                        "y"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+]

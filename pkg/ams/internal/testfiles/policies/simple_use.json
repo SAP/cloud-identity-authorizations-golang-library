@@ -1,0 +1,42 @@
+[
+    {
+        "policy": [
+            "simple",
+            "use"
+        ],
+        "uses": [
+            {
+                "use": [
+                    "simple",
+                    "name"
+                ]
+            }
+        ]
+    },
+    {
+        "policy": [
+            "simple",
+            "name"
+        ],
+        "rules": [
+            {
+                "rule": "grant",
+                "resources": [
+                    "data"
+                ],
+                "actions": [
+                    "read"
+                ]
+            },
+            {
+                "rule": "grant",
+                "resources": [
+                    "data"
+                ],
+                "actions": [
+                    "write"
+                ]
+            }
+        ]
+    }
+]

@@ -1,0 +1,341 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "readAllCountryCode"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "condition": {
+            "call": [
+              "or"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "CountryCode"
+                    ]
+                  },
+                  "DE"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "CountryCode"
+                    ]
+                  },
+                  "FR"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "readAllCountryCodeNe"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "condition": {
+            "call": [
+              "ne"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "CountryCode"
+                ]
+              },
+              "BE"
+            ]
+          }
+        },
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "condition": {
+            "call": [
+              "eq"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "CountryCode"
+                ]
+              },
+              "BE"
+            ]
+          }
+        }
+      ],
+      "description": "not equal",
+      "annotations": {
+        "description": "not equal"
+      }
+    },
+    {
+      "policy": [
+        "cas",
+        "readSalesOrdersCountryCodeSalesIdBetween"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "condition": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "CountryCode"
+                    ]
+                  },
+                  "DE"
+                ]
+              },
+              {
+                "call": [
+                  "between"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  },
+                  100.0,
+                  200.0
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "NOTreadAllCountryCodeNe"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readAllCountryCodeNe"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "readAllCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readAllCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "DE"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "readAllCountryCode_01"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readAllCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "FR"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTreadAllCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readAllCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "US"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "readSalesOrdersCountryCodeSalesIdBetween"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrdersCountryCodeSalesIdBetween"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 133.0,
+                  "CountryCode": "DE"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTreadSalesOrdersCountryCodeSalesIdBetween"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrdersCountryCodeSalesIdBetween"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 233.0,
+                  "CountryCode": "DE"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

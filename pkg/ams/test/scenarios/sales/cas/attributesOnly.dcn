@@ -1,0 +1,199 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "fullAuthorizedCountryCode"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "condition": {
+            "call": [
+              "in"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "CountryCode"
+                ]
+              },
+              [
+                "FR",
+                "DE",
+                "GB"
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "fullAuthorizedCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "fullAuthorizedCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "FR"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "fullAuthorizedCountryCode_01"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "fullAuthorizedCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "DE"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "fullAuthorizedCountryCode_02"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "fullAuthorizedCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 567.0,
+                  "CountryCode": "GB"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTfullAuthorizedCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "fullAuthorizedCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 345.0,
+                  "CountryCode": "CH"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTfullAuthorizedCountryCode_01"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "fullAuthorizedCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "CH"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

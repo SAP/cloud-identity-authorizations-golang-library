@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "policies": [],
+  "functions": [],
+  "schemas": [
+    {
+      "schema": [
+        "schema"
+      ],
+      "definition": {
+        "attribute": "Structure",
+        "nested": {
+          "$env": {
+            "attribute": "Structure",
+            "nested": {
+              "$user": {
+                "attribute": "Structure",
+                "nested": {
+                  "country": {
+                    "attribute": "String"
+                  },
+                  "name": {
+                    "attribute": "String"
+                  },
+                  "PersNumber": {
+                    "attribute": "Number"
+                  }
+                }
+              }
+            }
+          },
+          "$app": {
+            "attribute": "Structure",
+            "nested": {
+              "salesOrderId": {
+                "attribute": "Number"
+              },
+              "amount": {
+                "attribute": "Number"
+              },
+              "changedBy": {
+                "attribute": "String"
+              },
+              "CountryCode": {
+                "attribute": "String"
+              },
+              "Name": {
+                "attribute": "String"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "tests": []
+}

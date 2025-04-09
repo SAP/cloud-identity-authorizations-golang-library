@@ -1,0 +1,19 @@
+[
+    {
+        "policy": [
+            "simple",
+            "name"
+        ],
+        "rules": [
+            {
+                "rule": "grant",
+                "resources": [
+                    "data"
+                ],
+                "actions": [
+                    "read"
+                ]
+            }
+        ]
+    }
+]

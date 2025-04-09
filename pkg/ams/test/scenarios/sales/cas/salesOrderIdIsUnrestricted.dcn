@@ -1,0 +1,902 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "readSalesOrderIdIsUnrestricted"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "condition": {
+            "call": [
+              "not_restricted"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "salesOrderId"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "UseReadSalesOrderIsUnrestrictedBetween"
+      ],
+      "uses": [
+        {
+          "use": [
+            "cas",
+            "readSalesOrderIdIsUnrestricted"
+          ],
+          "restrictions": [
+            [
+              {
+                "call": [
+                  "between"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  },
+                  100.0,
+                  300.0
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "UseReadSalesOrderIsUnrestrictedEqual"
+      ],
+      "uses": [
+        {
+          "use": [
+            "cas",
+            "readSalesOrderIdIsUnrestricted"
+          ],
+          "restrictions": [
+            [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  },
+                  3456.0
+                ]
+              }
+            ],
+            [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  },
+                  5678.0
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "UseReadSalesOrderIsUnrestrictedLt"
+      ],
+      "uses": [
+        {
+          "use": [
+            "cas",
+            "readSalesOrderIdIsUnrestricted"
+          ],
+          "restrictions": [
+            [
+              {
+                "call": [
+                  "lt"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  },
+                  5.0
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "UseReadSalesOrderIsUnrestrictedGt"
+      ],
+      "uses": [
+        {
+          "use": [
+            "cas",
+            "readSalesOrderIdIsUnrestricted"
+          ],
+          "restrictions": [
+            [
+              {
+                "call": [
+                  "gt"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  },
+                  7.0
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "writeSalesOrderCountryCodeIsUnrestricted"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "condition": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "not_restricted"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  }
+                ]
+              },
+              {
+                "call": [
+                  "not_restricted"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "CountryCode"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "UseWriteSalesOrderCountryCodeIsUnrestricted"
+      ],
+      "uses": [
+        {
+          "use": [
+            "cas",
+            "writeSalesOrderCountryCodeIsUnrestricted"
+          ],
+          "restrictions": [
+            [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  },
+                  5498.0
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "CountryCode"
+                    ]
+                  },
+                  "DE"
+                ]
+              }
+            ],
+            [
+              {
+                "call": [
+                  "between"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "salesOrderId"
+                    ]
+                  },
+                  1000.0,
+                  3000.0
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "CountryCode"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$env",
+                      "$user",
+                      "country"
+                    ]
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      "description": "use a policy with 2 attributes",
+      "annotations": {
+        "description": "use a policy with 2 attributes"
+      }
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "readSalesOrderIdIsUnrestricted"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrderIdIsUnrestricted"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 354689.0
+                }
+              }
+            },
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 32435.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTreadSalesOrderIdIsUnrestricted"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "delete"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrderIdIsUnrestricted"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 354689.0
+                }
+              }
+            },
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 32435.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "UseReadSalesOrderIsUnrestrictedBetween"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseReadSalesOrderIsUnrestrictedBetween"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 112.0
+                }
+              }
+            },
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 299.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTUseReadSalesOrderIsUnrestrictedBetween"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseReadSalesOrderIsUnrestrictedBetween"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 301.0
+                }
+              }
+            },
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 99.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTUseReadSalesOrderIsUnrestrictedBetween_01"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseReadSalesOrderIsUnrestrictedBetween"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 112.0
+                }
+              }
+            },
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 299.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "UseWriteSalesOrderCountryCodeIsUnrestricted"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseWriteSalesOrderCountryCodeIsUnrestricted"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 5498.0,
+                  "CountryCode": "DE"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTUseWriteSalesOrderCountryCodeIsUnrestricted"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseWriteSalesOrderCountryCodeIsUnrestricted"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 6000.0,
+                  "CountryCode": "DE"
+                }
+              }
+            },
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 4598.0,
+                  "CountryCode": "FR"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "UseReadSalesOrderIsUnrestrictedEqual"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseReadSalesOrderIsUnrestrictedEqual"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 3456.0
+                }
+              }
+            },
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 5678.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTUseReadSalesOrderIsUnrestrictedEqual"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseReadSalesOrderIsUnrestrictedEqual"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 345678.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "UseReadSalesOrderIsUnrestrictedLt"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseReadSalesOrderIsUnrestrictedLt"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 3.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTUseReadSalesOrderIsUnrestrictedLt"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseReadSalesOrderIsUnrestrictedLt"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 88.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "UseReadSalesOrderIsUnrestrictedGt"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseReadSalesOrderIsUnrestrictedGt"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 9.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTUseReadSalesOrderIsUnrestrictedGt"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "UseReadSalesOrderIsUnrestrictedGt"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": -1.0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "writeSalesOrderCountryCodeIsUnrestricted"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "writeSalesOrderCountryCodeIsUnrestricted"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 435.0,
+                  "CountryCode": "FR"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "writeSalesOrderCountryCodeIsUnrestricted_01"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "writeSalesOrderCountryCodeIsUnrestricted"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTwriteSalesOrderCountryCodeIsUnrestricted"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "writeSalesOrderCountryCodeIsUnrestricted"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 435.0,
+                  "CountryCode": "FR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "delete"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "writeSalesOrderCountryCodeIsUnrestricted"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 435.0,
+                  "CountryCode": "FR"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

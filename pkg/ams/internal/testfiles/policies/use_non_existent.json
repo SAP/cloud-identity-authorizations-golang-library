@@ -1,0 +1,21 @@
+[
+    {
+        "policy": [
+            "simple"
+        ]
+    },
+    {
+        "policy": [
+            "simple",
+            "use"
+        ],
+        "uses": [
+            {
+                "use": [
+                    "simple",
+                    "name"
+                ]
+            }
+        ]
+    }
+]

@@ -1,0 +1,272 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "readSalesOrdersCountryCode"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "condition": {
+            "call": [
+              "in"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "CountryCode"
+                ]
+              },
+              [
+                "IT",
+                "AT",
+                "BE"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "readwriteSalesOrdersCountryCode"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read",
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "condition": {
+            "call": [
+              "in"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "CountryCode"
+                ]
+              },
+              [
+                "IT",
+                "AT"
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "readSalesOrdersCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrdersCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "IT"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTreadSalesOrdersCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrdersCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "IT"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "readwriteSalesOrdersCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read",
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readwriteSalesOrdersCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "IT"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "readwriteSalesOrdersCountryCode_01"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readwriteSalesOrdersCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "IT"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "readwriteSalesOrdersCountryCode_02"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readwriteSalesOrdersCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "AT"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTreadwriteSalesOrdersCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read",
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readwriteSalesOrdersCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "US"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

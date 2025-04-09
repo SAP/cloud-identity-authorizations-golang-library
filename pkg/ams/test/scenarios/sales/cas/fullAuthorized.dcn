@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "fullAuthorized"
+      ],
+      "rules": [
+        {
+          "rule": "grant"
+        }
+      ],
+      "description": "fully authorized",
+      "annotations": {
+        "description": "fully authorized"
+      }
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "fullAuthorized_read"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "fullAuthorized"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "fullAuthorized_write"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "fullAuthorized"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "fullAuthorized_activate"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "activate"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "fullAuthorized"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "fullAuthorized_activate_01"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "activate"
+          ],
+          "resources": [
+            "salesOrdersItems"
+          ],
+          "policies": [
+            [
+              "cas",
+              "fullAuthorized"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

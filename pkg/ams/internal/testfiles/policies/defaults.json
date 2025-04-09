@@ -1,0 +1,25 @@
+[
+    {
+        "policy": [
+            "base",
+            "simple"
+        ],
+        "default": false
+    },
+    {
+        "policy": [
+            "base",
+            "default"
+        ],
+        "default": true
+    },
+    {
+        "policy": [
+            "tenant",
+            "package",
+            "name",
+            "p"
+        ],
+        "default": true
+    }
+]

@@ -1,0 +1,8 @@
+{
+    "rule": "grant",
+    "actions": [
+        "read",
+        "write",
+        "delete"
+    ]
+}

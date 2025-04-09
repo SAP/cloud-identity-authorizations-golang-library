@@ -1,0 +1,834 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "fin",
+        "GLAccountLineItem"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "I_GLAccountLineItem"
+          ],
+          "condition": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "LEDGER"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$env",
+                      "$user",
+                      "ledger"
+                    ]
+                  }
+                ]
+              },
+              {
+                "call": [
+                  "or"
+                ],
+                "args": [
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "COMPANYCODE"
+                        ]
+                      },
+                      {
+                        "ref": [
+                          "$env",
+                          "$user",
+                          "company"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "COMPANYCODE"
+                        ]
+                      },
+                      "100"
+                    ]
+                  }
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "GLACCOUNTINCOMPANYCODE_AUTHORIZATIONGROUP"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$env",
+                      "$user",
+                      "authgrp3"
+                    ]
+                  }
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "SUPPLIER_AUTHORIZATIONGROUP"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$env",
+                      "$user",
+                      "authgrp"
+                    ]
+                  }
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "CUSTOMER_AUTHORIZATIONGROUP"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$env",
+                      "$user",
+                      "authgrp2"
+                    ]
+                  }
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "ACCOUNTINGDOCUMENTTYPE_AUTHORIZATIONGROUP"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$env",
+                      "$user",
+                      "authgrp4"
+                    ]
+                  }
+                ]
+              },
+              {
+                "call": [
+                  "or"
+                ],
+                "args": [
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "PROFITCENTER"
+                        ]
+                      },
+                      {
+                        "ref": [
+                          "$env",
+                          "$user",
+                          "profitcenter"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "CONTROLLINGAREA"
+                        ]
+                      },
+                      {
+                        "ref": [
+                          "$env",
+                          "$user",
+                          "controllingarea"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "PROFITCTRRESPONSIBLEUSER"
+                        ]
+                      },
+                      {
+                        "ref": [
+                          "$env",
+                          "$user",
+                          "id"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "call": [
+                  "between"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "PostingDate"
+                    ]
+                  },
+                  1.9990101E7,
+                  2.0212131E7
+                ]
+              },
+              {
+                "call": [
+                  "or"
+                ],
+                "args": [
+                  {
+                    "call": [
+                      "and"
+                    ],
+                    "args": [
+                      {
+                        "call": [
+                          "eq"
+                        ],
+                        "args": [
+                          {
+                            "ref": [
+                              "$app",
+                              "BUSINESSAREA"
+                            ]
+                          },
+                          {
+                            "ref": [
+                              "$env",
+                              "$user",
+                              "businessarea"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "call": [
+                          "eq"
+                        ],
+                        "args": [
+                          {
+                            "ref": [
+                              "$app",
+                              "SEGMENT"
+                            ]
+                          },
+                          {
+                            "ref": [
+                              "$env",
+                              "$user",
+                              "segment"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "call": [
+                          "or"
+                        ],
+                        "args": [
+                          {
+                            "call": [
+                              "and"
+                            ],
+                            "args": [
+                              {
+                                "call": [
+                                  "eq"
+                                ],
+                                "args": [
+                                  {
+                                    "ref": [
+                                      "$app",
+                                      "FINANCIALACCOUNTTYPE"
+                                    ]
+                                  },
+                                  "OPEN"
+                                ]
+                              },
+                              {
+                                "call": [
+                                  "or"
+                                ],
+                                "args": [
+                                  {
+                                    "call": [
+                                      "eq"
+                                    ],
+                                    "args": [
+                                      {
+                                        "ref": [
+                                          "$app",
+                                          "void"
+                                        ]
+                                      },
+                                      {
+                                        "ref": [
+                                          "$env",
+                                          "$user",
+                                          "FAUTHCNTXT1"
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "call": [
+                                      "and"
+                                    ],
+                                    "args": [
+                                      {
+                                        "call": [
+                                          "eq"
+                                        ],
+                                        "args": [
+                                          {
+                                            "ref": [
+                                              "$app",
+                                              "void"
+                                            ]
+                                          },
+                                          {
+                                            "ref": [
+                                              "$env",
+                                              "$user",
+                                              "FAUTHCNTXT2"
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "call": [
+                                          "or"
+                                        ],
+                                        "args": [
+                                          {
+                                            "call": [
+                                              "eq"
+                                            ],
+                                            "args": [
+                                              {
+                                                "ref": [
+                                                  "$app",
+                                                  "CONTROLLINGAREA"
+                                                ]
+                                              },
+                                              {
+                                                "ref": [
+                                                  "$env",
+                                                  "$user",
+                                                  "controllingarea"
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "call": [
+                                              "eq"
+                                            ],
+                                            "args": [
+                                              {
+                                                "ref": [
+                                                  "$app",
+                                                  "COSTCENTER"
+                                                ]
+                                              },
+                                              {
+                                                "ref": [
+                                                  "$env",
+                                                  "$user",
+                                                  "costcenter"
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "call": [
+                                              "eq"
+                                            ],
+                                            "args": [
+                                              {
+                                                "ref": [
+                                                  "$app",
+                                                  "COSTCTRRESPONSIBLEUSER"
+                                                ]
+                                              },
+                                              {
+                                                "ref": [
+                                                  "$env",
+                                                  "$user",
+                                                  "id"
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "call": [
+                                          "and"
+                                        ],
+                                        "args": [
+                                          {
+                                            "call": [
+                                              "or"
+                                            ],
+                                            "args": [
+                                              {
+                                                "call": [
+                                                  "eq"
+                                                ],
+                                                "args": [
+                                                  {
+                                                    "ref": [
+                                                      "$app",
+                                                      "SALESORGANIZATION"
+                                                    ]
+                                                  },
+                                                  {
+                                                    "ref": [
+                                                      "$env",
+                                                      "$user",
+                                                      "salesorg"
+                                                    ]
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "call": [
+                                                  "eq"
+                                                ],
+                                                "args": [
+                                                  {
+                                                    "ref": [
+                                                      "$app",
+                                                      "DSITRIBUTIONCHANNEL"
+                                                    ]
+                                                  },
+                                                  {
+                                                    "ref": [
+                                                      "$env",
+                                                      "$user",
+                                                      "distributionchannel"
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "call": [
+                                              "eq"
+                                            ],
+                                            "args": [
+                                              {
+                                                "ref": [
+                                                  "$app",
+                                                  "SalesDocumentType"
+                                                ]
+                                              },
+                                              {
+                                                "ref": [
+                                                  "$env",
+                                                  "$user",
+                                                  "SalesDocumentType"
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "call": [
+                                              "eq"
+                                            ],
+                                            "args": [
+                                              {
+                                                "ref": [
+                                                  "$app",
+                                                  "ServiceDocumentType"
+                                                ]
+                                              },
+                                              {
+                                                "ref": [
+                                                  "$env",
+                                                  "$user",
+                                                  "ServiceDocumentType"
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "call": [
+                              "and"
+                            ],
+                            "args": [
+                              {
+                                "call": [
+                                  "eq"
+                                ],
+                                "args": [
+                                  {
+                                    "ref": [
+                                      "$app",
+                                      "void"
+                                    ]
+                                  },
+                                  {
+                                    "ref": [
+                                      "$env",
+                                      "$user",
+                                      "FAUTHCNTXT1"
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "call": [
+                                  "eq"
+                                ],
+                                "args": [
+                                  {
+                                    "ref": [
+                                      "$app",
+                                      "COMPANYCODE"
+                                    ]
+                                  },
+                                  {
+                                    "ref": [
+                                      "$env",
+                                      "$user",
+                                      "company"
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "call": [
+                                  "eq"
+                                ],
+                                "args": [
+                                  {
+                                    "ref": [
+                                      "$app",
+                                      "BUSINESSAREA"
+                                    ]
+                                  },
+                                  {
+                                    "ref": [
+                                      "$env",
+                                      "$user",
+                                      "businessarea"
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "call": [
+                      "and"
+                    ],
+                    "args": [
+                      {
+                        "call": [
+                          "eq"
+                        ],
+                        "args": [
+                          {
+                            "ref": [
+                              "$app",
+                              "ORDERTYPE"
+                            ]
+                          },
+                          "valid"
+                        ]
+                      },
+                      {
+                        "call": [
+                          "or"
+                        ],
+                        "args": [
+                          {
+                            "call": [
+                              "and"
+                            ],
+                            "args": [
+                              {
+                                "call": [
+                                  "eq"
+                                ],
+                                "args": [
+                                  {
+                                    "ref": [
+                                      "$app",
+                                      "void"
+                                    ]
+                                  },
+                                  {
+                                    "ref": [
+                                      "$env",
+                                      "$user",
+                                      "FAUTHCNTXT2"
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "call": [
+                                  "or"
+                                ],
+                                "args": [
+                                  {
+                                    "call": [
+                                      "eq"
+                                    ],
+                                    "args": [
+                                      {
+                                        "ref": [
+                                          "$app",
+                                          "CONTROLLINGAREA"
+                                        ]
+                                      },
+                                      {
+                                        "ref": [
+                                          "$env",
+                                          "$user",
+                                          "controllingarea"
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "call": [
+                                      "eq"
+                                    ],
+                                    "args": [
+                                      {
+                                        "ref": [
+                                          "$app",
+                                          "COSTCENTER"
+                                        ]
+                                      },
+                                      {
+                                        "ref": [
+                                          "$env",
+                                          "$user",
+                                          "costcenter"
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "call": [
+                                      "eq"
+                                    ],
+                                    "args": [
+                                      {
+                                        "ref": [
+                                          "$app",
+                                          "COSTCTRRESPONSIBLEUSER"
+                                        ]
+                                      },
+                                      {
+                                        "ref": [
+                                          "$env",
+                                          "$user",
+                                          "id"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "call": [
+                              "and"
+                            ],
+                            "args": [
+                              {
+                                "call": [
+                                  "eq"
+                                ],
+                                "args": [
+                                  {
+                                    "ref": [
+                                      "$app",
+                                      "void"
+                                    ]
+                                  },
+                                  {
+                                    "ref": [
+                                      "$env",
+                                      "$user",
+                                      "FAUTHCNTXT1"
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "call": [
+                                  "eq"
+                                ],
+                                "args": [
+                                  {
+                                    "ref": [
+                                      "$app",
+                                      "PLANT"
+                                    ]
+                                  },
+                                  {
+                                    "ref": [
+                                      "$env",
+                                      "$user",
+                                      "plant"
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "call": [
+                      "and"
+                    ],
+                    "args": [
+                      {
+                        "call": [
+                          "eq"
+                        ],
+                        "args": [
+                          {
+                            "ref": [
+                              "$app",
+                              "void"
+                            ]
+                          },
+                          {
+                            "ref": [
+                              "$env",
+                              "$user",
+                              "FAUTHCNTXT2"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "call": [
+                          "eq"
+                        ],
+                        "args": [
+                          {
+                            "ref": [
+                              "$app",
+                              "VALUATIONAREA"
+                            ]
+                          },
+                          {
+                            "ref": [
+                              "$env",
+                              "$user",
+                              "VALUATIONAREA"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": []
+}

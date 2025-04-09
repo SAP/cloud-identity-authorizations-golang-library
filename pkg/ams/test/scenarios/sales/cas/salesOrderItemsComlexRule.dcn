@@ -1,0 +1,470 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "salesOrderItemsComlexRule"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read",
+            "write"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "condition": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "CountryCode"
+                    ]
+                  },
+                  "GB"
+                ]
+              },
+              {
+                "call": [
+                  "or"
+                ],
+                "args": [
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "salesOrderId"
+                        ]
+                      },
+                      233.0
+                    ]
+                  },
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "salesOrderId"
+                        ]
+                      },
+                      677.0
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "salesOrderItemsComlexRuleLike"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read",
+            "write"
+          ],
+          "resources": [
+            "salesOrders",
+            "saledOrderItems"
+          ],
+          "condition": {
+            "call": [
+              "or"
+            ],
+            "args": [
+              {
+                "call": [
+                  "and"
+                ],
+                "args": [
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "CountryCode"
+                        ]
+                      },
+                      "DE"
+                    ]
+                  },
+                  {
+                    "call": [
+                      "or"
+                    ],
+                    "args": [
+                      {
+                        "call": [
+                          "eq"
+                        ],
+                        "args": [
+                          {
+                            "ref": [
+                              "$app",
+                              "salesOrderId"
+                            ]
+                          },
+                          200.0
+                        ]
+                      },
+                      {
+                        "call": [
+                          "like"
+                        ],
+                        "args": [
+                          {
+                            "ref": [
+                              "$app",
+                              "Name"
+                            ]
+                          },
+                          "%Winter%"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "call": [
+                  "and"
+                ],
+                "args": [
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "CountryCode"
+                        ]
+                      },
+                      "EN"
+                    ]
+                  },
+                  {
+                    "call": [
+                      "or"
+                    ],
+                    "args": [
+                      {
+                        "call": [
+                          "eq"
+                        ],
+                        "args": [
+                          {
+                            "ref": [
+                              "$app",
+                              "salesOrderId"
+                            ]
+                          },
+                          300.0
+                        ]
+                      },
+                      {
+                        "call": [
+                          "like"
+                        ],
+                        "args": [
+                          {
+                            "ref": [
+                              "$app",
+                              "Name"
+                            ]
+                          },
+                          "%SOMMER!%..%",
+                          "!"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "readSalesOrdersNotNull"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderLists"
+          ],
+          "condition": {
+            "call": [
+              "is_not_null"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "amount"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "salesOrderItemsComlexRule"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItemsComlexRule"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 233.0,
+                  "CountryCode": "GB"
+                }
+              }
+            },
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 677.0,
+                  "CountryCode": "GB"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTsalesOrderItemsComlexRule"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItemsComlexRule"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 677.0,
+                  "CountryCode": "IT"
+                }
+              }
+            },
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 233.0,
+                  "CountryCode": "DE"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "salesOrderItemsComlexRuleLike"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read",
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItemsComlexRuleLike"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 300.0,
+                  "CountryCode": "EN",
+                  "Name": "SommerSales"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTsalesOrderItemsComlexRuleLike"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItemsComlexRuleLike"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 200.0,
+                  "CountryCode": "EN",
+                  "Name": "SommerSales"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTsalesOrderItemsComlexRuleLike_01"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItemsComlexRuleLike"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 200.0,
+                  "CountryCode": "EN",
+                  "Name": "WinterSales"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "salesOrderItemsComlexRuleLike_01"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItemsComlexRuleLike"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "salesOrderId": 300.0,
+                  "CountryCode": "EN",
+                  "Name": "SoMMerSales"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "poc",
+        "A"
+      ]
+    },
+    {
+      "policy": [
+        "poc",
+        "FC"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "C"
+          ],
+          "resources": [
+            "R"
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "poc",
+        "BASIC"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "C"
+          ],
+          "resources": [
+            "R"
+          ],
+          "policies": [
+            [
+              "poc",
+              "A"
+            ]
+          ],
+          "scopeFilter": [
+            [
+              "poc",
+              "FC"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

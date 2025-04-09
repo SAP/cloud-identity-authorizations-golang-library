@@ -1,0 +1,2557 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "ams",
+        "X"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "condition": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "r0"
+                ]
+              },
+              {
+                "call": [
+                  "ams",
+                  "r1"
+                ]
+              },
+              {
+                "call": [
+                  "ams",
+                  "r2"
+                ]
+              },
+              {
+                "call": [
+                  "ams",
+                  "r3"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "default": true
+    }
+  ],
+  "functions": [
+    {
+      "function": [
+        "ams",
+        "c0T"
+      ],
+      "result": {
+        "call": [
+          "and"
+        ],
+        "args": [
+          {
+            "call": [
+              "eq"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "a0"
+                ]
+              },
+              true
+            ]
+          },
+          {
+            "call": [
+              "eq"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "b0"
+                ]
+              },
+              true
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "c0N"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "ne"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "a0"
+                ]
+              },
+              true
+            ]
+          },
+          {
+            "call": [
+              "ne"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "b0"
+                ]
+              },
+              true
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "v0T"
+      ],
+      "result": {
+        "call": [
+          "ne"
+        ],
+        "args": [
+          {
+            "ref": [
+              "$app",
+              "a0"
+            ]
+          },
+          {
+            "ref": [
+              "$app",
+              "b0"
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "v0N"
+      ],
+      "result": {
+        "call": [
+          "eq"
+        ],
+        "args": [
+          {
+            "ref": [
+              "$app",
+              "a0"
+            ]
+          },
+          {
+            "ref": [
+              "$app",
+              "b0"
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "c1T"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c0N"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a1"
+                    ]
+                  },
+                  true
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "b1"
+                    ]
+                  },
+                  true
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c0T"
+                ]
+              },
+              {
+                "call": [
+                  "or"
+                ],
+                "args": [
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "a1"
+                        ]
+                      },
+                      true
+                    ]
+                  },
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "b1"
+                        ]
+                      },
+                      true
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "c1N"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c0N"
+                ]
+              },
+              {
+                "call": [
+                  "or"
+                ],
+                "args": [
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "a1"
+                        ]
+                      },
+                      false
+                    ]
+                  },
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "b1"
+                        ]
+                      },
+                      false
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c0T"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a1"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "b1"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "v1T"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c0N"
+                ]
+              },
+              {
+                "call": [
+                  "ne"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a1"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$app",
+                      "b1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c0T"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a1"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$app",
+                      "b1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "v1N"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c0N"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a1"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$app",
+                      "b1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c0T"
+                ]
+              },
+              {
+                "call": [
+                  "ne"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a1"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$app",
+                      "b1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "c2T"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c1N"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a2"
+                    ]
+                  },
+                  true
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "b2"
+                    ]
+                  },
+                  true
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c1T"
+                ]
+              },
+              {
+                "call": [
+                  "or"
+                ],
+                "args": [
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "a2"
+                        ]
+                      },
+                      true
+                    ]
+                  },
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "b2"
+                        ]
+                      },
+                      true
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "c2N"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c1N"
+                ]
+              },
+              {
+                "call": [
+                  "or"
+                ],
+                "args": [
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "a2"
+                        ]
+                      },
+                      false
+                    ]
+                  },
+                  {
+                    "call": [
+                      "eq"
+                    ],
+                    "args": [
+                      {
+                        "ref": [
+                          "$app",
+                          "b2"
+                        ]
+                      },
+                      false
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c1T"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a2"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "b2"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "v2T"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c1N"
+                ]
+              },
+              {
+                "call": [
+                  "ne"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a2"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$app",
+                      "b2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c1T"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a2"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$app",
+                      "b2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "v2N"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c1N"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a2"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$app",
+                      "b2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c1T"
+                ]
+              },
+              {
+                "call": [
+                  "ne"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "a2"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "$app",
+                      "b2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "r0"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "v0T"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r0"
+                    ]
+                  },
+                  true
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "v0N"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r0"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "r1"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "v1T"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r1"
+                    ]
+                  },
+                  true
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "v1N"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r1"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "r2"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "v2T"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r2"
+                    ]
+                  },
+                  true
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "v2N"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r2"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    },
+    {
+      "function": [
+        "ams",
+        "r3"
+      ],
+      "result": {
+        "call": [
+          "or"
+        ],
+        "args": [
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c2T"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r3"
+                    ]
+                  },
+                  true
+                ]
+              }
+            ]
+          },
+          {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "ams",
+                  "c2N"
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r3"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "returnType": "Boolean"
+    }
+  ],
+  "tests": [
+    {
+      "test": [
+        "ams",
+        "X"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": false,
+                  "a0": false,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": false,
+                  "a0": false,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": false,
+                  "a0": false,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": false,
+                  "a0": false,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": true,
+                  "a0": false,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": true,
+                  "a0": false,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": true,
+                  "a0": false,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": true,
+                  "a0": false,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r0"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r1"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r2"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r3"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          },
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "a2": false,
+                  "b0": false,
+                  "a0": false,
+                  "b1": false
+                }
+              },
+              "unknowns": [
+                {
+                  "ref": [
+                    "$app",
+                    "r0"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r1"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r2"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r3"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": true,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": true,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": true,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": true,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": true,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": true,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": true,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": true,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": true,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r0"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r1"
+                    ]
+                  },
+                  true
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r2"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r3"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          },
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "a2": false,
+                  "b0": true,
+                  "a0": true,
+                  "b1": false
+                }
+              },
+              "unknowns": [
+                {
+                  "ref": [
+                    "$app",
+                    "r0"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r1"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r2"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r3"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": true,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": true,
+                  "b1": true,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": true,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": true,
+                  "b1": true,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": true,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": true,
+                  "b1": true,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": true,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": true,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": true,
+                  "b1": true,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": true,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": true,
+                  "b1": true,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": true,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": true,
+                  "b1": true,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": true,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": true,
+                  "b1": true,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": true,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": true,
+                  "b1": true,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r0"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r1"
+                    ]
+                  },
+                  true
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r2"
+                    ]
+                  },
+                  true
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r3"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          },
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": true,
+                  "b2": false,
+                  "a2": false,
+                  "b0": true,
+                  "a0": true,
+                  "b1": true
+                }
+              },
+              "unknowns": [
+                {
+                  "ref": [
+                    "$app",
+                    "r0"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r1"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r2"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r3"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": false,
+                  "a0": true,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": false,
+                  "a0": true,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": false,
+                  "a0": true,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": false,
+                  "a0": true,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": true,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": true,
+                  "a0": true,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": true,
+                  "a0": true,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": true,
+                  "a0": true,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": false,
+                  "r0": true,
+                  "a0": true,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r0"
+                    ]
+                  },
+                  true
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r1"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r2"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r3"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          },
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "a2": false,
+                  "b0": false,
+                  "a0": true,
+                  "b1": false
+                }
+              },
+              "unknowns": [
+                {
+                  "ref": [
+                    "$app",
+                    "r0"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r1"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r2"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r3"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": false,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": false,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": false,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": false,
+                  "a0": false,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": true,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": false,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": false,
+                  "b1": false,
+                  "r1": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": false,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": false,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": false,
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "r2": true,
+                  "a2": false,
+                  "r3": false,
+                  "b0": true,
+                  "r0": true,
+                  "a0": false,
+                  "b1": false,
+                  "r1": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r0"
+                    ]
+                  },
+                  true
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r1"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r2"
+                    ]
+                  },
+                  false
+                ]
+              },
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "r3"
+                    ]
+                  },
+                  false
+                ]
+              }
+            ]
+          },
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a1": false,
+                  "b2": false,
+                  "a2": false,
+                  "b0": true,
+                  "a0": false,
+                  "b1": false
+                }
+              },
+              "unknowns": [
+                {
+                  "ref": [
+                    "$app",
+                    "r0"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r1"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r2"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "r3"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

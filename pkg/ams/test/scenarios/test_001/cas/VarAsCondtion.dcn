@@ -1,0 +1,366 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "x"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "X"
+          ],
+          "condition": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "a"
+                ]
+              },
+              {
+                "ref": [
+                  "$app",
+                  "b"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "y"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "X"
+          ],
+          "condition": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "cas",
+                  "T"
+                ]
+              },
+              {
+                "ref": [
+                  "$app",
+                  "b"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "function": [
+        "cas",
+        "T"
+      ],
+      "result": {
+        "call": [
+          "eq"
+        ],
+        "args": [
+          {
+            "ref": [
+              "$app",
+              "n"
+            ]
+          },
+          1.0
+        ]
+      },
+      "returnType": "Boolean"
+    }
+  ],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "x"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "X"
+          ],
+          "policies": [
+            [
+              "cas",
+              "x"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "a": true,
+                  "b": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "ref": [
+              "$app",
+              "a"
+            ]
+          },
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "X"
+          ],
+          "policies": [
+            [
+              "cas",
+              "x"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "b": true
+                }
+              },
+              "unknowns": [
+                {
+                  "ref": [
+                    "$app",
+                    "a"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "expect": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "a"
+                ]
+              },
+              {
+                "ref": [
+                  "$app",
+                  "b"
+                ]
+              }
+            ]
+          },
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "X"
+          ],
+          "policies": [
+            [
+              "cas",
+              "x"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {}
+              },
+              "unknowns": [
+                {
+                  "ref": [
+                    "$app",
+                    "a"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "b"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "y"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "X"
+          ],
+          "policies": [
+            [
+              "cas",
+              "y"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "b": true,
+                  "n": 1.0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "call": [
+              "eq"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "n"
+                ]
+              },
+              1.0
+            ]
+          },
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "X"
+          ],
+          "policies": [
+            [
+              "cas",
+              "y"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "b": true
+                }
+              },
+              "unknowns": [
+                {
+                  "ref": [
+                    "$app",
+                    "n"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "expect": {
+            "call": [
+              "and"
+            ],
+            "args": [
+              {
+                "call": [
+                  "eq"
+                ],
+                "args": [
+                  {
+                    "ref": [
+                      "$app",
+                      "n"
+                    ]
+                  },
+                  1.0
+                ]
+              },
+              {
+                "ref": [
+                  "$app",
+                  "b"
+                ]
+              }
+            ]
+          },
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "X"
+          ],
+          "policies": [
+            [
+              "cas",
+              "y"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {}
+              },
+              "unknowns": [
+                {
+                  "ref": [
+                    "$app",
+                    "n"
+                  ]
+                },
+                {
+                  "ref": [
+                    "$app",
+                    "b"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

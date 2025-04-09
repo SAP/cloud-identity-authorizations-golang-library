@@ -1,0 +1,199 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "salesOrderItemsCountryCode"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "resources": [
+            "salesOrderItems"
+          ],
+          "condition": {
+            "call": [
+              "in"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "CountryCode"
+                ]
+              },
+              [
+                "DE",
+                "CH",
+                "AT"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "readSalesOrdersLike"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "condition": {
+            "call": [
+              "like"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "Name"
+                ]
+              },
+              "%deal%"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "salesOrderItemsCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItemsCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "DE"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTsalesOrderItemsCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrderItemsCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "CountryCode": "US"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "readSalesOrdersLike"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrdersLike"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "Name": "Winterdeals"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTreadSalesOrdersLike"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrdersLike"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$app": {
+                  "Name": "WinterNews"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

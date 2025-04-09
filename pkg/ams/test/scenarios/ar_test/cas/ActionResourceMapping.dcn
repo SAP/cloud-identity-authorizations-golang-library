@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "Empty"
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "All"
+      ],
+      "rules": [
+        {
+          "rule": "grant"
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "A_ALL"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "A"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "B_ALL"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "ALL_R"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "resources": [
+            "R"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "A_R"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "R"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "B_R"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "B"
+          ],
+          "resources": [
+            "R"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "B_S"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "B"
+          ],
+          "resources": [
+            "S"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "AB"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "A",
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "AB_R"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "A",
+            "B"
+          ],
+          "resources": [
+            "R"
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": []
+}

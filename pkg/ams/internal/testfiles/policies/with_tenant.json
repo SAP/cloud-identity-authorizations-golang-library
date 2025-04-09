@@ -1,0 +1,21 @@
+[
+    {
+        "policy": [
+            "tenant",
+            "package",
+            "name",
+            "p"
+        ],
+        "rules": [
+            {
+                "rule": "grant",
+                "resources": [
+                    "data"
+                ],
+                "actions": [
+                    "read"
+                ]
+            }
+        ]
+    }
+]

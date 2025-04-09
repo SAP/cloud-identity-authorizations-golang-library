@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "policies": [],
+  "functions": [],
+  "schemas": [
+    {
+      "schema": [
+        "schema"
+      ],
+      "definition": {
+        "attribute": "Structure",
+        "nested": {
+          "$env": {
+            "attribute": "Structure",
+            "nested": {
+              "$user": {
+                "attribute": "Structure",
+                "nested": {
+                  "ledger": {
+                    "attribute": "String"
+                  },
+                  "SalesDocumentType": {
+                    "attribute": "String"
+                  },
+                  "businessarea": {
+                    "attribute": "String"
+                  },
+                  "VALUATIONAREA": {
+                    "attribute": "String"
+                  },
+                  "FAUTHCNTXT1": {
+                    "attribute": "Boolean"
+                  },
+                  "FAUTHCNTXT2": {
+                    "attribute": "Boolean"
+                  },
+                  "authgrp": {
+                    "attribute": "String"
+                  },
+                  "salesorg": {
+                    "attribute": "String"
+                  },
+                  "authgrp4": {
+                    "attribute": "String"
+                  },
+                  "authgrp3": {
+                    "attribute": "String"
+                  },
+                  "user_uuid": {
+                    "attribute": "String"
+                  },
+                  "authgrp2": {
+                    "attribute": "String"
+                  },
+                  "profitcenter": {
+                    "attribute": "String"
+                  },
+                  "ServiceDocumentType": {
+                    "attribute": "String"
+                  },
+                  "distributionchannel": {
+                    "attribute": "String"
+                  },
+                  "segment": {
+                    "attribute": "String"
+                  },
+                  "plant": {
+                    "attribute": "String"
+                  },
+                  "ASSETCLASS": {
+                    "attribute": "String"
+                  },
+                  "company": {
+                    "attribute": "String"
+                  },
+                  "controllingarea": {
+                    "attribute": "String"
+                  },
+                  "id": {
+                    "attribute": "String"
+                  },
+                  "PersNumber": {
+                    "attribute": "Number"
+                  },
+                  "costcenter": {
+                    "attribute": "String"
+                  }
+                }
+              }
+            }
+          },
+          "$app": {
+            "attribute": "Structure",
+            "nested": {
+              "SalesDocumentType": {
+                "attribute": "String"
+              },
+              "PLANT": {
+                "attribute": "String"
+              },
+              "SEGMENT": {
+                "attribute": "String"
+              },
+              "void": {
+                "attribute": "Boolean"
+              },
+              "COMPANYCODE": {
+                "attribute": "String"
+              },
+              "BUSINESSAREA": {
+                "attribute": "String"
+              },
+              "ORDERTYPE": {
+                "attribute": "String"
+              },
+              "VALUATIONAREA": {
+                "attribute": "String"
+              },
+              "COSTCENTER": {
+                "attribute": "String"
+              },
+              "ACCOUNTINGDOCUMENTTYPE_AUTHORIZATIONGROUP": {
+                "attribute": "String"
+              },
+              "CONTROLLINGAREA": {
+                "attribute": "String"
+              },
+              "FINANCIALACCOUNTTYPE": {
+                "attribute": "String"
+              },
+              "COSTCTRRESPONSIBLEUSER": {
+                "attribute": "String"
+              },
+              "SUPPLIER_AUTHORIZATIONGROUP": {
+                "attribute": "String"
+              },
+              "ServiceDocumentType": {
+                "attribute": "String"
+              },
+              "LEDGER": {
+                "attribute": "String"
+              },
+              "PROFITCENTER": {
+                "attribute": "String"
+              },
+              "PROFITCTRRESPONSIBLEUSER": {
+                "attribute": "String"
+              },
+              "PostingDate": {
+                "attribute": "Number"
+              },
+              "CUSTOMER_AUTHORIZATIONGROUP": {
+                "attribute": "String"
+              },
+              "ASSETCLASS": {
+                "attribute": "String"
+              },
+              "SALESORGANIZATION": {
+                "attribute": "String"
+              },
+              "DSITRIBUTIONCHANNEL": {
+                "attribute": "String"
+              },
+              "GLACCOUNTINCOMPANYCODE_AUTHORIZATIONGROUP": {
+                "attribute": "String"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "tests": []
+}

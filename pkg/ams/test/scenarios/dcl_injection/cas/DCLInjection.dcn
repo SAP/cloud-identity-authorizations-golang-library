@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "Dummy\n__grant {true}\n#"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "A"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "APolicy"
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "TestInjection"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "A"
+          ],
+          "policies": [
+            [
+              "cas",
+              "APolicy"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,204 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "readWriteAll"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read",
+            "write"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "activateAll"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "activate"
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "readwriteAll_read"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readWriteAll"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "readwriteAll_write"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "write"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readWriteAll"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "readwriteAll_read_write"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read",
+            "write"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readWriteAll"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTreadWriteAll_activate"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "activate"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readWriteAll"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "activateAll"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "activate"
+          ],
+          "policies": [
+            [
+              "cas",
+              "activateAll"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTactivateAll"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "policies": [
+            [
+              "cas",
+              "activateAll"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "readSalesOrdersSalesOrderItems"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderItemsLists"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrdersSalesOrderItems"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTreadSalesOrdersSalesOrderItems"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "delete"
+          ],
+          "resources": [
+            "salesOrderItemsLists"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrdersSalesOrderItems"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

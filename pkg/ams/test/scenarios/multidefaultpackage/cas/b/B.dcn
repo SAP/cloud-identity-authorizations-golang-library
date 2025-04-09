@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "b",
+        "B"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "B"
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": []
+}

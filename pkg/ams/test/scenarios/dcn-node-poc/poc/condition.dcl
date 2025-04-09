@@ -1,0 +1,24 @@
+POLICY A {
+    // GRANT C ON R;
+}
+
+// POLICY FA {
+//     GRANT A ON R;
+// }
+
+// POLICY FB {
+//     GRANT B ON R;
+// }
+
+POLICY FC {
+    GRANT C ON R;
+}
+
+TEST BASIC {
+    // GRANT A ON R POLICY A SCOPEFILTER FA;
+    // DENY  A ON R POLICY A SCOPEFILTER FB;
+
+    DENY  C ON R POLICY A SCOPEFILTER FC;
+    // GRANT C ON R POLICY A SCOPEFILTER FC;
+    
+}

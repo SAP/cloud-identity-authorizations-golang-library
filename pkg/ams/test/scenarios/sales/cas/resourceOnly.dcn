@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "salesOrders"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "resources": [
+            "salesOrders"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "salesOrdersSalesOrderItems"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "resources": [
+            "salesOrders",
+            "salesOrderItems",
+            "salesOrderLists"
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "salesOrders"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrders"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTsalesOrders"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrders"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "salesOrdersSalesOrderItems"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderLists"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrdersSalesOrderItems"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "salesOrdersSalesOrderItems_01"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderItemsLists"
+          ],
+          "policies": [
+            [
+              "cas",
+              "salesOrdersSalesOrderItems"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "readSalesOrdersUserCountryCode"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "condition": {
+            "call": [
+              "eq"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "CountryCode"
+                ]
+              },
+              {
+                "ref": [
+                  "$env",
+                  "$user",
+                  "country"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "writeSalesOrdersUserName"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "condition": {
+            "call": [
+              "eq"
+            ],
+            "args": [
+              {
+                "ref": [
+                  "$app",
+                  "changedBy"
+                ]
+              },
+              {
+                "ref": [
+                  "$env",
+                  "$user",
+                  "name"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "readSalesOrdersUserCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrdersUserCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$env": {
+                  "$user": {
+                    "country": "DE"
+                  }
+                },
+                "$app": {
+                  "CountryCode": "DE"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTreadSalesOrdersUserCountryCode"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrdersUserCountryCode"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$env": {
+                  "$user": {
+                    "country": "DE"
+                  }
+                },
+                "$app": {
+                  "CountryCode": "FR"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "writeSalesOrdersUserName"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "writeSalesOrdersUserName"
+            ]
+          ],
+          "inputs": [
+            {
+              "input": {
+                "$env": {
+                  "$user": {
+                    "name": "Alice"
+                  }
+                },
+                "$app": {
+                  "changedBy": "Alice"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

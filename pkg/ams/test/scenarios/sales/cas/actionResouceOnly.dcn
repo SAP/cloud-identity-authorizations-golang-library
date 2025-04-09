@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "readSalesOrders"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "writeDeleteSalesOrderItems"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "write",
+            "delete"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "readSalesOrdersSalesOrderItems"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders",
+            "salesOrderItems",
+            "salesOrderItemsLists"
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "readSalesOrders"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrders"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTreadSalesOrders"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "write"
+          ],
+          "resources": [
+            "salesOrders"
+          ],
+          "policies": [
+            [
+              "cas",
+              "readSalesOrders"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "writeDeleteSalesOrderItems"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "write",
+            "delete"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "policies": [
+            [
+              "cas",
+              "writeDeleteSalesOrderItems"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "test": [
+        "cas",
+        "NOTwriteDeleteSalesOrderItems"
+      ],
+      "assertions": [
+        {
+          "expect": false,
+          "actions": [
+            "read"
+          ],
+          "resources": [
+            "salesOrderItems"
+          ],
+          "policies": [
+            [
+              "cas",
+              "writeDeleteSalesOrderItems"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

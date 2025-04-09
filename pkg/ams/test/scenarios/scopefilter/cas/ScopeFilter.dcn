@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "policies": [
+    {
+      "policy": [
+        "cas",
+        "A"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "A",
+            "B"
+          ],
+          "resources": [
+            "R"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "FA"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "R"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "FB"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "B"
+          ],
+          "resources": [
+            "R"
+          ]
+        }
+      ]
+    },
+    {
+      "policy": [
+        "cas",
+        "FC"
+      ],
+      "rules": [
+        {
+          "rule": "grant",
+          "actions": [
+            "C"
+          ],
+          "resources": [
+            "R"
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "tests": [
+    {
+      "test": [
+        "cas",
+        "BASIC"
+      ],
+      "assertions": [
+        {
+          "expect": true,
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "R"
+          ],
+          "policies": [
+            [
+              "cas",
+              "A"
+            ]
+          ],
+          "scopeFilter": [
+            [
+              "cas",
+              "FA"
+            ]
+          ]
+        },
+        {
+          "expect": false,
+          "actions": [
+            "A"
+          ],
+          "resources": [
+            "R"
+          ],
+          "policies": [
+            [
+              "cas",
+              "A"
+            ]
+          ],
+          "scopeFilter": [
+            [
+              "cas",
+              "FB"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

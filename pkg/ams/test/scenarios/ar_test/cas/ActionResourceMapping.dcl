@@ -1,0 +1,38 @@
+POLICY Empty {
+}
+
+POLICY All {
+	GRANT * ON *;
+}
+
+POLICY A_ALL {
+	GRANT A ON *;
+}
+
+POLICY B_ALL {
+	GRANT B ON *;
+}
+
+POLICY ALL_R {
+    GRANT * ON R;
+}
+
+POLICY A_R {
+	GRANT A ON R;
+}
+
+POLICY B_R {
+	GRANT B ON R;
+}
+
+POLICY B_S {
+    GRANT B ON S;
+}
+
+POLICY AB {
+	GRANT A,B ON *;
+}
+
+POLICY AB_R {
+	GRANT A,B ON R;
+}

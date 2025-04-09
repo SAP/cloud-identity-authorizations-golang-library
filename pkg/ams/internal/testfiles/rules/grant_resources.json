@@ -1,0 +1,8 @@
+{
+    "rule": "grant",
+    "resources": [
+        "resource1",
+        "resource2",
+        "resource3"
+    ]
+}

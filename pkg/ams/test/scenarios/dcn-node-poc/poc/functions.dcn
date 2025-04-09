@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "policies": [],
+  "functions": [
+    {
+      "function": [
+        "poc",
+        "A"
+      ],
+      "result": "asdf",
+      "returnType": "String"
+    },
+    {
+      "function": [
+        "poc",
+        "B"
+      ],
+      "result": {
+        "ref": [
+          "$app",
+          "b"
+        ]
+      },
+      "returnType": "String"
+    },
+    {
+      "function": [
+        "poc",
+        "C"
+      ],
+      "result": {
+        "call": [
+          "eq"
+        ],
+        "args": [
+          {
+            "ref": [
+              "$app",
+              "b"
+            ]
+          },
+          "asdf"
+        ]
+      },
+      "returnType": "Boolean"
+    }
+  ],
+  "tests": []
+}

@@ -1,0 +1,26 @@
+{
+    "rule": "grant",
+    "actions": [
+        "read",
+        "write",
+        "delete"
+    ],
+    "resources": [
+        "resource1",
+        "resource2",
+        "resource3"
+    ],
+    "condition": {
+        "call": [
+            "eq"
+        ],
+        "args": [
+            {
+                "ref": [
+                    "x"
+                ]
+            },
+            1
+        ]
+    }
+}
