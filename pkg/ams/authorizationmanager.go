@@ -26,6 +26,8 @@ type AuthorizationManager struct {
 	hasAssignments     bool
 }
 
+// Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels, to update its policies and assignments during runtime.
+// the instance must receive (possibly empty) data on both channels to be ready.
 func NewAuthorizationManager(dcnChannel chan dcn.DcnContainer, assignmentsChannel chan dcn.Assignments) *AuthorizationManager {
 	result := AuthorizationManager{
 		ready:              make(chan bool),
@@ -43,6 +45,8 @@ func NewAuthorizationManager(dcnChannel chan dcn.DcnContainer, assignmentsChanne
 	return &result
 }
 
+// Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
+// the provided data should be taken from the identity binding
 func AuthorizationManagerForAMS(bundleURL, amsInstanceID, cert, key string) (*AuthorizationManager, error) {
 
 	//parse the cert and key
@@ -76,6 +80,9 @@ func AuthorizationManagerForAMS(bundleURL, amsInstanceID, cert, key string) (*Au
 
 }
 
+// Returns a new AuthorizationManager that loads the DCN and Assignments from the local file system
+// the provided path should contain the schema.dcn and the data.json files and subdirectories containing the other dcn files
+// the data.json file should contain the assignments, if needed and could be ommited
 func AuthorizationManagerForLocal(path string) *AuthorizationManager {
 	loader := dcn.NewLocalLoader(path)
 	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel)
@@ -83,6 +90,7 @@ func AuthorizationManagerForLocal(path string) *AuthorizationManager {
 	return result
 }
 
+// Register a new error handler that will be called when an error occurs in the background update process
 func (a *AuthorizationManager) RegisterErrorHandler(handler func(error)) {
 	a.m.Lock()
 	defer a.m.Unlock()
@@ -133,10 +141,13 @@ func (a *AuthorizationManager) start() {
 	}
 }
 
+// Returns a channel that will be closed when the AuthorizationManager is ready to be used
 func (a *AuthorizationManager) WhenReady() <-chan bool {
 	return a.ready
 }
 
+// Returns true if the AuthorizationManager is ready to be used
+// This is the case when both the DCN and Assignments have been loaded
 func (a *AuthorizationManager) IsReady() bool {
 	select {
 	case <-a.ready:
@@ -146,16 +157,22 @@ func (a *AuthorizationManager) IsReady() bool {
 	}
 }
 
+// Returns Schema that can be used for input creation/validation based on the DCL schema
 func (a *AuthorizationManager) GetSchema() internal.Schema {
 	a.m.RLock()
 	defer a.m.RUnlock()
 	return a.schema
 }
+
+// Returns Authorizations, based on the users assigned policies and default policies
+// basically just a convinience warpper around GetAssignments and GetAuthorizations
 func (a *AuthorizationManager) UserAuthorizations(tenant, user string) *Authorizations {
 	pNames := a.GetAssignments(tenant, user)
 	return a.GetAuthorizations(pNames, tenant, true)
 }
 
+// Returns Authorizations, based on the provided policy names and and optionally the default policies
+// and filtered filtering out admin policies from tenants other than the provided tenant. for tenant-independent queries, use "" as tenant
 func (a *AuthorizationManager) GetAuthorizations(names []string, tenant string, includeDefault bool) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()
@@ -165,6 +182,7 @@ func (a *AuthorizationManager) GetAuthorizations(names []string, tenant string, 
 	}
 }
 
+// Returns the policies that are assigned to the user in the given tenant
 func (a *AuthorizationManager) GetAssignments(tenant, user string) []string {
 	a.m.RLock()
 	defer a.m.RUnlock()

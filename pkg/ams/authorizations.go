@@ -11,11 +11,29 @@ type Authorizations struct {
 	schema    internal.Schema
 }
 
-func (a Authorizations) Inquire(action, resource string, input any, env any) expression.Expression {
-	i := a.schema.CustomInput(action, resource, input, env)
+//TODO: create env input type
+
+// Retrieve a access decision for a given action and resource and possibly some custom input
+// the app input should correspond to the DCL schema definition. This can be achieved by providing either:
+// - deeply nested map[string] where the keys are the schema names and the values can translated to the schema types
+// - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema name or the fields name is EXACTLY the same as the schema name
+//
+// expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
+// the env input is typically corresponding to the user information and you can provide TODO
+func (a Authorizations) Inquire(action, resource string, app any, env any) expression.Expression {
+	i := a.schema.CustomInput(action, resource, app, env)
 	return a.Evaluate(i)
 }
 
+// Retrieve a access decision for a given action and resource and possibly some custom input
+// this function is ment to provide generic quick access to the authorizations and is dangerous to use
+// the provided input must be a map[string]expression.Constant where
+//
+// the keys are the stringified qualified names from the schema (see util.StringifyQualifiedName)
+// the values are the expression constants that match exactly the schema types
+// the evaluation will panic if the input is wrongly typed
+//
+// expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
 func (a Authorizations) Evaluate(input expression.Input) expression.Expression {
 	r := a.policies.Evaluate(input)
 	if r == expression.FALSE {
@@ -37,6 +55,8 @@ func (a Authorizations) Evaluate(input expression.Input) expression.Expression {
 	return expression.NewAnd(results...)
 }
 
+// Restrict an authorizations object by another one
+// a possible scenario would be to restrict a users authorizations by other technical authorizations
 func (a Authorizations) AndJoin(aa *Authorizations) *Authorizations {
 	return &Authorizations{
 		policies:  a.policies,
