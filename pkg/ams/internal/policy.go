@@ -87,7 +87,7 @@ func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f expression.Function
 	}
 
 	for _, policy := range policies {
-		policyName := util.StringifyReference(policy.QualifiedName)
+		policyName := util.StringifyQualifiedName(policy.QualifiedName)
 		p := Policy{
 			tenant:        schema.GetTenantForQualifiedName(policy.QualifiedName),
 			defaultPolicy: policy.Default,
@@ -102,7 +102,7 @@ func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f expression.Function
 			p.rules = append(p.rules, r)
 		}
 		for _, use := range policy.Uses {
-			usedPolicyName := util.StringifyReference(use.QualifiedPolicyName)
+			usedPolicyName := util.StringifyQualifiedName(use.QualifiedPolicyName)
 			//the used policy is always present and initialized, because of the topological sort
 			usedPolicy := result.allPolicies[usedPolicyName]
 
@@ -151,14 +151,14 @@ func topologicalSort(policies []dcn.Policy) ([]dcn.Policy, error) {
 	policyMap := make(map[string]dcn.Policy)
 
 	for _, policy := range policies {
-		name := util.StringifyReference(policy.QualifiedName)
+		name := util.StringifyQualifiedName(policy.QualifiedName)
 		policyMap[name] = policy
 		inDegree[name] = 0
 	}
 	for _, policy := range policies {
-		name := util.StringifyReference(policy.QualifiedName)
+		name := util.StringifyQualifiedName(policy.QualifiedName)
 		for _, use := range policy.Uses {
-			useName := util.StringifyReference(use.QualifiedPolicyName)
+			useName := util.StringifyQualifiedName(use.QualifiedPolicyName)
 			graph[useName] = append(graph[useName], name)
 			inDegree[name]++
 		}

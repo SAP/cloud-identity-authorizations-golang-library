@@ -53,8 +53,8 @@ func visitExpression(e expression.Expression, args []expression.Expression) expr
 		if len(newArgs) == 2 {
 			if eq1, ok := newArgs[0].(expression.Eq); ok {
 				if eq2, ok := newArgs[1].(expression.Eq); ok {
-					if var1, ok := eq1.Args[0].(expression.Variable); ok {
-						if var2, ok := eq2.Args[0].(expression.Variable); ok {
+					if var1, ok := eq1.Args[0].(expression.Reference); ok {
+						if var2, ok := eq2.Args[0].(expression.Reference); ok {
 							if var1.Name == var2.Name {
 								if eq1.Args[1] != eq2.Args[1] {
 									return expression.FALSE
@@ -116,9 +116,9 @@ func visitExpression(e expression.Expression, args []expression.Expression) expr
 		return expression.NewAnd(newArgs...)
 	case expression.Eq:
 
-		l, ok := e.Args[1].(expression.Variable)
+		l, ok := e.Args[1].(expression.Reference)
 		if ok {
-			r, ok := e.Args[0].(expression.Variable)
+			r, ok := e.Args[0].(expression.Reference)
 			if !ok {
 				return expression.Eq{Args: []expression.Expression{e.Args[1], e.Args[0]}}
 			} else {
@@ -129,9 +129,9 @@ func visitExpression(e expression.Expression, args []expression.Expression) expr
 		}
 		return e
 	case expression.Ne:
-		_, ok := e.Args[1].(expression.Variable)
+		_, ok := e.Args[1].(expression.Reference)
 		if ok {
-			_, ok := e.Args[0].(expression.Variable)
+			_, ok := e.Args[0].(expression.Reference)
 			if !ok {
 				return expression.Ne{Args: []expression.Expression{e.Args[1], e.Args[0]}}
 			}

@@ -7,7 +7,7 @@ import (
 
 func TestLike(t *testing.T) {
 	t.Run("string variable like constant String", func(t *testing.T) {
-		like := NewLike(Variable{Name: "x"}, String("a"), String(""))
+		like := NewLike(Reference{Name: "x"}, String("a"), String(""))
 		result := like.Evaluate(Input{"x": String("a")})
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
@@ -34,7 +34,7 @@ func TestLike(t *testing.T) {
 	})
 
 	t.Run("evaluate like with _ as escape character", func(t *testing.T) {
-		like := NewLike(Variable{Name: "x"}, String("a"), String("_"))
+		like := NewLike(Reference{Name: "x"}, String("a"), String("_"))
 		result := like.Evaluate(Input{"x": String("a")})
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
@@ -61,7 +61,7 @@ func TestLike(t *testing.T) {
 	})
 
 	t.Run("evalutate Pattern _TEST_", func(t *testing.T) {
-		like := NewLike(Variable{Name: "x"}, String("_TEST_"), String(""))
+		like := NewLike(Reference{Name: "x"}, String("_TEST_"), String(""))
 		result := like.Evaluate(Input{"x": String("TEST")})
 		if result != Bool(false) {
 			t.Errorf("Expected false, got %v", result)
@@ -77,7 +77,7 @@ func TestLike(t *testing.T) {
 	})
 
 	t.Run("usage of regex characters in pattern", func(t *testing.T) {
-		like := NewLike(Variable{Name: "x"}, String("a.*b"), String(""))
+		like := NewLike(Reference{Name: "x"}, String("a.*b"), String(""))
 		result := like.Evaluate(Input{"x": String("a.*b")})
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
@@ -97,7 +97,7 @@ func TestLike(t *testing.T) {
 
 func TestNotLike(t *testing.T) {
 	t.Run("string variable like constant String", func(t *testing.T) {
-		notLike := NewNotLike(Variable{Name: "x"}, String("a"), String(""))
+		notLike := NewNotLike(Reference{Name: "x"}, String("a"), String(""))
 		result := notLike.Evaluate(Input{"x": String("a")})
 		if result != Bool(false) {
 			t.Errorf("Expected true, got %v", result)
@@ -124,7 +124,7 @@ func TestNotLike(t *testing.T) {
 	})
 
 	t.Run("evaluate like with _ as escape character", func(t *testing.T) {
-		notLike := NewNotLike(Variable{Name: "x"}, String("a"), String("_"))
+		notLike := NewNotLike(Reference{Name: "x"}, String("a"), String("_"))
 		result := notLike.Evaluate(Input{"x": String("a")})
 		if result != Bool(false) {
 			t.Errorf("Expected true, got %v", result)

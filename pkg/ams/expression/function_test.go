@@ -28,7 +28,7 @@ func TestFunction(t *testing.T) {
 		if !ok {
 			t.Fatalf("function not found")
 		}
-		if !reflect.DeepEqual(f.body, Variable{Name: "a"}) {
+		if !reflect.DeepEqual(f.body, Reference{Name: "a"}) {
 			t.Fatalf("unexpected body: %v", f.body)
 		}
 
@@ -66,7 +66,7 @@ func TestFunction(t *testing.T) {
 		if !ok {
 			t.Fatalf("function not found")
 		}
-		if !reflect.DeepEqual(f1.body, Variable{Name: "a"}) {
+		if !reflect.DeepEqual(f1.body, Reference{Name: "a"}) {
 			t.Fatalf("unexpected body: %v", f1.body)
 		}
 		f2, ok := functions["pkg.func2"]
@@ -75,7 +75,7 @@ func TestFunction(t *testing.T) {
 		}
 		expected := IsNotNull{
 			Arg: Function{
-				body: Variable{Name: "a"},
+				body: Reference{Name: "a"},
 			},
 		}
 		if !reflect.DeepEqual(f2.body, expected) {

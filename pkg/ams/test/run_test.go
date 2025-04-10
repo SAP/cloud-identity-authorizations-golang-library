@@ -33,7 +33,7 @@ func TestRun(t *testing.T) {
 			<-ams.WhenReady()
 
 			for _, test := range ams.Tests {
-				t.Run(util.StringifyReference(test.Test), func(t *testing.T) {
+				t.Run(util.StringifyQualifiedName(test.Test), func(t *testing.T) {
 					for _, assertion := range test.Assertions {
 						actions := assertion.Actions
 						resources := assertion.Resources
@@ -53,11 +53,11 @@ func TestRun(t *testing.T) {
 						}
 						policies := []string{}
 						for _, policy := range assertion.Policies {
-							policies = append(policies, util.StringifyReference(policy))
+							policies = append(policies, util.StringifyQualifiedName(policy))
 						}
 						scopeFilter := []string{}
 						for _, filter := range assertion.ScopeFilter {
-							scopeFilter = append(scopeFilter, util.StringifyReference(filter))
+							scopeFilter = append(scopeFilter, util.StringifyQualifiedName(filter))
 						}
 						authz := ams.GetAuthorizations(policies, "", true)
 						if len(scopeFilter) > 0 {
@@ -115,10 +115,10 @@ func createInput(schema internal.Schema, input dcn.Input, action, resource strin
 	result := schema.CustomInput(action, resource, app, env)
 
 	for _, unknown := range input.Unknowns {
-		schema.Set(result, util.StringifyReference(unknown.Ref), expression.UNKNOWN)
+		schema.Set(result, util.StringifyQualifiedName(unknown.Ref), expression.UNKNOWN)
 	}
 	for _, ignore := range input.Ignores {
-		schema.Set(result, util.StringifyReference(ignore.Ref), expression.IGNORE)
+		schema.Set(result, util.StringifyQualifiedName(ignore.Ref), expression.IGNORE)
 	}
 
 	return result

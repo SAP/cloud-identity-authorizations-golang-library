@@ -33,6 +33,7 @@ func (a Authorizations) Inquire(action, resource string, app any, env any) expre
 // the values are the expression constants that match exactly the schema types
 // the evaluation will panic if the input is wrongly typed
 //
+// the input can savely created/purged by the Schema
 // expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
 func (a Authorizations) Evaluate(input expression.Input) expression.Expression {
 	r := a.policies.Evaluate(input)

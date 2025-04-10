@@ -125,7 +125,7 @@ func TestPolicy(t *testing.T) {
 		expected := expression.NewOr(
 			expression.In{
 				Args: []expression.Expression{
-					expression.Variable{Name: "$dcl.action"},
+					expression.Reference{Name: "$dcl.action"},
 					expression.StringArray{
 						"read",
 					},
@@ -133,7 +133,7 @@ func TestPolicy(t *testing.T) {
 			},
 			expression.In{
 				Args: []expression.Expression{
-					expression.Variable{Name: "$dcl.action"},
+					expression.Reference{Name: "$dcl.action"},
 					expression.StringArray{
 						"write",
 					},

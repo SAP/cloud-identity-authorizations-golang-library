@@ -23,7 +23,7 @@ func RuleFromDCN(rawRule dcn.Rule, f expression.Functions) (Rule, error) {
 	if len(rawRule.Actions) > 0 {
 		args = append(args, expression.In{
 			Args: []expression.Expression{
-				expression.Variable{Name: "$dcl.action"},
+				expression.Reference{Name: "$dcl.action"},
 				expression.ConstantFrom(rawRule.Actions),
 			},
 		})
@@ -31,7 +31,7 @@ func RuleFromDCN(rawRule dcn.Rule, f expression.Functions) (Rule, error) {
 	if len(rawRule.Resources) > 0 {
 		args = append(args, expression.In{
 			Args: []expression.Expression{
-				expression.Variable{Name: "$dcl.resource"},
+				expression.Reference{Name: "$dcl.resource"},
 				expression.ConstantFrom(rawRule.Resources),
 			},
 		})

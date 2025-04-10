@@ -9,7 +9,7 @@ func TestStringifyReference(t *testing.T) {
 	t.Run("No escaping needed", func(t *testing.T) {
 		ref := []string{"test", "test2"}
 		expected := "test.test2"
-		if got := StringifyReference(ref); got != expected {
+		if got := StringifyQualifiedName(ref); got != expected {
 			t.Errorf("StringifyReference() = %v, expected %v", got, expected)
 		}
 		parsed := ParseQualifiedName(expected)
@@ -20,7 +20,7 @@ func TestStringifyReference(t *testing.T) {
 	t.Run("Contains double quote", func(t *testing.T) {
 		ref := []string{"test", "test2\""}
 		expected := "test.\"test2\\\"\""
-		if got := StringifyReference(ref); got != expected {
+		if got := StringifyQualifiedName(ref); got != expected {
 			t.Errorf("StringifyReference() = %v, expected %v", got, expected)
 		}
 		parsed := ParseQualifiedName(expected)
@@ -33,7 +33,7 @@ func TestStringifyReference(t *testing.T) {
 	t.Run("Contains dot", func(t *testing.T) {
 		ref := []string{"test", "test2."}
 		expected := "test.\"test2.\""
-		if got := StringifyReference(ref); got != expected {
+		if got := StringifyQualifiedName(ref); got != expected {
 			t.Errorf("StringifyReference() = %v, expected %v", got, expected)
 		}
 		parsed := ParseQualifiedName(expected)
@@ -45,7 +45,7 @@ func TestStringifyReference(t *testing.T) {
 	t.Run("Contains backslash", func(t *testing.T) {
 		ref := []string{"test", "test2\\"}
 		expected := "test.test2\\"
-		if got := StringifyReference(ref); got != expected {
+		if got := StringifyQualifiedName(ref); got != expected {
 			t.Errorf("StringifyReference() = %v, expected %v", got, expected)
 		}
 		parsed := ParseQualifiedName(expected)
@@ -57,7 +57,7 @@ func TestStringifyReference(t *testing.T) {
 	t.Run("Contains chinese characters", func(t *testing.T) {
 		ref := []string{"你好"}
 		expected := "你好"
-		if got := StringifyReference(ref); got != expected {
+		if got := StringifyQualifiedName(ref); got != expected {
 			t.Errorf("StringifyReference() = %v, expected %v", got, expected)
 		}
 		parsed := ParseQualifiedName(expected)
@@ -69,7 +69,7 @@ func TestStringifyReference(t *testing.T) {
 	t.Run("Contains part with only dots", func(t *testing.T) {
 		ref := []string{".", "."}
 		expected := "\".\".\".\""
-		if got := StringifyReference(ref); got != expected {
+		if got := StringifyQualifiedName(ref); got != expected {
 			t.Errorf("StringifyReference() = %v, expected %v", got, expected)
 		}
 		parsed := ParseQualifiedName(expected)

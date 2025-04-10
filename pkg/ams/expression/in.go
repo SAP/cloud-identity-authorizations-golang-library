@@ -18,7 +18,7 @@ func (e In) Evaluate(input Input) Expression {
 		return IGNORE
 	}
 
-	if _, ok := right.(Variable); ok {
+	if _, ok := right.(Reference); ok {
 		return In{Args: []Expression{left, right}}
 	}
 	r := right.(ArrayConstant)
@@ -26,7 +26,7 @@ func (e In) Evaluate(input Input) Expression {
 		return FALSE
 	}
 
-	if _, ok := left.(Variable); ok {
+	if _, ok := left.(Reference); ok {
 		return In{Args: []Expression{left, right}}
 	}
 	l := left.(Constant)
@@ -47,14 +47,14 @@ func (e NotIn) Evaluate(input Input) Expression {
 		return IGNORE
 	}
 
-	if _, ok := right.(Variable); ok {
+	if _, ok := right.(Reference); ok {
 		return NotIn{Args: []Expression{left, right}}
 	}
 	r := right.(ArrayConstant)
 	if r.IsEmpty() {
 		return TRUE
 	}
-	if _, ok := left.(Variable); ok {
+	if _, ok := left.(Reference); ok {
 		return NotIn{Args: []Expression{left, right}}
 	}
 	l := left.(Constant)

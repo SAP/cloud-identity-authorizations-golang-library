@@ -20,7 +20,7 @@ func TestEq(t *testing.T) {
 	})
 
 	t.Run("TestEq with variable and constant", func(t *testing.T) {
-		e := Eq{Args: []Expression{Variable{Name: "a"}, Number(1)}}
+		e := Eq{Args: []Expression{Reference{Name: "a"}, Number(1)}}
 		if got, want := ToString(e), "eq(a, 1)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -33,7 +33,7 @@ func TestEq(t *testing.T) {
 	})
 
 	t.Run("TestEq with variables", func(t *testing.T) {
-		e := Eq{Args: []Expression{Variable{Name: "a"}, Variable{Name: "b"}}}
+		e := Eq{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}}}
 		if got, want := ToString(e), "eq(a, b)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -73,7 +73,7 @@ func TestLt(t *testing.T) {
 	})
 
 	t.Run("TestLt with variable and constant", func(t *testing.T) {
-		e := Lt{Args: []Expression{Variable{Name: "a"}, Number(2)}}
+		e := Lt{Args: []Expression{Reference{Name: "a"}, Number(2)}}
 		if got, want := ToString(e), "lt(a, 2)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -86,7 +86,7 @@ func TestLt(t *testing.T) {
 	})
 
 	t.Run("TestLt with variables", func(t *testing.T) {
-		e := Lt{Args: []Expression{Variable{Name: "a"}, Variable{Name: "b"}}}
+		e := Lt{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}}}
 		if got, want := ToString(e), "lt(a, b)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -129,7 +129,7 @@ func TestBetween(t *testing.T) {
 	})
 
 	t.Run("TestBetween with variable and constants", func(t *testing.T) {
-		e := Between{Args: []Expression{Variable{Name: "a"}, Number(1), Number(10)}}
+		e := Between{Args: []Expression{Reference{Name: "a"}, Number(1), Number(10)}}
 		if got, want := ToString(e), "between(a, 1, 10)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -145,7 +145,7 @@ func TestBetween(t *testing.T) {
 	})
 
 	t.Run("TestBetween with variables", func(t *testing.T) {
-		e := Between{Args: []Expression{Variable{Name: "a"}, Variable{Name: "b"}, Variable{Name: "c"}}}
+		e := Between{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}, Reference{Name: "c"}}}
 		if got, want := ToString(e), "between(a, b, c)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -188,7 +188,7 @@ func TestNe(t *testing.T) {
 	})
 
 	t.Run("TestNe with variable and constant", func(t *testing.T) {
-		e := Ne{Args: []Expression{Variable{Name: "a"}, Number(1)}}
+		e := Ne{Args: []Expression{Reference{Name: "a"}, Number(1)}}
 		if got, want := ToString(e), "ne(a, 1)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -201,7 +201,7 @@ func TestNe(t *testing.T) {
 	})
 
 	t.Run("TestNe with variables", func(t *testing.T) {
-		e := Ne{Args: []Expression{Variable{Name: "a"}, Variable{Name: "b"}}}
+		e := Ne{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}}}
 		if got, want := ToString(e), "ne(a, b)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -235,7 +235,7 @@ func TestLe(t *testing.T) {
 	})
 
 	t.Run("TestLe with variable and constant", func(t *testing.T) {
-		e := Le{Args: []Expression{Variable{Name: "a"}, Number(2)}}
+		e := Le{Args: []Expression{Reference{Name: "a"}, Number(2)}}
 		if got, want := ToString(e), "le(a, 2)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -251,7 +251,7 @@ func TestLe(t *testing.T) {
 	})
 
 	t.Run("TestLe with variables", func(t *testing.T) {
-		e := Le{Args: []Expression{Variable{Name: "a"}, Variable{Name: "b"}}}
+		e := Le{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}}}
 		if got, want := ToString(e), "le(a, b)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -284,7 +284,7 @@ func TestGt(t *testing.T) {
 	})
 
 	t.Run("TestGt with variable and constant", func(t *testing.T) {
-		e := Gt{Args: []Expression{Variable{Name: "a"}, Number(1)}}
+		e := Gt{Args: []Expression{Reference{Name: "a"}, Number(1)}}
 		if got, want := ToString(e), "gt(a, 1)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -297,7 +297,7 @@ func TestGt(t *testing.T) {
 	})
 
 	t.Run("TestGt with variables", func(t *testing.T) {
-		e := Gt{Args: []Expression{Variable{Name: "a"}, Variable{Name: "b"}}}
+		e := Gt{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}}}
 		if got, want := ToString(e), "gt(a, b)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -331,7 +331,7 @@ func TestGe(t *testing.T) {
 	})
 
 	t.Run("TestGe with variable and constant", func(t *testing.T) {
-		e := Ge{Args: []Expression{Variable{Name: "a"}, Number(2)}}
+		e := Ge{Args: []Expression{Reference{Name: "a"}, Number(2)}}
 		if got, want := ToString(e), "ge(a, 2)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -344,7 +344,7 @@ func TestGe(t *testing.T) {
 	})
 
 	t.Run("TestGe with variables", func(t *testing.T) {
-		e := Ge{Args: []Expression{Variable{Name: "a"}, Variable{Name: "b"}}}
+		e := Ge{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}}}
 		if got, want := ToString(e), "ge(a, b)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
@@ -378,7 +378,7 @@ func TestNotBetween(t *testing.T) {
 	})
 
 	t.Run("TestNotBetween with variable and constants", func(t *testing.T) {
-		e := NotBetween{Args: []Expression{Variable{Name: "a"}, Number(1), Number(10)}}
+		e := NotBetween{Args: []Expression{Reference{Name: "a"}, Number(1), Number(10)}}
 		if got, want := ToString(e), "not_between(a, 1, 10)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}

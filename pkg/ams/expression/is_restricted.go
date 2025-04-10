@@ -1,12 +1,12 @@
 package expression
 
 type IsRestricted struct {
-	Not          Bool
-	VariableName string
+	Not       Bool
+	Reference string
 }
 
 func (e IsRestricted) Evaluate(input Input) Expression {
-	val, ok := input[e.VariableName]
+	val, ok := input[e.Reference]
 	if ok && val == UNKNOWN {
 		return e
 	}

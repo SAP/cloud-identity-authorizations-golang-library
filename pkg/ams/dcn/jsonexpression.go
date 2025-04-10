@@ -9,7 +9,7 @@ type CallObject struct {
 	Call []string     `json:"call"`
 	Args []Expression `json:"args"`
 }
-type Variable struct {
+type Referance struct {
 	Ref []string `json:"ref"`
 }
 
@@ -25,7 +25,7 @@ func (e Expression) MarshalJSON() ([]byte, error) {
 		})
 	}
 	if len(e.Ref) > 0 {
-		return json.Marshal(Variable{
+		return json.Marshal(Referance{
 			Ref: e.Ref,
 		})
 	}
@@ -41,7 +41,7 @@ func (e *Expression) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var v Variable
+	var v Referance
 	if err := json.Unmarshal(data, &v); err == nil && len(v.Ref) > 0 {
 		e.Ref = v.Ref
 		return nil

@@ -271,13 +271,13 @@ func TestAuthorizationManager(t *testing.T) {
 
 		in1 := expression.In{
 			Args: []expression.Expression{
-				expression.Variable{Name: "$dcl.action"},
+				expression.Reference{Name: "$dcl.action"},
 				expression.StringArray{"action2"},
 			},
 		}
 		in2 := expression.In{
 			Args: []expression.Expression{
-				expression.Variable{Name: "$dcl.action"},
+				expression.Reference{Name: "$dcl.action"},
 				expression.StringArray{"action3"},
 			},
 		}

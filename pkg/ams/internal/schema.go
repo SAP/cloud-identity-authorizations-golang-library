@@ -41,7 +41,7 @@ func SchemaFromDCN(sc []dcn.Schema) Schema {
 
 	for _, s := range sc {
 		if s.Tenant != "" {
-			tenantPackage := util.StringifyReference(s.QualifiedName[:len(s.QualifiedName)-1])
+			tenantPackage := util.StringifyQualifiedName(s.QualifiedName[:len(s.QualifiedName)-1])
 			result.tenantSchemas[tenantPackage] = s.Tenant
 		}
 		if s.Definition.Nested != nil {
@@ -77,14 +77,16 @@ func (s *Schema) buildSchemaAttributes(a dcn.SchemaAttribute, path []string) {
 	for k, v := range a.Nested {
 		newPath := append(path, k)
 		if v.Nested != nil {
-			s.inputTypes[util.StringifyReference(newPath)] = STRUCTURE
+			s.inputTypes[util.StringifyQualifiedName(newPath)] = STRUCTURE
 			s.buildSchemaAttributes(v, newPath)
 		} else {
-			s.inputTypes[util.StringifyReference(newPath)] = mapType(v.Type)
+			s.inputTypes[util.StringifyQualifiedName(newPath)] = mapType(v.Type)
 		}
 	}
 }
 
+// Modifies the privided input by setting the value of the given key to the provided value
+// if the value is a structure, all nested values are set to the provided value
 func (s Schema) Set(input expression.Input, val string, value expression.Wildcard) {
 	t, ok := s.inputTypes[val]
 	if !ok {
@@ -102,7 +104,7 @@ func (s Schema) Set(input expression.Input, val string, value expression.Wildcar
 }
 
 func (s Schema) GetTenantForQualifiedName(qn dcn.QualifiedName) string {
-	p := util.StringifyReference(qn[:len(qn)-1])
+	p := util.StringifyQualifiedName(qn[:len(qn)-1])
 	tenant, ok := s.tenantSchemas[p]
 	if !ok {
 		return ""
@@ -127,7 +129,7 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 
 	v := input
 	kind := v.Kind()
-	currentPath := util.StringifyReference(path)
+	currentPath := util.StringifyQualifiedName(path)
 	shouldBeType, ok := s.inputTypes[currentPath]
 	if !ok {
 		return

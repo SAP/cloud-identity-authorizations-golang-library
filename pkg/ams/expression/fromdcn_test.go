@@ -114,7 +114,7 @@ func TestUnmarshalJSON(t *testing.T) {
 	t.Run("Variable", func(t *testing.T) {
 		var ec dcn.Expression
 		input := `{"ref": ["x"]}`
-		expected := Variable{Name: "x"}
+		expected := Reference{Name: "x"}
 		err := json.Unmarshal([]byte(input), &ec)
 		if err != nil {
 			t.Fatalf("UnmarshalJSON() error = %v", err)
@@ -189,7 +189,7 @@ func TestUnmarshalJSON(t *testing.T) {
 		var ec dcn.Expression
 		input := `{"call": ["is_null"], "args": [{"ref": ["x"]}]}`
 		expected := IsNull{
-			Arg: Variable{Name: "x"},
+			Arg: Reference{Name: "x"},
 		}
 		err := json.Unmarshal([]byte(input), &ec)
 		if err != nil {
@@ -208,7 +208,7 @@ func TestUnmarshalJSON(t *testing.T) {
 		var ec dcn.Expression
 		input := `{"call": ["is_not_null"], "args": [{"ref": ["x"]}]}`
 		expected := IsNotNull{
-			Arg: Variable{Name: "x"},
+			Arg: Reference{Name: "x"},
 		}
 		err := json.Unmarshal([]byte(input), &ec)
 		if err != nil {
@@ -463,7 +463,7 @@ func TestUnmarshalJSON(t *testing.T) {
 		var ec dcn.Expression
 		input := `{"call": ["in"], "args":[{"ref":["x"]}, [1, 2, 3]]}`
 		expected := In{
-			Args: []Expression{Variable{Name: "x"}, NumberArray{1, 2, 3}},
+			Args: []Expression{Reference{Name: "x"}, NumberArray{1, 2, 3}},
 		}
 		err := json.Unmarshal([]byte(input), &ec)
 		if err != nil {
@@ -482,7 +482,7 @@ func TestUnmarshalJSON(t *testing.T) {
 		var ec dcn.Expression
 		input := `{"call": ["not_in"], "args":[{"ref":["x"]}, [1, 2, 3]]}`
 		expected := NotIn{
-			Args: []Expression{Variable{Name: "x"}, NumberArray{1, 2, 3}},
+			Args: []Expression{Reference{Name: "x"}, NumberArray{1, 2, 3}},
 		}
 		err := json.Unmarshal([]byte(input), &ec)
 		if err != nil {
@@ -501,8 +501,8 @@ func TestUnmarshalJSON(t *testing.T) {
 		var ec dcn.Expression
 		input := `{"call": ["restricted"], "args": [{"ref":["x"]}]}`
 		expected := IsRestricted{
-			Not:          false,
-			VariableName: "x",
+			Not:       false,
+			Reference: "x",
 		}
 		err := json.Unmarshal([]byte(input), &ec)
 		if err != nil {
@@ -521,8 +521,8 @@ func TestUnmarshalJSON(t *testing.T) {
 		var ec dcn.Expression
 		input := `{"call": ["not_restricted"], "args": [{"ref":["x"]}]}`
 		expected := IsRestricted{
-			Not:          true,
-			VariableName: "x",
+			Not:       true,
+			Reference: "x",
 		}
 		err := json.Unmarshal([]byte(input), &ec)
 		if err != nil {

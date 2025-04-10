@@ -10,13 +10,13 @@ import (
 
 type Input map[string]Constant
 
-type Variable struct {
+type Reference struct {
 	Name string
 }
-type variableSet map[string]bool
+type referenceSet map[string]bool
 type ExpressionContainer struct {
-	Expression    Expression `json:"expression"`
-	VariableNames variableSet
+	Expression Expression `json:"expression"`
+	References referenceSet
 }
 
 type Expression interface {
@@ -25,7 +25,7 @@ type Expression interface {
 
 func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 	result := ExpressionContainer{
-		VariableNames: make(variableSet),
+		References: make(referenceSet),
 	}
 	if e.Call != nil {
 		if len(e.Call) == 0 {
@@ -38,8 +38,8 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 				return result, err
 			}
 			args[i] = container.Expression
-			for name := range container.VariableNames {
-				result.VariableNames[name] = true
+			for name := range container.References {
+				result.References[name] = true
 			}
 		}
 		if len(e.Call) == 1 {
@@ -89,16 +89,16 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 			case "ge":
 				result.Expression = Ge{Args: args}
 			case "restricted":
-				variable := args[0].(Variable)
+				ref := args[0].(Reference)
 				result.Expression = IsRestricted{
-					Not:          Bool(false),
-					VariableName: variable.Name,
+					Not:       Bool(false),
+					Reference: ref.Name,
 				}
 			case "not_restricted":
-				variable := args[0].(Variable)
+				ref := args[0].(Reference)
 				result.Expression = IsRestricted{
-					Not:          Bool(true),
-					VariableName: variable.Name,
+					Not:       Bool(true),
+					Reference: ref.Name,
 				}
 			default:
 				return result, fmt.Errorf("unknown call: %s", e.Call[0])
@@ -107,7 +107,7 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 		}
 
 		if len(e.Call) > 1 {
-			name := util.StringifyReference(e.Call)
+			name := util.StringifyQualifiedName(e.Call)
 			function, ok := f[name]
 			if !ok {
 				return result, fmt.Errorf("unknown function %s", name)
@@ -118,9 +118,9 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 	}
 
 	if e.Ref != nil {
-		name := util.StringifyReference(e.Ref)
-		result.Expression = Variable{Name: name}
-		result.VariableNames[name] = true
+		name := util.StringifyQualifiedName(e.Ref)
+		result.Expression = Reference{Name: name}
+		result.References[name] = true
 	}
 
 	if e.Constant != nil {
@@ -132,7 +132,7 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 	return result, nil
 }
 
-func (v Variable) Evaluate(input Input) Expression {
+func (v Reference) Evaluate(input Input) Expression {
 	val, ok := input[v.Name]
 	if !ok {
 		return UNSET
@@ -148,7 +148,7 @@ func ToString(e Expression) string {
 		func(name string, args []string) string {
 			return name + "(" + strings.Join(args, ", ") + ")"
 		},
-		func(v Variable) string {
+		func(v Reference) string {
 			return v.Name
 		},
 		func(c Constant) string {
@@ -208,7 +208,7 @@ func ApplyRestriction(e Expression, restriction []ExpressionContainer) Expressio
 		return Not{ApplyRestriction(e.Arg, restriction)}
 	case IsRestricted:
 		for _, r := range restriction {
-			if _, ok := r.VariableNames[e.VariableName]; ok {
+			if _, ok := r.References[e.Reference]; ok {
 				return r.Expression
 			}
 		}
@@ -239,9 +239,9 @@ func VisitExpression[T any](e Expression, f func(Expression, []T) T) T {
 	}
 }
 
-func Visit[T any](e Expression, fCall func(string, []T) T, fRef func(Variable) T, fConst func(Constant) T) T {
+func Visit[T any](e Expression, fCall func(string, []T) T, fRef func(Reference) T, fConst func(Constant) T) T {
 	switch e := e.(type) {
-	case Variable:
+	case Reference:
 		return fRef(e)
 	case Constant:
 		return fConst(e)
@@ -343,9 +343,9 @@ func Visit[T any](e Expression, fCall func(string, []T) T, fRef func(Variable) T
 		return fCall("is_not_null", []T{Visit(e.Arg, fCall, fRef, fConst)})
 	case IsRestricted:
 		if e.Not {
-			return fCall("is_not_restricted", []T{fRef(Variable{Name: e.VariableName})})
+			return fCall("is_not_restricted", []T{fRef(Reference{Name: e.Reference})})
 		} else {
-			return fCall("is_restricted", []T{fRef(Variable{Name: e.VariableName})})
+			return fCall("is_restricted", []T{fRef(Reference{Name: e.Reference})})
 		}
 	}
 	return fCall("unexpected_expression", []T{})

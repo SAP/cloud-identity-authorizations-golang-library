@@ -25,7 +25,7 @@ func FunctionsFromDCN(dcn []dcn.Function) (Functions, error) {
 		return nil, err
 	}
 	for _, f := range dcnF {
-		name := util.StringifyReference(f.QualifiedName)
+		name := util.StringifyQualifiedName(f.QualifiedName)
 		expContainer, err := FromDCN(f.Result, functions)
 		if err != nil {
 			return nil, err
@@ -44,13 +44,13 @@ func topologicalSort(functions []dcn.Function) ([]dcn.Function, error) {
 	functionsMap := make(map[string]dcn.Function)
 
 	for _, function := range functions {
-		name := util.StringifyReference(function.QualifiedName)
+		name := util.StringifyQualifiedName(function.QualifiedName)
 		functionsMap[name] = function
 		inDegree[name] = 0
 	}
 
 	for _, function := range functions {
-		name := util.StringifyReference(function.QualifiedName)
+		name := util.StringifyQualifiedName(function.QualifiedName)
 		for _, call := range getFunctionCalls(function.Result) {
 			graph[call] = append(graph[call], name)
 			inDegree[name]++
@@ -98,6 +98,6 @@ func getFunctionCalls(exp dcn.Expression) []string {
 		return result
 	}
 
-	return []string{util.StringifyReference(exp.Call)}
+	return []string{util.StringifyQualifiedName(exp.Call)}
 
 }

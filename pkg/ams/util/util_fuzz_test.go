@@ -38,7 +38,7 @@ func FuzzQualifiedName(f *testing.F) {
 		}
 
 		// Join the parts back together with a dot
-		output := StringifyReference(parts)
+		output := StringifyQualifiedName(parts)
 
 		// Parse the output string back into parts
 		parsedParts := ParseQualifiedName(output)

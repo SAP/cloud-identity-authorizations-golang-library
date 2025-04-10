@@ -7,7 +7,7 @@ import (
 
 func TestIsNull(t *testing.T) {
 	t.Run("variable is null", func(t *testing.T) {
-		isNull := IsNull{Arg: Variable{Name: "x"}}
+		isNull := IsNull{Arg: Reference{Name: "x"}}
 		result := isNull.Evaluate(Input{"x": UNSET})
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
@@ -40,7 +40,7 @@ func TestIsNull(t *testing.T) {
 
 func TestIsNotNull(t *testing.T) {
 	t.Run("variable is not null", func(t *testing.T) {
-		isNotNull := IsNotNull{Arg: Variable{Name: "x"}}
+		isNotNull := IsNotNull{Arg: Reference{Name: "x"}}
 		result := isNotNull.Evaluate(Input{"x": UNSET})
 		if result != Bool(false) {
 			t.Errorf("Expected false, got %v", result)

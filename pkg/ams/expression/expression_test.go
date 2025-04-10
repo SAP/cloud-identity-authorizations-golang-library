@@ -10,9 +10,9 @@ func TestVisitExpression(t *testing.T) {
 	t.Run("Visit without changing", func(t *testing.T) {
 		e := Or{Args: []Expression{
 			And{Args: []Expression{
-				Not{Arg: Variable{Name: "a"}},
-				Variable{Name: "b"},
-			}}, Variable{Name: "c"}}}
+				Not{Arg: Reference{Name: "a"}},
+				Reference{Name: "b"},
+			}}, Reference{Name: "c"}}}
 		result := VisitExpression(e, func(e Expression, args []Expression) Expression {
 			return e
 		})
