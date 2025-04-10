@@ -10,28 +10,28 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
-//go:embed testfiles/policies/defaults.json
+//go:embed testfiles/policies/defaults.dcn
 var defaultsPolicy []byte
 
-//go:embed testfiles/policies/simple.json
+//go:embed testfiles/policies/simple.dcn
 var simplePolicy []byte
 
-//go:embed testfiles/policies/simple_use.json
+//go:embed testfiles/policies/simple_use.dcn
 var simpleUsePolicy []byte
 
-//go:embed testfiles/policies/use_with_restrictions.json
+//go:embed testfiles/policies/use_with_restrictions.dcn
 var useWithRestrictionsPolicy []byte
 
-//go:embed testfiles/policies/use_without_restrictions.json
+//go:embed testfiles/policies/use_without_restrictions.dcn
 var useWithoutRestrictionsPolicy []byte
 
-//go:embed testfiles/policies/use_non_existent.json
+//go:embed testfiles/policies/use_non_existent.dcn
 var useNonExistentPolicy []byte
 
-//go:embed testfiles/policies/with_tenant.json
+//go:embed testfiles/policies/with_tenant.dcn
 var withTenantPolicy []byte
 
-//go:embed testfiles/policies/use_with_broken_restriction.json
+//go:embed testfiles/policies/use_with_broken_restriction.dcn
 var useWithBrokenRestrictionPolicy []byte
 
 func TestPolicy(t *testing.T) {

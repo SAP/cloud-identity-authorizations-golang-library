@@ -10,13 +10,13 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
-//go:embed testfiles/schema/example.js
+//go:embed testfiles/schema/example.dcn
 var exampleSchema []byte
 
-//go:embed testfiles/schema/simple.js
+//go:embed testfiles/schema/simple.dcn
 var simpleSchema []byte
 
-//go:embed testfiles/schema/variables_with_quotes.js
+//go:embed testfiles/schema/variables_with_quotes.dcn
 var variablesWithQuotes []byte
 
 type NumberWrapper struct {

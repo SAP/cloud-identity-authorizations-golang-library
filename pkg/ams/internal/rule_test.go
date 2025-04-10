@@ -9,16 +9,16 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
-//go:embed testfiles/rules/grant_all.json
+//go:embed testfiles/rules/grant_all.dcn
 var grantAll []byte
 
-//go:embed testfiles/rules/grant_actions.json
+//go:embed testfiles/rules/grant_actions.dcn
 var grantActions []byte
 
-//go:embed testfiles/rules/grant_conditional.json
+//go:embed testfiles/rules/grant_conditional.dcn
 var grantConditional []byte
 
-//go:embed testfiles/rules/grant_resources.json
+//go:embed testfiles/rules/grant_resources.dcn
 var grantResources []byte
 
 func TestRule(t *testing.T) {
