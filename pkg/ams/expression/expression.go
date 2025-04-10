@@ -19,7 +19,11 @@ type ExpressionContainer struct {
 	References referenceSet
 }
 
+// represents a logic expression. Is comparable to TRUE and FALSE. And can be processed using the Visit or VisitExpression function
 type Expression interface {
+	//uses the input to resolve references and evaluate to a new expression. Possibly TRUE or FALSE
+	//
+	// this function may panic if the type of the input does not match the schema definition
 	Evaluate(Input) Expression
 }
 
