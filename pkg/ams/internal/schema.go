@@ -103,6 +103,8 @@ func (s Schema) Set(input expression.Input, val string, value expression.Wildcar
 	}
 }
 
+// returns the owning tenant for a package
+// if the package is not owned by a tenant, the function returns an empty string
 func (s Schema) GetTenantForQualifiedName(qn dcn.QualifiedName) string {
 	p := util.StringifyQualifiedName(qn[:len(qn)-1])
 	tenant, ok := s.tenantSchemas[p]
@@ -112,6 +114,12 @@ func (s Schema) GetTenantForQualifiedName(qn dcn.QualifiedName) string {
 	return tenant
 }
 
+// the app input should correspond to the DCL schema definition and will be mapped into $app fields. This can be achieved by providing either:
+// - deeply nested map[string] where the keys are the schema names and the values can translated to the schema types
+// - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema name or the fields name is EXACTLY the same as the schema name
+//
+// expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
+// the env input is typically corresponding to the user information. If you did not modify the $user or $env in your schema denfinitions you can use the ams.Env struct. It will be mapped into $env fields.
 func (s Schema) CustomInput(action, resource string, input any, env any) expression.Input {
 	result := expression.Input{
 		"$dcl.action":   expression.String(action),
@@ -267,6 +275,9 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 	}
 
 }
+
+// modifies the input by removing all keys that are not defined in the schema or are not of the correct type
+// expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
 func (s Schema) PurgeInvalidInput(input expression.Input) {
 	for k, v := range input {
 		t, ok := s.inputTypes[k]

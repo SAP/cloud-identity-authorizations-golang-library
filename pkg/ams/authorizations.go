@@ -10,16 +10,23 @@ type Authorizations struct {
 	andJoined []*Authorizations
 	schema    internal.Schema
 }
+type User struct {
+	UUID   expression.String      `ams:"user_uuid"`
+	Groups expression.StringArray `ams:"groups"`
+	Email  expression.String      `ams:"email"`
+}
 
-//TODO: create env input type
+type Env struct {
+	User User `ams:"$user"`
+}
 
 // Retrieve a access decision for a given action and resource and possibly some custom input
-// the app input should correspond to the DCL schema definition. This can be achieved by providing either:
+// the app input should correspond to the DCL schema definition and will be mapped into $app fields. This can be achieved by providing either:
 // - deeply nested map[string] where the keys are the schema names and the values can translated to the schema types
 // - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema name or the fields name is EXACTLY the same as the schema name
 //
 // expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
-// the env input is typically corresponding to the user information and you can provide TODO
+// the env input is typically corresponding to the user information. If you did not modify the $user or $env in your schema denfinitions you can use the ams.Env struct. It will be mapped into $env fields.
 func (a Authorizations) Inquire(action, resource string, app any, env any) expression.Expression {
 	i := a.schema.CustomInput(action, resource, app, env)
 	return a.Evaluate(i)
