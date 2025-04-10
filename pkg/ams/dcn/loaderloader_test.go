@@ -4,10 +4,39 @@ import (
 	"log"
 	"os"
 	"path"
+	"reflect"
 	"testing"
 )
 
 func TestLocalLoader(t *testing.T) {
+	t.Run("on testfolder", func(t *testing.T) {
+		errors := []error{}
+		loader := NewLocalLoader("testfolder")
+		loader.RegisterErrorHandler(func(err error) {
+			errors = append(errors, err)
+		})
+
+		dcn := <-loader.DCNChannel
+		assignments := <-loader.AssignmentsChannel
+		if len(errors) != 0 {
+			t.Fatalf("expected 0 errors, got %d", len(errors))
+		}
+		if len(dcn.Policies) != 1 {
+			t.Fatalf("expected 1 policy, got %d", len(dcn.Policies))
+		}
+		if len(dcn.Schemas) != 1 {
+			t.Fatalf("expected 1 schema, got %d", len(dcn.Schemas))
+		}
+
+		wantAssignments := Assignments{
+			"tenant1": {
+				"user1": []string{"cas.Base"},
+			},
+		}
+		if !reflect.DeepEqual(assignments, wantAssignments) {
+			t.Fatalf("expected %v, got %v", wantAssignments, assignments)
+		}
+	})
 	t.Run("broken data.json", func(t *testing.T) {
 		errReceived := make(chan bool)
 		errors := []error{}

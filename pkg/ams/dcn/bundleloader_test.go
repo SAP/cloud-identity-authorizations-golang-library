@@ -2,6 +2,7 @@ package dcn
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	_ "embed"
 	"net/http"
@@ -89,6 +90,42 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 		if err != nil {
 			t.Fatalf("failed to write tar content: %v", err)
 		}
+	})
+
+	serveBrokenDataJSON := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		result := bytes.Buffer{}
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+		tarWriter := tar.NewWriter(&result)
+		defer tarWriter.Close()
+		err := tarWriter.WriteHeader(&tar.Header{
+			Name: "data.json",
+			Size: 10,
+		})
+		if err != nil {
+			t.Fatalf("failed to write tar header: %v", err)
+		}
+		tarWriter.Write([]byte("asdfghjkla")) //nolint:errcheck
+		truncated := result.Bytes()[:len(result.Bytes())-2]
+		gz.Write(truncated) //nolint:errcheck
+	})
+
+	serveBrokenDCN := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		result := bytes.Buffer{}
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+		tarWriter := tar.NewWriter(&result)
+		defer tarWriter.Close()
+		err := tarWriter.WriteHeader(&tar.Header{
+			Name: "broken.dcn",
+			Size: 10,
+		})
+		if err != nil {
+			t.Fatalf("failed to write tar header: %v", err)
+		}
+		tarWriter.Write([]byte("asdfghjkla")) //nolint:errcheck
+		truncated := result.Bytes()[:len(result.Bytes())-2]
+		gz.Write(truncated) //nolint:errcheck
 	})
 
 	tickerC := make(chan time.Time)
@@ -238,7 +275,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 		if len(errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(errors))
 		}
-		want := "unexpected EOF"
+		want := "unexpected EOF" //nolint:goconst
 		got := errors[0].Error()
 		if got != want {
 			t.Fatalf("expected error to be '%s', got %v", want, got)
@@ -329,6 +366,66 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("expected 1 request, got %d", len(errors))
 		}
 		want := "invalid character 'h' in literal true (expecting 'r')"
+		got := errors[0].Error()
+		if got != want {
+			t.Fatalf("expected error to be '%s', got %v", want, got)
+		}
+		errors = []error{}
+	})
+
+	t.Run("broken data.json filebody", func(t *testing.T) {
+		errReceived := make(chan bool)
+		ts := httptest.NewServer(serveBrokenDataJSON)
+		defer ts.Close()
+
+		targetURL, err := url.Parse(ts.URL)
+		if err != nil {
+			t.Fatalf("failed to parse url: %v", err)
+		}
+
+		errors := []error{}
+
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader.RegisterErrorHandler(func(err error) {
+			errors = append(errors, err)
+			errReceived <- true
+		})
+
+		<-errReceived
+		if len(errors) != 1 {
+			t.Fatalf("expected 1 request, got %d", len(errors))
+		}
+		want := "unexpected EOF"
+		got := errors[0].Error()
+		if got != want {
+			t.Fatalf("expected error to be '%s', got %v", want, got)
+		}
+		errors = []error{}
+	})
+
+	t.Run("broken dcn filebody", func(t *testing.T) {
+		errReceived := make(chan bool)
+		ts := httptest.NewServer(serveBrokenDCN)
+		defer ts.Close()
+
+		targetURL, err := url.Parse(ts.URL)
+		if err != nil {
+			t.Fatalf("failed to parse url: %v", err)
+		}
+
+		errors := []error{}
+
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader.RegisterErrorHandler(func(err error) {
+			errors = append(errors, err)
+			errReceived <- true
+		})
+
+		<-errReceived
+		if len(errors) != 1 {
+			t.Fatalf("expected 1 request, got %d", len(errors))
+		}
+		want := "unexpected EOF"
 		got := errors[0].Error()
 		if got != want {
 			t.Fatalf("expected error to be '%s', got %v", want, got)

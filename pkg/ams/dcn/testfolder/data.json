@@ -1,0 +1,9 @@
+{
+    "principal2policies": {
+        "tenant1": {
+            "user1": [
+                "cas.Base"
+            ]
+        }
+    }
+}

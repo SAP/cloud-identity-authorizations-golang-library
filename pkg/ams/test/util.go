@@ -92,8 +92,8 @@ func visitExpression(e expression.Expression, args []expression.Expression) expr
 			return fmt.Sprintf("%v", newArgs[i]) < fmt.Sprintf("%v", newArgs[j])
 		})
 		return expression.NewOr(newArgs...)
-	case expression.Not:
-		return expression.Not{Arg: e.Arg}
+	// case expression.Not:
+	// 	return expression.Not{Arg: e.Arg}
 	case expression.In:
 		array, ok := e.Args[1].(expression.ArrayConstant)
 		if !ok {
