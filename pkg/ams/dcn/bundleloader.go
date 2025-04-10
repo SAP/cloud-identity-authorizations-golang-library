@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,7 +24,6 @@ type BundleLoader struct {
 }
 
 func NewBundleLoader(targetURL *url.URL, client *http.Client, ticker time.Ticker) *BundleLoader {
-
 	result := BundleLoader{
 		DCNChannel:         make(chan DcnContainer),
 		AssignmentsChannel: make(chan Assignments),
@@ -123,7 +123,7 @@ func (b *BundleLoader) bundleRequest() {
 			if strings.HasSuffix(header.Name, ".dcn") {
 				content := make([]byte, header.Size)
 				_, err := tarReader.Read(content)
-				if err != nil && err != io.EOF {
+				if err != nil && !errors.Is(err, io.EOF) {
 					b.handleError(err)
 					return
 				}
@@ -140,7 +140,7 @@ func (b *BundleLoader) bundleRequest() {
 			if header.Name == "data.json" {
 				content := make([]byte, header.Size)
 				_, err := tarReader.Read(content)
-				if err != nil && err != io.EOF {
+				if err != nil && !errors.Is(err, io.EOF) {
 					b.handleError(err)
 					return
 				}
@@ -157,5 +157,4 @@ func (b *BundleLoader) bundleRequest() {
 
 	b.DCNChannel <- dcn
 	b.AssignmentsChannel <- assignments
-
 }

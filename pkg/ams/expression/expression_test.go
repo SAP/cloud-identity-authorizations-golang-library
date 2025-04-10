@@ -12,7 +12,8 @@ func TestVisitExpression(t *testing.T) {
 			And{Args: []Expression{
 				Not{Arg: Reference{Name: "a"}},
 				Reference{Name: "b"},
-			}}, Reference{Name: "c"}}}
+			}}, Reference{Name: "c"},
+		}}
 		result := VisitExpression(e, func(e Expression, args []Expression) Expression {
 			return e
 		})

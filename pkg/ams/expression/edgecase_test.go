@@ -25,7 +25,6 @@ func TestEdgeCases(t *testing.T) {
 		if r != "unexpected_expression" {
 			t.Errorf("Unexpected result: %s", r)
 		}
-
 	})
 
 	t.Run("unsupported constant", func(t *testing.T) {
@@ -62,5 +61,4 @@ func TestEdgeCases(t *testing.T) {
 			t.Errorf("Expected error")
 		}
 	})
-
 }

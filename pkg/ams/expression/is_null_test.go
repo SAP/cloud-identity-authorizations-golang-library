@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestIsNull(t *testing.T) {
+func TestIsNull(t *testing.T) { //nolint:dupl
 	t.Run("variable is null", func(t *testing.T) {
 		isNull := IsNull{Arg: Reference{Name: "x"}}
 		result := isNull.Evaluate(Input{"x": UNSET})
@@ -38,7 +38,7 @@ func TestIsNull(t *testing.T) {
 	})
 }
 
-func TestIsNotNull(t *testing.T) {
+func TestIsNotNull(t *testing.T) { //nolint:dupl
 	t.Run("variable is not null", func(t *testing.T) {
 		isNotNull := IsNotNull{Arg: Reference{Name: "x"}}
 		result := isNotNull.Evaluate(Input{"x": UNSET})

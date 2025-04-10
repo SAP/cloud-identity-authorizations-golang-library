@@ -4,9 +4,9 @@ import (
 	"strings"
 )
 
-// reverse to StringifyQualifiedName
+// reverse to StringifyQualifiedName.
 //
-// if the provided string is not a valid qualified name, the return value is not reliable
+// if the provided string is not a valid qualified name, the return value is not reliable.
 func ParseQualifiedName(qualifiedName string) []string {
 	result := make([]string, 0)
 
@@ -20,7 +20,6 @@ func ParseQualifiedName(qualifiedName string) []string {
 	)
 	state := startofPart
 	for _, c := range qualifiedName {
-
 		switch state {
 		case startofPart:
 			switch c {
@@ -55,7 +54,6 @@ func ParseQualifiedName(qualifiedName string) []string {
 			state = quotedPart
 		case endOfQuotedPart:
 			state = startofPart
-
 		}
 	}
 	if currentPart != "" {
@@ -63,12 +61,13 @@ func ParseQualifiedName(qualifiedName string) []string {
 	}
 
 	return result
-
 }
 
-// returns the string representation of a qualified name
+// returns the string representation of a qualified name.
 //
-// the parts are concatenated with a dot. Parts containing a dot or a quote will be surrounded by quotes and inner quotes and backslashes will be escaped with a backslash
+// the parts are concatenated with a dot.
+// Parts containing a dot or a quote will be surrounded by quotes
+// and inner quotes and backslashes will be escaped with a backslash.
 func StringifyQualifiedName(ref []string) string {
 	escaped := make([]string, len(ref))
 	for i, r := range ref {
@@ -82,7 +81,6 @@ func StringifyQualifiedName(ref []string) string {
 }
 
 func escapePart(part string) string {
-
 	result := strings.ReplaceAll(part, "\\", "\\\\")
 	result = strings.ReplaceAll(result, "\"", "\\\"")
 	return "\"" + result + "\""

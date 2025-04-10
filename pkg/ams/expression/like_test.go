@@ -6,7 +6,7 @@ import (
 )
 
 func TestLike(t *testing.T) {
-	t.Run("string variable like constant String", func(t *testing.T) {
+	t.Run("string variable like constant String", func(t *testing.T) { //nolint:dupl
 		like := NewLike(Reference{Name: "x"}, String("a"), String(""))
 		result := like.Evaluate(Input{"x": String("a")})
 		if result != Bool(true) {
@@ -33,7 +33,7 @@ func TestLike(t *testing.T) {
 		}
 	})
 
-	t.Run("evaluate like with _ as escape character", func(t *testing.T) {
+	t.Run("evaluate like with _ as escape character", func(t *testing.T) { //nolint:dupl
 		like := NewLike(Reference{Name: "x"}, String("a"), String("_"))
 		result := like.Evaluate(Input{"x": String("a")})
 		if result != Bool(true) {
@@ -90,13 +90,11 @@ func TestLike(t *testing.T) {
 		if result != Bool(false) {
 			t.Errorf("Expected true, got %v", result)
 		}
-
 	})
-
 }
 
 func TestNotLike(t *testing.T) {
-	t.Run("string variable like constant String", func(t *testing.T) {
+	t.Run("string variable like constant String", func(t *testing.T) { //nolint:dupl
 		notLike := NewNotLike(Reference{Name: "x"}, String("a"), String(""))
 		result := notLike.Evaluate(Input{"x": String("a")})
 		if result != Bool(false) {
@@ -123,7 +121,7 @@ func TestNotLike(t *testing.T) {
 		}
 	})
 
-	t.Run("evaluate like with _ as escape character", func(t *testing.T) {
+	t.Run("evaluate like with _ as escape character", func(t *testing.T) { //nolint:dupl
 		notLike := NewNotLike(Reference{Name: "x"}, String("a"), String("_"))
 		result := notLike.Evaluate(Input{"x": String("a")})
 		if result != Bool(false) {

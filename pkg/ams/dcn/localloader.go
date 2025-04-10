@@ -29,6 +29,7 @@ func NewLocalLoader(dir string) *Loader {
 func (l *Loader) RegisterErrorHandler(handler func(error)) {
 	l.errHandlers = append(l.errHandlers, handler)
 }
+
 func (l *Loader) notifyError(err error) {
 	for _, handler := range l.errHandlers {
 		handler(err)
@@ -36,14 +37,13 @@ func (l *Loader) notifyError(err error) {
 }
 
 func (l *Loader) start() {
-	dcn, assigments, err := readDirectory(l.dir)
+	dcn, assignments, err := readDirectory(l.dir)
 	if err != nil {
 		l.notifyError(err)
 		return
 	}
 	l.DCNChannel <- dcn
-	l.AssignmentsChannel <- assigments.Assignments
-
+	l.AssignmentsChannel <- assignments.Assignments
 }
 
 func readDirectory(dir string) (DcnContainer, AssignmentsContainer, error) {
@@ -73,7 +73,6 @@ func readDirectory(dir string) (DcnContainer, AssignmentsContainer, error) {
 			resultDcn.Functions = append(resultDcn.Functions, subDCN.Functions...)
 			resultDcn.Schemas = append(resultDcn.Schemas, subDCN.Schemas...)
 			resultDcn.Tests = append(resultDcn.Tests, subDCN.Tests...)
-
 		}
 		if strings.HasSuffix(entry.Name(), ".dcn") {
 			var dcn DcnContainer

@@ -47,7 +47,6 @@ func SchemaFromDCN(sc []dcn.Schema) Schema {
 		if s.Definition.Nested != nil {
 			result.buildSchemaAttributes(s.Definition, []string{})
 		}
-
 	}
 	return result
 }
@@ -70,12 +69,11 @@ func mapType(dcnType string) InputType {
 		return STRUCTURE
 	}
 	return UNDEFINED
-
 }
 
 func (s *Schema) buildSchemaAttributes(a dcn.SchemaAttribute, path []string) {
 	for k, v := range a.Nested {
-		newPath := append(path, k)
+		newPath := append(path, k) //nolint:gocritic
 		if v.Nested != nil {
 			s.inputTypes[util.StringifyQualifiedName(newPath)] = STRUCTURE
 			s.buildSchemaAttributes(v, newPath)
@@ -86,7 +84,7 @@ func (s *Schema) buildSchemaAttributes(a dcn.SchemaAttribute, path []string) {
 }
 
 // Modifies the privided input by setting the value of the given key to the provided value
-// if the value is a structure, all nested values are set to the provided value
+// if the value is a structure, all nested values are set to the provided value.
 func (s Schema) Set(input expression.Input, val string, value expression.Wildcard) {
 	t, ok := s.inputTypes[val]
 	if !ok {
@@ -104,7 +102,7 @@ func (s Schema) Set(input expression.Input, val string, value expression.Wildcar
 }
 
 // returns the owning tenant for a package
-// if the package is not owned by a tenant, the function returns an empty string
+// if the package is not owned by a tenant, the function returns an empty string.
 func (s Schema) GetTenantForQualifiedName(qn dcn.QualifiedName) string {
 	p := util.StringifyQualifiedName(qn[:len(qn)-1])
 	tenant, ok := s.tenantSchemas[p]
@@ -114,12 +112,17 @@ func (s Schema) GetTenantForQualifiedName(qn dcn.QualifiedName) string {
 	return tenant
 }
 
-// the app input should correspond to the DCL schema definition and will be mapped into $app fields. This can be achieved by providing either:
-// - deeply nested map[string] where the keys are the schema names and the values can translated to the schema types
-// - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema name or the fields name is EXACTLY the same as the schema name
+// the app input should correspond to the DCL schema definition and will be mapped
+// into $app fields. This can be achieved by providing either:
+//   - deeply nested map[string] where the keys are the schema names and the values
+//     can translated to the schema types
+//   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to
+//     the schema name or the fields name is EXACTLY the same as the schema name
 //
 // expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
-// the env input is typically corresponding to the user information. If you did not modify the $user or $env in your schema denfinitions you can use the ams.Env struct. It will be mapped into $env fields.
+// the env input is typically corresponding to the user information.
+// If you did not modify the $user or $env in your schema denfinitions
+// you can use the ams.Env struct. It will be mapped into $env fields.
 func (s Schema) CustomInput(action, resource string, input any, env any) expression.Input {
 	result := expression.Input{
 		"$dcl.action":   expression.String(action),
@@ -134,7 +137,6 @@ func (s Schema) CustomInput(action, resource string, input any, env any) express
 }
 
 func (s Schema) convertCustomInput(result expression.Input, input reflect.Value, path []string) {
-
 	v := input
 	kind := v.Kind()
 	currentPath := util.StringifyQualifiedName(path)
@@ -160,11 +162,11 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 		return
 	}
 
-	switch shouldBeType {
+	switch shouldBeType { //nolint:exhaustive
 	case STRUCTURE:
-		switch kind {
+		switch kind { //nolint:exhaustive
 		case reflect.Struct:
-			for i := 0; i < v.NumField(); i++ {
+			for i := range v.NumField() {
 				fieldValue := v.Field(i)
 				field := v.Type().Field(i)
 				if !field.IsExported() {
@@ -194,7 +196,7 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 			result[currentPath] = expression.Bool(v.Bool())
 		}
 	case NUMBER:
-		switch kind {
+		switch kind { //nolint:exhaustive
 		case reflect.Uint, reflect.Uintptr, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			result[currentPath] = expression.Number(v.Uint())
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -208,7 +210,7 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 				return
 			}
 			r := expression.StringArray{}
-			for i := 0; i < v.Len(); i++ {
+			for i := range v.Len() {
 				vi := v.Index(i)
 				for vi.Kind() == reflect.Interface || vi.Kind() == reflect.Pointer {
 					if vi.IsNil() {
@@ -229,7 +231,7 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 				return
 			}
 			r := expression.NumberArray{}
-			for i := 0; i < v.Len(); i++ {
+			for i := range v.Len() {
 				vi := v.Index(i)
 				for vi.Kind() == reflect.Interface || vi.Kind() == reflect.Pointer {
 					if vi.IsNil() {
@@ -237,7 +239,7 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 					}
 					vi = vi.Elem()
 				}
-				switch vi.Kind() {
+				switch vi.Kind() { //nolint:exhaustive
 				case reflect.Uint, reflect.Uintptr, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 					r = append(r, expression.Number(vi.Uint()))
 				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -256,7 +258,7 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 				return
 			}
 			r := expression.BoolArray{}
-			for i := 0; i < v.Len(); i++ {
+			for i := range v.Len() {
 				vi := v.Index(i)
 
 				for vi.Kind() == reflect.Interface || vi.Kind() == reflect.Pointer {
@@ -273,11 +275,10 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 			result[currentPath] = r
 		}
 	}
-
 }
 
 // modifies the input by removing all keys that are not defined in the schema or are not of the correct type
-// expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
+// expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types.
 func (s Schema) PurgeInvalidInput(input expression.Input) {
 	for k, v := range input {
 		t, ok := s.inputTypes[k]
@@ -326,7 +327,9 @@ func (s Schema) PurgeInvalidInput(input expression.Input) {
 				delete(input, k)
 				continue
 			}
+		case STRUCTURE, UNDEFINED:
+			delete(input, k)
+			continue
 		}
-
 	}
 }

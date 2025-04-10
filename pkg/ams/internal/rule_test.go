@@ -23,7 +23,6 @@ var grantResources []byte
 
 func TestRule(t *testing.T) {
 	t.Run("Evaluate Grant All Rule", func(t *testing.T) {
-
 		dcnRule := dcn.Rule{}
 		err := json.Unmarshal(grantAll, &dcnRule)
 		if err != nil {

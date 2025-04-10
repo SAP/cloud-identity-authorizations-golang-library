@@ -69,7 +69,6 @@ func TestRun(t *testing.T) {
 								for _, resource := range resources {
 									for _, tInput := range inputs {
 										t.Run(assertionCaption(action, resource, tInput), func(t *testing.T) {
-
 											input := createInput(ams.GetSchema(), tInput, action, resource)
 
 											result := authz.Evaluate(input)
@@ -84,7 +83,6 @@ func TestRun(t *testing.T) {
 												result := authz.Evaluate(input)
 												t.Errorf("expected %v, got %v", expected, result)
 											}
-
 										})
 									}
 								}
@@ -93,10 +91,8 @@ func TestRun(t *testing.T) {
 					}
 				})
 			}
-
 		})
 	}
-
 }
 
 func assertionCaption(action string, resource string, input dcn.Input) string {

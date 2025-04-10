@@ -49,7 +49,7 @@ type SimpleEnv struct {
 	EnvN expression.Constant
 }
 
-func TestExampleSchema(t *testing.T) {
+func TestExampleSchema(t *testing.T) { //nolint:maintidx
 	var schema Schema
 
 	var ss []dcn.Schema
@@ -98,6 +98,20 @@ func TestExampleSchema(t *testing.T) {
 		}
 		if _, ok := input["invalid"]; ok {
 			t.Errorf("Expected 'invalid' to be removed")
+		}
+	})
+
+	t.Run("removes structure typed input", func(t *testing.T) {
+		input := expression.Input{
+			"$dcl.action":        expression.String("read"),
+			"$app.deeper_nested": expression.String("example"),
+		}
+		schema.PurgeInvalidInput(input)
+		want := expression.Input{
+			"$dcl.action": expression.String("read"),
+		}
+		if !reflect.DeepEqual(input, want) {
+			t.Errorf("Expected %v, got %v", want, input)
 		}
 	})
 
@@ -261,7 +275,6 @@ func TestExampleSchema(t *testing.T) {
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("Expected %v, got %v", want, got)
 		}
-
 	})
 
 	t.Run("Ignores nil slices", func(t *testing.T) {
@@ -311,7 +324,6 @@ func TestExampleSchema(t *testing.T) {
 			t.Errorf("Expected %v, got %v", want, got)
 		}
 	})
-
 }
 
 func TestSimpleSchema(t *testing.T) {
@@ -376,9 +388,7 @@ func TestSimpleSchema(t *testing.T) {
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("Expected %v, got %v", want, got)
 		}
-
 	})
-
 }
 
 func TestVariablesWithQuotes(t *testing.T) {
@@ -417,7 +427,6 @@ func TestVariablesWithQuotes(t *testing.T) {
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("Expected %v, got %v", want, got)
 		}
-
 	})
 
 	t.Run("schema.Set ignores undefined fields", func(t *testing.T) {
@@ -439,7 +448,6 @@ func TestVariablesWithQuotes(t *testing.T) {
 		if !reflect.DeepEqual(input, want) {
 			t.Errorf("Expected %v, got %v", want, input)
 		}
-
 	})
 
 	t.Run("type mapping edge cases", func(t *testing.T) {
@@ -453,7 +461,5 @@ func TestVariablesWithQuotes(t *testing.T) {
 		if got != want {
 			t.Errorf("Expected %v, got %v", want, got)
 		}
-
 	})
-
 }

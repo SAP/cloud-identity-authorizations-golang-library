@@ -13,18 +13,22 @@ type Input map[string]Constant
 type Reference struct {
 	Name string
 }
-type referenceSet map[string]bool
-type ExpressionContainer struct {
-	Expression Expression `json:"expression"`
-	References referenceSet
-}
+type (
+	referenceSet        map[string]bool
+	ExpressionContainer struct {
+		Expression Expression `json:"expression"`
+		References referenceSet
+	}
+)
 
-// represents a logic expression. Is comparable to TRUE and FALSE. And can be processed using the Visit or VisitExpression function
+// represents a logic expression. Is comparable to TRUE and FALSE.
+//
+// And can be processed using the Visit or VisitExpression function.
 type Expression interface {
-	//uses the input to resolve references and evaluate to a new expression. Possibly TRUE or FALSE
+	// uses the input to resolve references and evaluate to a new expression. Possibly TRUE or FALSE.
 	//
-	// this function may panic if the type of the input does not match the schema definition
-	Evaluate(Input) Expression
+	// this function may panic if the type of the input does not match the schema definition.
+	Evaluate(input Input) Expression
 }
 
 func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
@@ -59,17 +63,29 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 			case "is_not_null":
 				result.Expression = IsNotNull{Arg: args[0]}
 			case "like":
-				pattern := args[1].(String)
+				pattern, ok := args[1].(String)
+				if !ok {
+					return result, fmt.Errorf("like pattern %v not castable to string", args[1])
+				}
 				var escape String
 				if len(args) == 3 {
-					escape = args[2].(String)
+					escape, ok = args[2].(String)
+					if !ok {
+						return result, fmt.Errorf("like escape %v not castable to string", args[2])
+					}
 				}
 				result.Expression = NewLike(args[0], pattern, escape)
 			case "not_like":
-				pattern := args[1].(String)
+				pattern, ok := args[1].(String)
+				if !ok {
+					return result, fmt.Errorf("not_like pattern %v not castable to string", args[1])
+				}
 				var escape String
 				if len(args) == 3 {
-					escape = args[2].(String)
+					escape, ok = args[2].(String)
+					if !ok {
+						return result, fmt.Errorf("not_like escape %v not castable to string", args[2])
+					}
 				}
 				result.Expression = NewNotLike(args[0], pattern, escape)
 			case "between":
@@ -93,13 +109,19 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 			case "ge":
 				result.Expression = Ge{Args: args}
 			case "restricted":
-				ref := args[0].(Reference)
+				ref, ok := args[0].(Reference)
+				if !ok {
+					return result, fmt.Errorf("restricted argument %v not a reference", args[0])
+				}
 				result.Expression = IsRestricted{
 					Not:       Bool(false),
 					Reference: ref.Name,
 				}
 			case "not_restricted":
-				ref := args[0].(Reference)
+				ref, ok := args[0].(Reference)
+				if !ok {
+					return result, fmt.Errorf("not_restricted argument %v not a reference", args[0])
+				}
 				result.Expression = IsRestricted{
 					Not:       Bool(true),
 					Reference: ref.Name,
@@ -118,15 +140,12 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 			}
 			result.Expression = function
 		}
-
 	}
-
 	if e.Ref != nil {
 		name := util.StringifyQualifiedName(e.Ref)
 		result.Expression = Reference{Name: name}
 		result.References[name] = true
 	}
-
 	if e.Constant != nil {
 		result.Expression = ConstantFrom(e.Constant)
 		if result.Expression == UNSET {
@@ -147,6 +166,7 @@ func (v Reference) Evaluate(input Input) Expression {
 
 	return val
 }
+
 func ToString(e Expression) string {
 	return Visit(e,
 		func(name string, args []string) string {
@@ -169,7 +189,6 @@ func ToString(e Expression) string {
 }
 
 func IsRestrictable(e Expression) bool {
-
 	switch e := e.(type) {
 	case And:
 		for _, arg := range e.Args {
@@ -326,19 +345,19 @@ func Visit[T any](e Expression, fCall func(string, []T) T, fRef func(Reference) 
 	case Like:
 		args := []T{
 			Visit(e.Arg, fCall, fRef, fConst),
-			fConst(String(e.Pattern)),
+			fConst(e.Pattern),
 		}
 		if e.Escape != "" {
-			args = append(args, fConst(String(e.Escape)))
+			args = append(args, fConst(e.Escape))
 		}
 		return fCall("like", args)
 	case NotLike:
 		args := []T{
 			Visit(e.Arg, fCall, fRef, fConst),
-			fConst(String(e.Pattern)),
+			fConst(e.Pattern),
 		}
 		if e.Escape != "" {
-			args = append(args, fConst(String(e.Escape)))
+			args = append(args, fConst(e.Escape))
 		}
 		return fCall("not_like", args)
 	case IsNull:

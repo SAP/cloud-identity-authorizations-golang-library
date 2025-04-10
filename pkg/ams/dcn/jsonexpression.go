@@ -33,7 +33,6 @@ func (e Expression) MarshalJSON() ([]byte, error) {
 }
 
 func (e *Expression) UnmarshalJSON(data []byte) error {
-
 	var c CallObject
 	if err := json.Unmarshal(data, &c); err == nil && len(c.Call) > 0 {
 		e.Call = c.Call

@@ -31,7 +31,6 @@ func TestFunction(t *testing.T) {
 		if !reflect.DeepEqual(f.body, Reference{Name: "a"}) {
 			t.Fatalf("unexpected body: %v", f.body)
 		}
-
 	})
 
 	t.Run("function calling another function", func(t *testing.T) {

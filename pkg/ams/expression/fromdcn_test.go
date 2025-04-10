@@ -8,7 +8,7 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 )
 
-func TestUnmarshalJSON(t *testing.T) {
+func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 	t.Run("DCNBool", func(t *testing.T) {
 		var ec dcn.Expression
 		input := `true`
@@ -241,6 +241,28 @@ func TestUnmarshalJSON(t *testing.T) {
 		}
 		if !reflect.DeepEqual(e.Expression, expected) {
 			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
+		}
+	})
+
+	t.Run("broken dcn", func(t *testing.T) {
+		var ec dcn.Expression
+		brokeninputs := []string{
+			`{"call": ["like"], "args": [1,1]}`,
+			`{"call": ["like"], "args": [1,"x", 2]}`,
+			`{"call": ["not_like"], "args": [1,1]}`,
+			`{"call": ["not_like"], "args": [1,"x", 2]}`,
+			`{"call": ["restricted"], "args": [1]}`,
+			`{"call": ["not_restricted"], "args": [1]}`,
+		}
+		for _, input := range brokeninputs {
+			err := json.Unmarshal([]byte(input), &ec)
+			if err != nil {
+				t.Fatalf("UnmarshalJSON() error = %v, expected error", err)
+			}
+			_, err = FromDCN(ec, nil)
+			if err == nil {
+				t.Errorf("FromDCN() error = %v, expected error", err)
+			}
 		}
 	})
 
@@ -606,5 +628,4 @@ func TestUnmarshalJSON(t *testing.T) {
 			t.Fatalf("no error thrown")
 		}
 	})
-
 }

@@ -34,7 +34,7 @@ var withTenantPolicy []byte
 //go:embed testfiles/policies/use_with_broken_restriction.dcn
 var useWithBrokenRestrictionPolicy []byte
 
-func TestPolicy(t *testing.T) {
+func TestPolicy(t *testing.T) { //nolint:maintidx
 	schema := Schema{
 		tenantSchemas: map[string]string{
 			"tenant.package.name": "mytenantid",
@@ -63,7 +63,6 @@ func TestPolicy(t *testing.T) {
 		if len(policy.rules) != 1 {
 			t.Errorf("Expected 1 rule, got %d", len(policy.rules))
 		}
-
 	})
 
 	t.Run("simple use policy from DCN", func(t *testing.T) {
@@ -144,10 +143,9 @@ func TestPolicy(t *testing.T) {
 		if !reflect.DeepEqual(r, expected) {
 			t.Errorf("Expected %+v, got %+v", expected, r)
 		}
-
 	})
 
-	t.Run("use with restrictions policy from DCN", func(t *testing.T) {
+	t.Run("use with restrictions policy from DCN", func(t *testing.T) { //nolint:dupl
 		var sp []dcn.Policy
 		err := json.Unmarshal(useWithRestrictionsPolicy, &sp)
 		if err != nil {
@@ -180,7 +178,6 @@ func TestPolicy(t *testing.T) {
 		if len(policy.rules) != 3 {
 			t.Errorf("Expected 3 rules, got %d", len(policy.rules))
 		}
-
 	})
 
 	t.Run("use non existent policy from DCN", func(t *testing.T) {
@@ -195,7 +192,7 @@ func TestPolicy(t *testing.T) {
 		}
 	})
 
-	t.Run("use without restrictions policy from DCN", func(t *testing.T) {
+	t.Run("use without restrictions policy from DCN", func(t *testing.T) { //nolint:dupl
 		var sp []dcn.Policy
 		err := json.Unmarshal(useWithoutRestrictionsPolicy, &sp)
 		if err != nil {
@@ -228,7 +225,6 @@ func TestPolicy(t *testing.T) {
 		if len(policy.rules) != 2 {
 			t.Errorf("Expected 2 rules, got %d", len(policy.rules))
 		}
-
 	})
 
 	t.Run("with tenant policy from DCN", func(t *testing.T) {
@@ -275,24 +271,23 @@ func TestPolicy(t *testing.T) {
 			t.Errorf("Expected 3 policies, got %d", len(sub.allPolicies))
 		}
 
-		sub = p.GetSubset([]string{"non-existant"}, "mytenantid", true)
+		sub = p.GetSubset([]string{"non-existent"}, "mytenantid", true)
 
 		if len(sub.allPolicies) != 2 {
 			t.Errorf("Expected 2 policies, got %d", len(sub.allPolicies))
 		}
 
-		sub = p.GetSubset([]string{"non-existant"}, "mytenantid", false)
+		sub = p.GetSubset([]string{"non-existent"}, "mytenantid", false)
 
 		if len(sub.allPolicies) != 0 {
 			t.Errorf("Expected 2 policies, got %d", len(sub.allPolicies))
 		}
 
-		sub = p.GetSubset([]string{"base.simple"}, "non-existant-tenant", true)
+		sub = p.GetSubset([]string{"base.simple"}, "non-existent-tenant", true)
 
 		if len(sub.allPolicies) != 2 {
 			t.Errorf("Expected 2 policies, got %d", len(sub.allPolicies))
 		}
-
 	})
 
 	t.Run("use with broken restriction policy from DCN", func(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestUnmarshalJSON(t *testing.T) {
+func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 	t.Run("boolean constant", func(t *testing.T) {
 		var ec Expression
 		input := `true`
@@ -27,7 +27,6 @@ func TestUnmarshalJSON(t *testing.T) {
 		if string(marshaled) != input {
 			t.Errorf("MarshalJSON() = %s, expected %s", string(marshaled), input)
 		}
-
 	})
 
 	t.Run("number constant", func(t *testing.T) {
@@ -72,7 +71,6 @@ func TestUnmarshalJSON(t *testing.T) {
 		if string(marshaled) != input {
 			t.Errorf("MarshalJSON() = %s, expected %s", string(marshaled), input)
 		}
-
 	})
 
 	t.Run("boolean array constant", func(t *testing.T) {
@@ -97,7 +95,6 @@ func TestUnmarshalJSON(t *testing.T) {
 		if string(marshaled) != input {
 			t.Errorf("MarshalJSON() = %s, expected %s", string(marshaled), input)
 		}
-
 	})
 
 	t.Run("number array constant", func(t *testing.T) {
@@ -218,7 +215,5 @@ func TestUnmarshalJSON(t *testing.T) {
 		if err == nil {
 			t.Errorf("MarshalJSON() error = %v, expected error", err)
 		}
-
 	})
-
 }

@@ -121,10 +121,8 @@ func visitExpression(e expression.Expression, args []expression.Expression) expr
 			r, ok := e.Args[0].(expression.Reference)
 			if !ok {
 				return expression.Eq{Args: []expression.Expression{e.Args[1], e.Args[0]}}
-			} else {
-				if l.Name == r.Name {
-					return expression.IsNotNull{Arg: e.Args[0]}
-				}
+			} else if l.Name == r.Name {
+				return expression.IsNotNull{Arg: e.Args[0]}
 			}
 		}
 		return e
@@ -143,5 +141,4 @@ func visitExpression(e expression.Expression, args []expression.Expression) expr
 	default:
 		return e
 	}
-
 }

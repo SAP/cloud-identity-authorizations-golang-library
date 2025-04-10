@@ -65,7 +65,8 @@ func TestEdgeCases(t *testing.T) {
 								Args: []dcn.Expression{{Constant: struct{}{}}},
 							},
 						},
-					}}},
+					},
+				}},
 			},
 		}
 		_, err := PoliciesFromDCN(policies, Schema{}, nil)

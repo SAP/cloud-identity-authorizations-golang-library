@@ -23,7 +23,7 @@ func NewOr(args ...Expression) Expression {
 }
 
 func (o Or) Evaluate(input Input) Expression {
-	var resultArgs []Expression
+	resultArgs := []Expression{}
 	isIgnore := false
 	hasUnset := false
 	hasUnknown := false
@@ -68,7 +68,7 @@ func NewAnd(args ...Expression) Expression {
 }
 
 func (a And) Evaluate(input Input) Expression {
-	var resultArgs []Expression
+	resultArgs := []Expression{}
 	isUnset := false
 	hasIgnore := false
 	hasUnknown := false

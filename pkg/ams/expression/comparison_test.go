@@ -5,8 +5,10 @@ import (
 	"testing"
 )
 
-const DCNFalse = Bool(false)
-const DCNTrue = Bool(true)
+const (
+	DCNFalse = Bool(false)
+	DCNTrue  = Bool(true)
+)
 
 func TestEq(t *testing.T) {
 	t.Run("TestEq with constants", func(t *testing.T) {
@@ -61,6 +63,7 @@ func TestEq(t *testing.T) {
 		}
 	})
 }
+
 func TestLt(t *testing.T) {
 	t.Run("TestLt with constants", func(t *testing.T) {
 		e := Lt{Args: []Expression{Number(1), Number(2)}}
@@ -117,6 +120,7 @@ func TestLt(t *testing.T) {
 		}
 	})
 }
+
 func TestBetween(t *testing.T) {
 	t.Run("TestBetween with constants", func(t *testing.T) {
 		e := Between{Args: []Expression{Number(5), Number(1), Number(10)}}
@@ -149,7 +153,8 @@ func TestBetween(t *testing.T) {
 		if got, want := ToString(e), "between(a, b, c)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
-		if got, want := ToString(e.Evaluate(Input{"a": Number(5), "b": Number(1), "c": UNKNOWN})), "between(5, 1, c)"; got != want {
+		input := Input{"a": Number(5), "b": Number(1), "c": UNKNOWN}
+		if got, want := ToString(e.Evaluate(input)), "between(5, 1, c)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
 		}
 		if got, want := e.Evaluate(Input{"a": Number(5), "b": Number(1)}), UNSET; got != want {
@@ -176,7 +181,8 @@ func TestBetween(t *testing.T) {
 		}
 	})
 }
-func TestNe(t *testing.T) {
+
+func TestNe(t *testing.T) { //nolint:dupl
 	t.Run("TestNe with constants", func(t *testing.T) {
 		e := Ne{Args: []Expression{Number(1), Number(2)}}
 		if got, want := ToString(e), "ne(1, 2)"; got != want {
@@ -200,7 +206,7 @@ func TestNe(t *testing.T) {
 		}
 	})
 
-	t.Run("TestNe with variables", func(t *testing.T) {
+	t.Run("TestNe with variables", func(t *testing.T) { //nolint:dupl
 		e := Ne{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}}}
 		if got, want := ToString(e), "ne(a, b)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
@@ -250,7 +256,7 @@ func TestLe(t *testing.T) {
 		}
 	})
 
-	t.Run("TestLe with variables", func(t *testing.T) {
+	t.Run("TestLe with variables", func(t *testing.T) { //nolint:dupl
 		e := Le{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}}}
 		if got, want := ToString(e), "le(a, b)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
@@ -272,7 +278,8 @@ func TestLe(t *testing.T) {
 		}
 	})
 }
-func TestGt(t *testing.T) {
+
+func TestGt(t *testing.T) { //nolint:dupl
 	t.Run("TestGt with constants", func(t *testing.T) {
 		e := Gt{Args: []Expression{Number(2), Number(1)}}
 		if got, want := ToString(e), "gt(2, 1)"; got != want {
@@ -296,7 +303,7 @@ func TestGt(t *testing.T) {
 		}
 	})
 
-	t.Run("TestGt with variables", func(t *testing.T) {
+	t.Run("TestGt with variables", func(t *testing.T) { //nolint:dupl
 		e := Gt{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}}}
 		if got, want := ToString(e), "gt(a, b)"; got != want {
 			t.Errorf("got %v, want %v", got, want)
@@ -319,7 +326,7 @@ func TestGt(t *testing.T) {
 	})
 }
 
-func TestGe(t *testing.T) {
+func TestGe(t *testing.T) { //nolint:dupl
 	t.Run("TestGe with constants", func(t *testing.T) {
 		e := Ge{Args: []Expression{Number(2), Number(1)}}
 		if got, want := ToString(e), "ge(2, 1)"; got != want {
@@ -343,7 +350,7 @@ func TestGe(t *testing.T) {
 		}
 	})
 
-	t.Run("TestGe with variables", func(t *testing.T) {
+	t.Run("TestGe with variables", func(t *testing.T) { //nolint:dupl
 		e := Ge{Args: []Expression{Reference{Name: "a"}, Reference{Name: "b"}}}
 		if got, want := ToString(e), "ge(a, b)"; got != want {
 			t.Errorf("got %v, want %v", got, want)

@@ -21,7 +21,7 @@ func (e In) Evaluate(input Input) Expression {
 	if _, ok := right.(Reference); ok {
 		return In{Args: []Expression{left, right}}
 	}
-	r := right.(ArrayConstant)
+	r := right.(ArrayConstant) //nolint:forcetypeassert
 	if r.IsEmpty() {
 		return FALSE
 	}
@@ -29,7 +29,7 @@ func (e In) Evaluate(input Input) Expression {
 	if _, ok := left.(Reference); ok {
 		return In{Args: []Expression{left, right}}
 	}
-	l := left.(Constant)
+	l := left.(Constant) //nolint:forcetypeassert
 
 	if r.Contains(l) {
 		return TRUE
@@ -50,14 +50,14 @@ func (e NotIn) Evaluate(input Input) Expression {
 	if _, ok := right.(Reference); ok {
 		return NotIn{Args: []Expression{left, right}}
 	}
-	r := right.(ArrayConstant)
+	r := right.(ArrayConstant) //nolint:forcetypeassert
 	if r.IsEmpty() {
 		return TRUE
 	}
 	if _, ok := left.(Reference); ok {
 		return NotIn{Args: []Expression{left, right}}
 	}
-	l := left.(Constant)
+	l := left.(Constant) //nolint:forcetypeassert
 
 	if r.Contains(l) {
 		return Bool(false)

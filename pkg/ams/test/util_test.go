@@ -8,9 +8,13 @@ import (
 )
 
 func TestNormalizeExpression(t *testing.T) {
-
 	t.Run(" In => Or equals", func(t *testing.T) {
-		in := expression.In{Args: []expression.Expression{expression.Reference{Name: "x"}, expression.StringArray{expression.String("a"), expression.String("b")}}}
+		in := expression.In{
+			Args: []expression.Expression{
+				expression.Reference{Name: "x"},
+				expression.StringArray{expression.String("a"), expression.String("b")},
+			},
+		}
 		got := NormalizeExpression(in)
 		want := expression.Or{Args: []expression.Expression{
 			expression.Eq{Args: []expression.Expression{expression.Reference{Name: "x"}, expression.String("a")}},
@@ -22,7 +26,15 @@ func TestNormalizeExpression(t *testing.T) {
 	})
 
 	t.Run(" Not In => And not equals", func(t *testing.T) {
-		notIt := expression.NotIn{Args: []expression.Expression{expression.Reference{Name: "x"}, expression.StringArray{expression.String("a"), expression.String("b")}}}
+		notIt := expression.NotIn{
+			Args: []expression.Expression{
+				expression.Reference{Name: "x"},
+				expression.StringArray{
+					expression.String("a"),
+					expression.String("b"),
+				},
+			},
+		}
 		got := NormalizeExpression(notIt)
 		want := expression.And{Args: []expression.Expression{
 			expression.Ne{Args: []expression.Expression{expression.Reference{Name: "x"}, expression.String("a")}},

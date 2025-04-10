@@ -27,7 +27,6 @@ func TestStringifyReference(t *testing.T) {
 		if !reflect.DeepEqual(ref, parsed) {
 			t.Errorf("ParseQualifiedName() = %v, expected %v", parsed, ref)
 		}
-
 	})
 
 	t.Run("Contains dot", func(t *testing.T) {
@@ -55,8 +54,8 @@ func TestStringifyReference(t *testing.T) {
 	})
 
 	t.Run("Contains chinese characters", func(t *testing.T) {
-		ref := []string{"你好"}
-		expected := "你好"
+		ref := []string{"你好"} //nolint:gosmopolitan
+		expected := "你好"      //nolint:gosmopolitan
 		if got := StringifyQualifiedName(ref); got != expected {
 			t.Errorf("StringifyReference() = %v, expected %v", got, expected)
 		}
@@ -77,7 +76,6 @@ func TestStringifyReference(t *testing.T) {
 			t.Errorf("ParseQualifiedName() = %v, expected %v", parsed, ref)
 		}
 	})
-
 }
 
 func TestParseQualifiedName(t *testing.T) {
@@ -95,5 +93,4 @@ func TestParseQualifiedName(t *testing.T) {
 			t.Errorf("ParseQualifiedName() = %v, expected %v", got, expected)
 		}
 	})
-
 }

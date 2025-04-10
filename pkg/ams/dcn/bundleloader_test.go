@@ -3,20 +3,18 @@ package dcn
 import (
 	"archive/tar"
 	"compress/gzip"
-	"testing"
-
 	_ "embed"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"testing"
 	"time"
 )
 
 //go:embed bundles/original_bundle.tar.gz
 var bundle []byte
 
-func TestBundleLoader(t *testing.T) {
-
+func TestBundleLoader(t *testing.T) { //nolint:maintidx
 	var recordedRequests []http.Request
 
 	serveBundle := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -28,14 +26,14 @@ func TestBundleLoader(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write(bundle)
+		w.Write(bundle) //nolint:errcheck
 	})
 
 	serveError := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedRequests = append(recordedRequests, *r)
 		w.WriteHeader(http.StatusInternalServerError)
 		res := []byte("Internal Server Error")
-		w.Write(res)
+		w.Write(res) //nolint:errcheck
 	})
 
 	serveErrorNoBody := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -46,13 +44,13 @@ func TestBundleLoader(t *testing.T) {
 	serveNonGzip := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedRequests = append(recordedRequests, *r)
 		w.Header().Set("Etag", "test-etag")
-		w.Write([]byte("asdf"))
+		w.Write([]byte("asdf")) //nolint:errcheck
 	})
 
 	serveNonTar := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedRequests = append(recordedRequests, *r)
 		w.Header().Set("Etag", "test-etag")
-		gzip.NewWriter(w).Write([]byte("asdf"))
+		gzip.NewWriter(w).Write([]byte("asdf")) //nolint:errcheck
 	})
 
 	serveUnparseableDCN := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +136,6 @@ func TestBundleLoader(t *testing.T) {
 		if len(recordedRequests) != 2 {
 			t.Fatalf("expected 2 request, got %d", len(recordedRequests))
 		}
-
 	})
 
 	t.Run("broken server", func(t *testing.T) {
@@ -202,7 +199,6 @@ func TestBundleLoader(t *testing.T) {
 	})
 
 	t.Run("broken http client", func(t *testing.T) {
-
 		targetURL, _ := url.Parse("http://127.0.0.1:1234")
 
 		errors := []error{}
@@ -339,5 +335,4 @@ func TestBundleLoader(t *testing.T) {
 		}
 		errors = []error{}
 	})
-
 }

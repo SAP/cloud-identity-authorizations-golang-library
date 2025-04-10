@@ -82,7 +82,6 @@ func topologicalSort(functions []dcn.Function) ([]dcn.Function, error) {
 	}
 
 	return result, nil
-
 }
 
 func getFunctionCalls(exp dcn.Expression) []string {
@@ -99,5 +98,4 @@ func getFunctionCalls(exp dcn.Expression) []string {
 	}
 
 	return []string{util.StringifyQualifiedName(exp.Call)}
-
 }

@@ -6,7 +6,6 @@ import (
 )
 
 func TestAnd(t *testing.T) {
-
 	t.Run("Both true", func(t *testing.T) {
 		and := And{Args: []Expression{Bool(true), Bool(true)}}
 		result := and.Evaluate(nil)
@@ -46,7 +45,6 @@ func TestAnd(t *testing.T) {
 	})
 
 	t.Run("IGNORE and UNKNOWN", func(t *testing.T) {
-
 		expected := Eq{Args: []Expression{
 			Reference{Name: "x"},
 			Bool(true),
@@ -105,7 +103,6 @@ func TestAnd(t *testing.T) {
 			t.Errorf("Expected %v, got %v", expected, result)
 		}
 	})
-
 }
 
 func TestOr(t *testing.T) {
@@ -189,7 +186,7 @@ func TestOr(t *testing.T) {
 		}
 	})
 
-	t.Run("UNKOWN or UNKOWN", func(t *testing.T) {
+	t.Run("UNKNOWN or UNKNOWN", func(t *testing.T) {
 		or := Or{Args: []Expression{Reference{Name: "x"}, Reference{Name: "y"}}}
 		result := or.Evaluate(Input{"x": UNKNOWN, "y": UNKNOWN})
 
@@ -197,7 +194,6 @@ func TestOr(t *testing.T) {
 			t.Errorf("Expected %v, got %v", or, result)
 		}
 	})
-
 }
 
 func TestNot(t *testing.T) {

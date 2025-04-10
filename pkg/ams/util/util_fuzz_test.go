@@ -1,7 +1,7 @@
 package util
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"reflect"
 	"strings"
 	"testing"
@@ -14,13 +14,12 @@ func FuzzQualifiedName(f *testing.F) {
 	f.Add("a")
 	f.Add("a....b...c")
 	f.Add("auhdsiufa")
-	f.Add("你好_jadpö世界\"")
+	f.Add("你好_jadpö世界\"") //nolint:gosmopolitan
 	f.Add("ji...لسلام عليكم dsfüka&%$ ::.sdfaf?ßsd")
 	f.Add("sadasd.asok\"a.b")
 	f.Add("sad..\"...//  \\ssas")
 
 	f.Fuzz(func(t *testing.T, input string) {
-
 		// Split the input string into parts
 		parts := randomSplit(input)
 
@@ -50,7 +49,6 @@ func FuzzQualifiedName(f *testing.F) {
 			t.Errorf("Parsed     : %v", parsedParts)
 		}
 	})
-
 }
 
 func randomSplit(s string) []string {
@@ -58,7 +56,7 @@ func randomSplit(s string) []string {
 	part := ""
 	for _, c := range s {
 		part += string(c)
-		if rand.Intn(3) == 0 {
+		if rand.Int32N(3) == 0 { //nolint:gosec
 			result = append(result, part)
 			part = ""
 		}

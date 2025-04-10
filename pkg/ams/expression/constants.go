@@ -2,12 +2,12 @@ package expression
 
 type Constant interface {
 	Expression
-	Equals(Constant) bool
-	LessThan(Constant) bool
+	Equals(c Constant) bool
+	LessThan(c Constant) bool
 }
 
 type ArrayConstant interface {
-	Contains(Constant) bool
+	Contains(c Constant) bool
 	IsEmpty() bool
 	Elements() []Constant
 	Constant
@@ -25,8 +25,10 @@ type StringArray []String
 
 type BoolArray []Bool
 
-const TRUE = Bool(true)
-const FALSE = Bool(false)
+const (
+	TRUE  = Bool(true)
+	FALSE = Bool(false)
+)
 
 func ConstantFrom(v any) Constant {
 	switch v := v.(type) {
@@ -59,28 +61,27 @@ func ConstantFrom(v any) Constant {
 }
 
 func (n Number) Equals(c Constant) bool {
-	return n == c.(Number)
+	return n == c.(Number) //nolint:forcetypeassert
 }
 
 func (n Number) LessThan(c Constant) bool {
-	return n < c.(Number)
+	return n < c.(Number) //nolint:forcetypeassert
 }
 
 func (s String) Equals(c Constant) bool {
-	return s == c.(String)
+	return s == c.(String) //nolint:forcetypeassert
 }
 
 func (s String) LessThan(c Constant) bool {
-	return s < c.(String)
+	return s < c.(String) //nolint:forcetypeassert
 }
 
 func (b Bool) Equals(c Constant) bool {
-	return b == c.(Bool)
+	return b == c.(Bool) //nolint:forcetypeassert
 }
 
 func (b Bool) LessThan(c Constant) bool {
-
-	return bool(!b && c.(Bool))
+	return bool(!b && c.(Bool)) //nolint:forcetypeassert
 }
 
 func (n NumberArray) Contains(c Constant) bool {
@@ -137,6 +138,7 @@ func (s StringArray) Elements() []Constant {
 	}
 	return result
 }
+
 func (b BoolArray) Elements() []Constant {
 	result := make([]Constant, len(b))
 	for i, v := range b {

@@ -6,7 +6,7 @@ import (
 )
 
 func TestIn(t *testing.T) {
-	t.Run("string variable in constant StringArray", func(t *testing.T) {
+	t.Run("string variable in constant StringArray", func(t *testing.T) { //nolint:dupl
 		in := In{Args: []Expression{Reference{Name: "x"}, StringArray{String("a"), String("b")}}}
 		result := in.Evaluate(Input{"x": String("a")})
 		if result != Bool(true) {
@@ -31,9 +31,8 @@ func TestIn(t *testing.T) {
 		if ToString(in) != "in(x, [a b])" {
 			t.Errorf("Expected in(x, [a b]), got %v", ToString(in))
 		}
-
 	})
-	t.Run("string variable in variable StringArray", func(t *testing.T) {
+	t.Run("string variable in variable StringArray", func(t *testing.T) { //nolint:dupl
 		in := In{Args: []Expression{Reference{Name: "x"}, Reference{Name: "y"}}}
 		result := in.Evaluate(Input{"x": String("a"), "y": StringArray{String("a"), String("b")}})
 		if result != Bool(true) {
@@ -92,7 +91,7 @@ func TestIn(t *testing.T) {
 		}
 	})
 
-	t.Run("number variable in variable NumberArray", func(t *testing.T) {
+	t.Run("number variable in variable NumberArray", func(t *testing.T) { //nolint:dupl
 		in := In{Args: []Expression{Reference{Name: "x"}, Reference{Name: "y"}}}
 		result := in.Evaluate(Input{"x": Number(1), "y": NumberArray{Number(1), Number(2)}})
 		if result != Bool(true) {
@@ -161,7 +160,7 @@ func TestIn(t *testing.T) {
 }
 
 func TestNotIn(t *testing.T) {
-	t.Run("string variable not in constant StringArray", func(t *testing.T) {
+	t.Run("string variable not in constant StringArray", func(t *testing.T) { //nolint:dupl
 		notIn := NotIn{Args: []Expression{Reference{Name: "x"}, StringArray{String("a"), String("b")}}}
 		result := notIn.Evaluate(Input{"x": String("a")})
 		if result != Bool(false) {
@@ -188,7 +187,7 @@ func TestNotIn(t *testing.T) {
 		}
 	})
 
-	t.Run("string variable not in variable StringArray", func(t *testing.T) {
+	t.Run("string variable not in variable StringArray", func(t *testing.T) { //nolint:dupl
 		notIn := NotIn{Args: []Expression{Reference{Name: "x"}, Reference{Name: "y"}}}
 		result := notIn.Evaluate(Input{"x": String("a"), "y": StringArray{String("a"), String("b")}})
 		if result != Bool(false) {

@@ -8,10 +8,8 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
-func TestAuthorizationManager(t *testing.T) {
-
+func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("has schema", func(t *testing.T) {
-
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
 		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
@@ -34,7 +32,6 @@ func TestAuthorizationManager(t *testing.T) {
 		if tenant != "tenant1" {
 			t.Errorf("expected tenant1, got %v", tenant)
 		}
-
 	})
 	t.Run("is ready after receiving DCN", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
@@ -74,7 +71,6 @@ func TestAuthorizationManager(t *testing.T) {
 		if !am.IsReady() {
 			t.Error("is not ready after receiving DCN")
 		}
-
 	})
 
 	t.Run("error in functions", func(t *testing.T) {
@@ -111,7 +107,6 @@ func TestAuthorizationManager(t *testing.T) {
 		if len(errors) != 1 {
 			t.Errorf("expected 1 error, got %v", errors)
 		}
-
 	})
 
 	t.Run("error in policies", func(t *testing.T) {
@@ -152,7 +147,6 @@ func TestAuthorizationManager(t *testing.T) {
 		if len(errors) != 1 {
 			t.Errorf("expected 1 error, got %v", errors)
 		}
-
 	})
 
 	t.Run("get Authorizations", func(t *testing.T) {
@@ -286,7 +280,6 @@ func TestAuthorizationManager(t *testing.T) {
 		if !reflect.DeepEqual(r, expected) {
 			t.Errorf("expected %+v, got %+v", expected, r)
 		}
-
 	})
 
 	t.Run("get assignments", func(t *testing.T) {
@@ -327,7 +320,5 @@ func TestAuthorizationManager(t *testing.T) {
 		if !reflect.DeepEqual(r, expected) {
 			t.Errorf("expected %v, got %v", expected, r)
 		}
-
 	})
-
 }

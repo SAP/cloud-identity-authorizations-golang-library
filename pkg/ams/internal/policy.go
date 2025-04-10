@@ -103,7 +103,7 @@ func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f expression.Function
 		}
 		for _, use := range policy.Uses {
 			usedPolicyName := util.StringifyQualifiedName(use.QualifiedPolicyName)
-			//the used policy is always present and initialized, because of the topological sort
+			// the used policy is always present and initialized, because of the topological sort
 			usedPolicy := result.allPolicies[usedPolicyName]
 
 			for _, usedRule := range usedPolicy.rules {
@@ -185,5 +185,4 @@ func topologicalSort(policies []dcn.Policy) ([]dcn.Policy, error) {
 		return nil, fmt.Errorf("cyclic dependency detected")
 	}
 	return result, nil
-
 }

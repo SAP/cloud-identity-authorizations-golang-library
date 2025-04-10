@@ -95,5 +95,4 @@ func TestIsRestricted_Evaluate(t *testing.T) {
 			t.Errorf("got %v, want %v", result, expected)
 		}
 	})
-
 }
