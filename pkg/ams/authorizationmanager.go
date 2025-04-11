@@ -2,6 +2,7 @@ package ams
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"net/url"
 	"sync"
@@ -48,14 +49,14 @@ func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.A
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
-func AuthorizationManagerForAMS(bundleURL, amsInstanceID, cert, key string) (*AuthorizationManager, error) {
+func AuthorizationManagerForAMS(iasUrl, amsInstanceID, cert, key string) (*AuthorizationManager, error) {
 	// parse the cert and key
 	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
 	if err != nil {
 		return nil, err
 	}
 
-	parsedURL, err := url.Parse(bundleURL)
+	parsedURL, err := url.Parse(fmt.Sprintf("%s/bundle-gateway/%s.dcn.tar.gz", iasUrl, amsInstanceID))
 	if err != nil {
 		return nil, err
 	}
