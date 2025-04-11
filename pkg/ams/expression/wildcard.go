@@ -12,10 +12,10 @@ func (b Wildcard) Evaluate(input Input) Expression {
 	return b
 }
 
-func (b Wildcard) Equals(Constant) bool {
+func (b Wildcard) equals(Constant) bool {
 	return false
 }
 
-func (b Wildcard) LessThan(Constant) bool {
+func (b Wildcard) lessThan(Constant) bool {
 	return false
 }

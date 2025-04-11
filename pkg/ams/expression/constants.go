@@ -2,8 +2,8 @@ package expression
 
 type Constant interface {
 	Expression
-	Equals(c Constant) bool
-	LessThan(c Constant) bool
+	equals(c Constant) bool
+	lessThan(c Constant) bool
 }
 
 type ArrayConstant interface {
@@ -60,33 +60,33 @@ func ConstantFrom(v any) Constant {
 	return UNSET
 }
 
-func (n Number) Equals(c Constant) bool {
+func (n Number) equals(c Constant) bool {
 	return n == c.(Number) //nolint:forcetypeassert
 }
 
-func (n Number) LessThan(c Constant) bool {
+func (n Number) lessThan(c Constant) bool {
 	return n < c.(Number) //nolint:forcetypeassert
 }
 
-func (s String) Equals(c Constant) bool {
+func (s String) equals(c Constant) bool {
 	return s == c.(String) //nolint:forcetypeassert
 }
 
-func (s String) LessThan(c Constant) bool {
+func (s String) lessThan(c Constant) bool {
 	return s < c.(String) //nolint:forcetypeassert
 }
 
-func (b Bool) Equals(c Constant) bool {
+func (b Bool) equals(c Constant) bool {
 	return b == c.(Bool) //nolint:forcetypeassert
 }
 
-func (b Bool) LessThan(c Constant) bool {
+func (b Bool) lessThan(c Constant) bool {
 	return bool(!b && c.(Bool)) //nolint:forcetypeassert
 }
 
 func (n NumberArray) Contains(c Constant) bool {
 	for _, v := range n {
-		if v.Equals(c) {
+		if v.equals(c) {
 			return true
 		}
 	}
@@ -95,7 +95,7 @@ func (n NumberArray) Contains(c Constant) bool {
 
 func (s StringArray) Contains(c Constant) bool {
 	for _, v := range s {
-		if v.Equals(c) {
+		if v.equals(c) {
 			return true
 		}
 	}
@@ -104,7 +104,7 @@ func (s StringArray) Contains(c Constant) bool {
 
 func (b BoolArray) Contains(c Constant) bool {
 	for _, v := range b {
-		if v.Equals(c) {
+		if v.equals(c) {
 			return true
 		}
 	}
@@ -171,26 +171,26 @@ func (b Bool) Evaluate(input Input) Expression {
 	return b
 }
 
-func (s StringArray) Equals(c Constant) bool {
+func (s StringArray) equals(c Constant) bool {
 	return false
 }
 
-func (s StringArray) LessThan(c Constant) bool {
+func (s StringArray) lessThan(c Constant) bool {
 	return false
 }
 
-func (b BoolArray) Equals(c Constant) bool {
+func (b BoolArray) equals(c Constant) bool {
 	return false
 }
 
-func (b BoolArray) LessThan(c Constant) bool {
+func (b BoolArray) lessThan(c Constant) bool {
 	return false
 }
 
-func (n NumberArray) Equals(c Constant) bool {
+func (n NumberArray) equals(c Constant) bool {
 	return false
 }
 
-func (n NumberArray) LessThan(c Constant) bool {
+func (n NumberArray) lessThan(c Constant) bool {
 	return false
 }
