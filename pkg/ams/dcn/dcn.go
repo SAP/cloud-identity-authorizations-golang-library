@@ -58,9 +58,11 @@ type QualifiedName []string
 
 type Expression struct {
 	Constant any
-	Call     []string     `json:"call,omitempty"`
-	Ref      []string     `json:"ref,omitempty"`
-	Args     []Expression `json:"args,omitempty"`
+
+	Ref []string `json:"ref,omitempty"`
+
+	Call []string     `json:"call,omitempty"`
+	Args []Expression `json:"args,omitempty"`
 }
 
 type Test struct {

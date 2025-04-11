@@ -8,7 +8,6 @@ import (
 )
 
 func TestNormalizeExpression(t *testing.T) {
-
 	t.Run(" TRUE and FALSE => FALSE", func(t *testing.T) {
 		and := expression.And{
 			Args: []expression.Expression{
