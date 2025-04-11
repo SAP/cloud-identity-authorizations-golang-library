@@ -38,7 +38,7 @@ func (e Eq) Evaluate(input Input) Expression {
 		return bp
 	}
 	if len(constants) == 2 {
-		return Bool(constants[0].Equals(constants[1]))
+		return Bool(constants[0].equals(constants[1]))
 	}
 	return Eq{Args: nextArgs}
 }
@@ -49,7 +49,7 @@ func (e Ne) Evaluate(input Input) Expression {
 		return bp
 	}
 	if len(constants) == 2 {
-		return Bool(!constants[0].Equals(constants[1]))
+		return Bool(!constants[0].equals(constants[1]))
 	}
 	return Ne{Args: nextArgs}
 }
@@ -60,7 +60,7 @@ func (e Lt) Evaluate(input Input) Expression {
 		return bp
 	}
 	if len(constants) == 2 {
-		return Bool(constants[0].LessThan(constants[1]))
+		return Bool(constants[0].lessThan(constants[1]))
 	}
 	return Lt{Args: nextArgs}
 }
@@ -71,7 +71,7 @@ func (e Le) Evaluate(input Input) Expression {
 		return bp
 	}
 	if len(constants) == 2 {
-		return Bool(!constants[1].LessThan(constants[0]))
+		return Bool(!constants[1].lessThan(constants[0]))
 	}
 	return Le{Args: nextArgs}
 }
@@ -82,7 +82,7 @@ func (e Gt) Evaluate(input Input) Expression {
 		return bp
 	}
 	if len(constants) == 2 {
-		return Bool(constants[1].LessThan(constants[0]))
+		return Bool(constants[1].lessThan(constants[0]))
 	}
 	return Gt{Args: nextArgs}
 }
@@ -93,7 +93,7 @@ func (e Ge) Evaluate(input Input) Expression {
 		return bp
 	}
 	if len(constants) == 2 {
-		return Bool(!constants[0].LessThan(constants[1]))
+		return Bool(!constants[0].lessThan(constants[1]))
 	}
 	return Ge{Args: nextArgs}
 }
@@ -104,7 +104,7 @@ func (e Between) Evaluate(input Input) Expression {
 		return bp
 	}
 	if len(constants) == 3 {
-		return Bool(!constants[0].LessThan(constants[1]) && !constants[2].LessThan(constants[0]))
+		return Bool(!constants[0].lessThan(constants[1]) && !constants[2].lessThan(constants[0]))
 	}
 	return Between{Args: nextArgs}
 }
@@ -115,7 +115,7 @@ func (e NotBetween) Evaluate(input Input) Expression {
 		return bp
 	}
 	if len(constants) == 3 {
-		return Bool(constants[0].LessThan(constants[1]) || constants[2].LessThan(constants[0]))
+		return Bool(constants[0].lessThan(constants[1]) || constants[2].lessThan(constants[0]))
 	}
 	return NotBetween{Args: nextArgs}
 }
