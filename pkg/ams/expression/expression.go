@@ -21,9 +21,9 @@ type (
 	}
 )
 
-// represents a logic expression. Is comparable to TRUE and FALSE.
+// represents a logic expression. Is comparable to expression.TRUE and expression.FALSE.
 //
-// And can be processed using the Visit or VisitExpression function.
+// And can be processed using the Visit function.
 type Expression interface {
 	// uses the input to resolve references and evaluate to a new expression. Possibly TRUE or FALSE.
 	//
@@ -31,7 +31,11 @@ type Expression interface {
 	Evaluate(input Input) Expression
 }
 
-func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
+func Ref(name string) Reference {
+	return Reference{Name: name}
+}
+
+func FromDCN(e dcn.Expression, f *FunctionContainer) (ExpressionContainer, error) {
 	result := ExpressionContainer{
 		References: make(referenceSet),
 	}
@@ -53,79 +57,44 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 		if len(e.Call) == 1 {
 			switch e.Call[0] {
 			case "and":
-				result.Expression = And{Args: args}
+				result.Expression = And(args...)
 			case "or":
-				result.Expression = Or{Args: args}
+				result.Expression = Or(args...)
 			case "not":
-				result.Expression = Not{Arg: args[0]}
+				result.Expression = Not(args[0])
 			case "is_null":
-				result.Expression = IsNull{Arg: args[0]}
+				result.Expression = IsNull(args[0])
 			case "is_not_null":
-				result.Expression = IsNotNull{Arg: args[0]}
+				result.Expression = IsNotNull(args[0])
 			case "like":
-				pattern, ok := args[1].(String)
-				if !ok {
-					return result, fmt.Errorf("like pattern %v not castable to string", args[1])
-				}
-				var escape String
-				if len(args) == 3 {
-					escape, ok = args[2].(String)
-					if !ok {
-						return result, fmt.Errorf("like escape %v not castable to string", args[2])
-					}
-				}
-				result.Expression = NewLike(args[0], pattern, escape)
+				result.Expression = Like(args...)
 			case "not_like":
-				pattern, ok := args[1].(String)
-				if !ok {
-					return result, fmt.Errorf("not_like pattern %v not castable to string", args[1])
-				}
-				var escape String
-				if len(args) == 3 {
-					escape, ok = args[2].(String)
-					if !ok {
-						return result, fmt.Errorf("not_like escape %v not castable to string", args[2])
-					}
-				}
-				result.Expression = NewNotLike(args[0], pattern, escape)
+				result.Expression = NotLike(args...)
 			case "between":
-				result.Expression = Between{Args: args}
+				result.Expression = Between(args...)
 			case "not_between":
-				result.Expression = NotBetween{Args: args}
+				result.Expression = NotBetween(args...)
 			case "in":
-				result.Expression = In{Args: args}
+				result.Expression = In(args...)
 			case "not_in":
-				result.Expression = NotIn{Args: args}
+				result.Expression = NotIn(args...)
 			case "eq":
-				result.Expression = Eq{Args: args}
+				result.Expression = Eq(args...)
 			case "ne":
-				result.Expression = Ne{Args: args}
+				result.Expression = Ne(args...)
 			case "lt":
-				result.Expression = Lt{Args: args}
+				result.Expression = Lt(args...)
 			case "le":
-				result.Expression = Le{Args: args}
+				result.Expression = Le(args...)
 			case "gt":
-				result.Expression = Gt{Args: args}
+				result.Expression = Gt(args...)
 			case "ge":
-				result.Expression = Ge{Args: args}
+				result.Expression = Ge(args...)
 			case "restricted":
-				ref, ok := args[0].(Reference)
-				if !ok {
-					return result, fmt.Errorf("restricted argument %v not a reference", args[0])
-				}
-				result.Expression = IsRestricted{
-					Not:       Bool(false),
-					Reference: ref.Name,
-				}
+
+				result.Expression = Restricted(args[0])
 			case "not_restricted":
-				ref, ok := args[0].(Reference)
-				if !ok {
-					return result, fmt.Errorf("not_restricted argument %v not a reference", args[0])
-				}
-				result.Expression = IsRestricted{
-					Not:       Bool(true),
-					Reference: ref.Name,
-				}
+				result.Expression = NotRestricted(args[0])
 			default:
 				return result, fmt.Errorf("unknown call: %s", e.Call[0])
 			}
@@ -134,11 +103,8 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 
 		if len(e.Call) > 1 {
 			name := util.StringifyQualifiedName(e.Call)
-			function, ok := f[name]
-			if !ok {
-				return result, fmt.Errorf("unknown function %s", name)
-			}
-			result.Expression = function
+			result.Expression = Function(name, f, args)
+			return result, nil
 		}
 	}
 	if e.Ref != nil {
@@ -148,7 +114,7 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 	}
 	if e.Constant != nil {
 		result.Expression = ConstantFrom(e.Constant)
-		if result.Expression == UNSET {
+		if result.Expression == nil {
 			return result, fmt.Errorf("unexpected constant %v", e.Constant)
 		}
 	}
@@ -158,13 +124,13 @@ func FromDCN(e dcn.Expression, f Functions) (ExpressionContainer, error) {
 func (v Reference) Evaluate(input Input) Expression {
 	val, ok := input[v.Name]
 	if !ok {
-		return UNSET
-	}
-	if val == UNKNOWN {
 		return v
 	}
-
 	return val
+}
+
+func (v Reference) GetName() string {
+	return v.Name
 }
 
 func ToString(e Expression) string {
@@ -189,77 +155,50 @@ func ToString(e Expression) string {
 }
 
 func IsRestrictable(e Expression) bool {
-	switch e := e.(type) {
-	case And:
-		for _, arg := range e.Args {
-			if IsRestrictable(arg) {
-				return true
-			}
-		}
-		return false
-	case Or:
-		for _, arg := range e.Args {
-			if IsRestrictable(arg) {
-				return true
-			}
-		}
-		return false
-	case Not:
-		return IsRestrictable(e.Arg)
-	case IsRestricted:
-		return true
-	default:
+	oc, ok := e.(OperatorCall)
+	if !ok {
 		return false
 	}
+
+	if oc.operator == RESTRICTED || oc.operator == NOT_RESTRICTED {
+		return true
+	}
+
+	for _, arg := range oc.args {
+		if IsRestrictable(arg) {
+			return true
+		}
+	}
+	return false
 }
 
 func ApplyRestriction(e Expression, restriction []ExpressionContainer) Expression {
-	switch e := e.(type) {
-	case And:
-		args := make([]Expression, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = ApplyRestriction(arg, restriction)
-		}
-		return And{args}
-	case Or:
-		args := make([]Expression, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = ApplyRestriction(arg, restriction)
-		}
-		return Or{args}
-	case Not:
-		return Not{ApplyRestriction(e.Arg, restriction)}
-	case IsRestricted:
+	oc, ok := e.(OperatorCall)
+	if !ok {
+		return e
+	}
+	if oc.operator == RESTRICTED || oc.operator == NOT_RESTRICTED {
 		for _, r := range restriction {
-			if _, ok := r.References[e.Reference]; ok {
+			ref, ok := oc.args[0].(Reference)
+			if !ok {
+				continue
+			}
+			if _, ok := r.References[ref.GetName()]; ok {
 				return r.Expression
 			}
 		}
-		return e
-	default:
-		return e
 	}
-}
-
-func VisitExpression[T any](e Expression, f func(Expression, []T) T) T {
-	switch e := e.(type) {
-	case And:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = VisitExpression(arg, f)
+	if oc.operator == AND || oc.operator == OR || oc.operator == NOT {
+		newArgs := make([]Expression, len(oc.args))
+		for i, arg := range oc.args {
+			newArgs[i] = ApplyRestriction(arg, restriction)
 		}
-		return f(e, args)
-	case Or:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = VisitExpression(arg, f)
+		return OperatorCall{
+			operator: oc.operator,
+			args:     newArgs,
 		}
-		return f(e, args)
-	case Not:
-		return f(e, []T{VisitExpression(e.Arg, f)})
-	default:
-		return f(e, []T{})
 	}
+	return e
 }
 
 func Visit[T any](e Expression, fCall func(string, []T) T, fRef func(Reference) T, fConst func(Constant) T) T {
@@ -268,108 +207,21 @@ func Visit[T any](e Expression, fCall func(string, []T) T, fRef func(Reference) 
 		return fRef(e)
 	case Constant:
 		return fConst(e)
-	case And:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
+	case OperatorCall:
+		args := make([]T, len(e.args))
+		for i, arg := range e.args {
 			args[i] = Visit(arg, fCall, fRef, fConst)
 		}
-		return fCall("and", args)
-	case Or:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
+		c, ok := operatorNames[e.operator]
+		if ok {
+			return fCall(c, args)
+		}
+	case FunctionCall:
+		args := make([]T, len(e.args))
+		for i, arg := range e.args {
 			args[i] = Visit(arg, fCall, fRef, fConst)
 		}
-		return fCall("or", args)
-	case Not:
-		return fCall("not", []T{Visit(e.Arg, fCall, fRef, fConst)})
-	case Eq:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = Visit(arg, fCall, fRef, fConst)
-		}
-		return fCall("eq", args)
-	case Ne:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = Visit(arg, fCall, fRef, fConst)
-		}
-		return fCall("ne", args)
-	case Lt:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = Visit(arg, fCall, fRef, fConst)
-		}
-		return fCall("lt", args)
-	case Le:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = Visit(arg, fCall, fRef, fConst)
-		}
-		return fCall("le", args)
-	case Gt:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = Visit(arg, fCall, fRef, fConst)
-		}
-		return fCall("gt", args)
-	case Ge:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = Visit(arg, fCall, fRef, fConst)
-		}
-		return fCall("ge", args)
-	case Between:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = Visit(arg, fCall, fRef, fConst)
-		}
-		return fCall("between", args)
-	case NotBetween:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = Visit(arg, fCall, fRef, fConst)
-		}
-		return fCall("not_between", args)
-	case In:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = Visit(arg, fCall, fRef, fConst)
-		}
-		return fCall("in", args)
-	case NotIn:
-		args := make([]T, len(e.Args))
-		for i, arg := range e.Args {
-			args[i] = Visit(arg, fCall, fRef, fConst)
-		}
-		return fCall("not_in", args)
-	case Like:
-		args := []T{
-			Visit(e.Arg, fCall, fRef, fConst),
-			fConst(e.Pattern),
-		}
-		if e.Escape != "" {
-			args = append(args, fConst(e.Escape))
-		}
-		return fCall("like", args)
-	case NotLike:
-		args := []T{
-			Visit(e.Arg, fCall, fRef, fConst),
-			fConst(e.Pattern),
-		}
-		if e.Escape != "" {
-			args = append(args, fConst(e.Escape))
-		}
-		return fCall("not_like", args)
-	case IsNull:
-		return fCall("is_null", []T{Visit(e.Arg, fCall, fRef, fConst)})
-	case IsNotNull:
-		return fCall("is_not_null", []T{Visit(e.Arg, fCall, fRef, fConst)})
-	case IsRestricted:
-		if e.Not {
-			return fCall("is_not_restricted", []T{fRef(Reference{Name: e.Reference})})
-		} else {
-			return fCall("is_restricted", []T{fRef(Reference{Name: e.Reference})})
-		}
+		return fCall(e.name, args)
 	}
 	return fCall("unexpected_expression", []T{})
 }

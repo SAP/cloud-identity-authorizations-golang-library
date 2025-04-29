@@ -149,40 +149,6 @@ func TestExampleSchema(t *testing.T) { //nolint:maintidx
 		}
 	})
 
-	t.Run("accepts BoolPlus for any type", func(t *testing.T) {
-		input := expression.Input{
-			"$app.string_value": expression.UNKNOWN,
-			"$app.number_value": expression.UNSET,
-			"$app.bool_value":   expression.IGNORE,
-		}
-
-		schema.PurgeInvalidInput(input)
-
-		if len(input) != 3 {
-			t.Errorf("Expected 3 field, got %+v", input)
-		}
-	})
-
-	t.Run("sets input ", func(t *testing.T) {
-		input := expression.Input{}
-		schema.Set(input, "$dcl", expression.UNKNOWN)
-		if len(input) != 2 {
-			t.Errorf("Expected 2 field, got %d", len(input))
-		}
-		if action, ok := input["$dcl.action"]; !ok {
-			t.Errorf("Expected $dcl.action to be present")
-			if action != expression.UNKNOWN {
-				t.Errorf("Expected $dcl.action to be 'read', got %v", action)
-			}
-		}
-		if resource, ok := input["$dcl.resource"]; !ok {
-			t.Errorf("Expected $dcl.resource to be present")
-			if resource != expression.UNKNOWN {
-				t.Errorf("Expected $dcl.resource to be 'example', got %v", resource)
-			}
-		}
-	})
-
 	t.Run("Generates input from Custom Structure", func(t *testing.T) {
 		i := ExampleInput{
 			StringValue:      "string_value",
@@ -374,7 +340,7 @@ func TestSimpleSchema(t *testing.T) {
 			t.Errorf("Expected %v, got %v", want, got)
 		}
 
-		env.EnvN = expression.UNKNOWN
+		env.EnvN = nil
 		app.NumberValue = nil
 
 		got = schema.CustomInput("read", "data", app, env)
@@ -383,7 +349,6 @@ func TestSimpleSchema(t *testing.T) {
 			"$dcl.resource":         expression.String("data"),
 			"$app.BoolArrayValue":   expression.BoolArray{true},
 			"$app.NumberArrayValue": expression.NumberArray{42},
-			"$env.EnvN":             expression.UNKNOWN,
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("Expected %v, got %v", want, got)
@@ -416,39 +381,28 @@ func TestVariablesWithQuotes(t *testing.T) {
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("Expected %v, got %v", want, got)
 		}
-
-		schema.Set(got, "$app.\"\\\"quoted2\\\"\".findme", expression.UNKNOWN)
-
-		want = expression.Input{
-			"$dcl.action":                     expression.String("read"),
-			"$dcl.resource":                   expression.String("data"),
-			"$app.\"\\\"quoted2\\\"\".findme": expression.UNKNOWN,
-		}
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("Expected %v, got %v", want, got)
-		}
 	})
 
-	t.Run("schema.Set ignores undefined fields", func(t *testing.T) {
-		input := expression.Input{
-			"$dcl.action":                     expression.String("read"),
-			"$dcl.resource":                   expression.String("data"),
-			"$app.\"\\\"quoted2\\\"\".findme": expression.String("findme"),
-		}
+	// t.Run("schema.Set ignores undefined fields", func(t *testing.T) {
+	// 	input := expression.Input{
+	// 		"$dcl.action":                     expression.String("read"),
+	// 		"$dcl.resource":                   expression.String("data"),
+	// 		"$app.\"\\\"quoted2\\\"\".findme": expression.String("findme"),
+	// 	}
 
-		schema.Set(input, "$app", expression.UNKNOWN)
-		schema.Set(input, "$app.not_defined", expression.UNKNOWN)
+	// 	schema.Set(input, "$app", expression.UNKNOWN)
+	// 	schema.Set(input, "$app.not_defined", expression.UNKNOWN)
 
-		want := expression.Input{
-			"$dcl.action":                     expression.String("read"),
-			"$dcl.resource":                   expression.String("data"),
-			"$app.\"\\\"quoted2\\\"\".findme": expression.UNKNOWN,
-		}
+	// 	want := expression.Input{
+	// 		"$dcl.action":                     expression.String("read"),
+	// 		"$dcl.resource":                   expression.String("data"),
+	// 		"$app.\"\\\"quoted2\\\"\".findme": expression.UNKNOWN,
+	// 	}
 
-		if !reflect.DeepEqual(input, want) {
-			t.Errorf("Expected %v, got %v", want, input)
-		}
-	})
+	// 	if !reflect.DeepEqual(input, want) {
+	// 		t.Errorf("Expected %v, got %v", want, input)
+	// 	}
+	// })
 
 	t.Run("type mapping edge cases", func(t *testing.T) {
 		got := mapType("Structure")

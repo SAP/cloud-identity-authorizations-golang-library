@@ -63,7 +63,7 @@ func (a Authorizations) Evaluate(input expression.Input) expression.Expression {
 			results = append(results, r)
 		}
 	}
-	return expression.NewAnd(results...)
+	return expression.And(results...)
 }
 
 // Restrict an authorizations object by another one

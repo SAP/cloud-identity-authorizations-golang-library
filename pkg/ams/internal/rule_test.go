@@ -3,6 +3,7 @@ package internal
 import (
 	_ "embed"
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	dcn "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
@@ -95,14 +96,16 @@ func TestRule(t *testing.T) {
 		result = rule.Evaluate(expression.Input{
 			"$dcl.action": expression.String("asdf"),
 		})
-		if result != expression.Bool(false) {
-			t.Errorf("Unexpected result: %s", result)
-		}
+		want := expression.In(
+			expression.Ref("$dcl.resource"),
+			expression.StringArray{
+				expression.String("resource1"),
+				expression.String("resource2"),
+				expression.String("resource3"),
+			},
+		)
 
-		result = rule.Evaluate(expression.Input{
-			"$dcl.resource": expression.IGNORE,
-		})
-		if result != expression.Bool(true) {
+		if !reflect.DeepEqual(result, want) {
 			t.Errorf("Unexpected result: %s", result)
 		}
 
@@ -144,14 +147,18 @@ func TestRule(t *testing.T) {
 			"$dcl.action":   expression.String("write"),
 			"$dcl.resource": expression.String("resource1"),
 		})
-		if result != expression.Bool(false) {
-			t.Errorf("Unexpected result: %s", result)
+
+		want := expression.Eq(
+			expression.Ref("x"),
+			expression.Number(1),
+		)
+		if !reflect.DeepEqual(result, want) {
+			t.Errorf("Unexpected result: %s", expression.ToString(result))
 		}
 
 		result = rule.Evaluate(expression.Input{
-			"$dcl.action":   expression.String("read"),
-			"$dcl.resource": expression.UNKNOWN,
-			"x":             expression.Number(1),
+			"$dcl.action": expression.String("read"),
+			"x":           expression.Number(1),
 		})
 		if expression.ToString(result) != "in($dcl.resource, [resource1 resource2 resource3])" {
 			t.Errorf("Unexpected result: %s", expression.ToString(result))

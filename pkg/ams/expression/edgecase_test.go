@@ -9,7 +9,7 @@ import (
 type UnexpectedExpression struct{}
 
 func (e UnexpectedExpression) Evaluate(input Input) Expression {
-	return UNSET
+	return FALSE
 }
 
 func TestEdgeCases(t *testing.T) {
@@ -24,20 +24,6 @@ func TestEdgeCases(t *testing.T) {
 		})
 		if r != "unexpected_expression" {
 			t.Errorf("Unexpected result: %s", r)
-		}
-	})
-
-	t.Run("unsupported constant", func(t *testing.T) {
-		c := ConstantFrom(struct{}{})
-		if c != UNSET {
-			t.Errorf("Unexpected result: %v", c)
-		}
-		cExp := dcn.Expression{
-			Constant: struct{}{},
-		}
-		_, err := FromDCN(cExp, nil)
-		if err == nil {
-			t.Errorf("Expected error")
 		}
 	})
 

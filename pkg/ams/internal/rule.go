@@ -9,7 +9,7 @@ type Rule struct {
 	asExpression expression.Expression
 }
 
-func RuleFromDCN(rawRule dcn.Rule, f expression.Functions) (Rule, error) {
+func RuleFromDCN(rawRule dcn.Rule, f *expression.FunctionContainer) (Rule, error) {
 	var rule Rule
 	args := []expression.Expression{}
 
@@ -21,32 +21,22 @@ func RuleFromDCN(rawRule dcn.Rule, f expression.Functions) (Rule, error) {
 		args = append(args, cond.Expression)
 	}
 	if len(rawRule.Actions) > 0 {
-		args = append(args, expression.In{
-			Args: []expression.Expression{
-				expression.Reference{Name: "$dcl.action"},
-				expression.ConstantFrom(rawRule.Actions),
-			},
-		})
+		args = append(args, expression.In(
+			expression.Ref("$dcl.action"),
+			expression.ConstantFrom(rawRule.Actions),
+		))
 	}
 	if len(rawRule.Resources) > 0 {
-		args = append(args, expression.In{
-			Args: []expression.Expression{
-				expression.Reference{Name: "$dcl.resource"},
-				expression.ConstantFrom(rawRule.Resources),
-			},
-		})
+		args = append(args, expression.In(
+			expression.Ref("$dcl.resource"),
+			expression.ConstantFrom(rawRule.Resources),
+		))
 	}
-	rule.asExpression = expression.NewAnd(args...)
+	rule.asExpression = expression.And(args...)
 	return rule, nil
 }
 
 func (r *Rule) Evaluate(input expression.Input) expression.Expression {
 	result := r.asExpression.Evaluate(input)
-	if result == expression.UNSET {
-		return expression.Bool(false)
-	}
-	if result == expression.IGNORE {
-		return expression.Bool(true)
-	}
 	return result
 }

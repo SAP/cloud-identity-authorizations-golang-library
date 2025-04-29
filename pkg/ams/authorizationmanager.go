@@ -11,6 +11,7 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal"
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
 
 type AuthorizationManager struct {
@@ -25,6 +26,7 @@ type AuthorizationManager struct {
 	Tests              []dcn.Test
 	hasDCN             bool
 	hasAssignments     bool
+	functionContainer  *expression.FunctionContainer
 }
 
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
@@ -40,6 +42,7 @@ func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.A
 		m:                  sync.RWMutex{},
 		hasDCN:             false,
 		hasAssignments:     false,
+		functionContainer:  expression.NewFunctionContainer(),
 	}
 
 	go result.start()
@@ -120,13 +123,17 @@ func (a *AuthorizationManager) start() {
 		case dcn := <-a.dcnChannel:
 			a.m.Lock()
 			a.schema = internal.SchemaFromDCN(dcn.Schemas)
-			functions, err := expression.FunctionsFromDCN(dcn.Functions)
-			if err != nil {
-				a.notifyError(err)
-				a.m.Unlock()
-				continue
+			for _, f := range dcn.Functions {
+				expr, err := expression.FromDCN(f.Result, a.functionContainer)
+				if err != nil {
+					a.notifyError(err)
+					continue
+				}
+				name := util.StringifyQualifiedName(f.QualifiedName)
+				a.functionContainer.RegisterExpressionFunction(name, expr.Expression)
 			}
-			a.policies, err = internal.PoliciesFromDCN(dcn.Policies, a.schema, functions)
+			var err error
+			a.policies, err = internal.PoliciesFromDCN(dcn.Policies, a.schema, a.functionContainer)
 			if err != nil {
 				a.notifyError(err)
 			} else {

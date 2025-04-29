@@ -119,25 +119,20 @@ func TestPolicy(t *testing.T) { //nolint:maintidx
 
 		r = p.Evaluate(expression.Input{
 			"$dcl.resource": expression.String("data"),
-			"$dcl.action":   expression.UNKNOWN,
 		})
-		expected := expression.NewOr(
-			expression.In{
-				Args: []expression.Expression{
-					expression.Reference{Name: "$dcl.action"},
-					expression.StringArray{
-						"read",
-					},
+		expected := expression.Or(
+			expression.In(
+				expression.Ref("$dcl.action"),
+				expression.StringArray{
+					"read",
 				},
-			},
-			expression.In{
-				Args: []expression.Expression{
-					expression.Reference{Name: "$dcl.action"},
-					expression.StringArray{
-						"write",
-					},
+			),
+			expression.In(
+				expression.Ref("$dcl.action"),
+				expression.StringArray{
+					"write",
 				},
-			},
+			),
 		)
 
 		if !reflect.DeepEqual(r, expected) {

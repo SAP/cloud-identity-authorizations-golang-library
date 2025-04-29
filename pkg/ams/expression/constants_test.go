@@ -138,7 +138,6 @@ func TestDCNArrayConstant_Equals(t *testing.T) {
 		{"Different arrays", NumberArray{1, 2, 3}, NumberArray{1, 2, 4}, false},
 		{"Different string arrays", StringArray{"a", "b", "c"}, StringArray{"a", "b", "d"}, false},
 		{"Different bool arrays", BoolArray{true, false}, BoolArray{true, true}, false},
-		{"Different BoolPlus", UNSET, IGNORE, false},
 	}
 
 	for _, tt := range tests {

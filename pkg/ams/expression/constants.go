@@ -57,7 +57,7 @@ func ConstantFrom(v any) Constant {
 		}
 		return result
 	}
-	return UNSET
+	return nil
 }
 
 func (n Number) equals(c Constant) bool {

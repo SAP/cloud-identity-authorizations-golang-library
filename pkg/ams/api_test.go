@@ -249,7 +249,6 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 
 		r = andJoined.Evaluate(expression.Input{
 			"$dcl.resource": expression.String("resource2"),
-			"$dcl.action":   expression.UNKNOWN,
 		})
 		if r != expression.FALSE {
 			t.Errorf("expected false, got %v", r)
@@ -260,23 +259,12 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		andJoined = auth2.AndJoin(auth3)
 		r = andJoined.Evaluate(expression.Input{
 			"$dcl.resource": expression.String("resource2"),
-			"$dcl.action":   expression.UNKNOWN,
 		})
 
-		in1 := expression.In{
-			Args: []expression.Expression{
-				expression.Reference{Name: "$dcl.action"},
-				expression.StringArray{"action2"},
-			},
-		}
-		in2 := expression.In{
-			Args: []expression.Expression{
-				expression.Reference{Name: "$dcl.action"},
-				expression.StringArray{"action3"},
-			},
-		}
+		in1 := expression.In(expression.Ref("$dcl.action"), expression.StringArray{"action2"})
+		in2 := expression.In(expression.Ref("$dcl.action"), expression.StringArray{"action3"})
 
-		expected := expression.NewAnd(in1, in2)
+		expected := expression.And(in1, in2)
 		if !reflect.DeepEqual(r, expected) {
 			t.Errorf("expected %+v, got %+v", expected, r)
 		}

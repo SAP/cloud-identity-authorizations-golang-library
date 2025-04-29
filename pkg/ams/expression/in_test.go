@@ -7,7 +7,7 @@ import (
 
 func TestIn(t *testing.T) {
 	t.Run("string variable in constant StringArray", func(t *testing.T) { //nolint:dupl
-		in := In{Args: []Expression{Reference{Name: "x"}, StringArray{String("a"), String("b")}}}
+		in := In(Ref("x"), StringArray{String("a"), String("b")})
 		result := in.Evaluate(Input{"x": String("a")})
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
@@ -16,24 +16,17 @@ func TestIn(t *testing.T) {
 		if result != Bool(false) {
 			t.Errorf("Expected false, got %v", result)
 		}
-		result = in.Evaluate(Input{"x": UNKNOWN})
+		result = in.Evaluate(Input{})
 		if !reflect.DeepEqual(result, in) {
-			t.Errorf("Expected %v, got %v", in, result)
+			t.Errorf("Expected %+v, got %+v", in, result)
 		}
-		result = in.Evaluate(Input{"x": IGNORE})
-		if result != IGNORE {
-			t.Errorf("Expected IGNORE, got %v", result)
-		}
-		result = in.Evaluate(Input{"x": UNSET})
-		if result != UNSET {
-			t.Errorf("Expected UNSET, got %v", result)
-		}
+
 		if ToString(in) != "in(x, [a b])" {
 			t.Errorf("Expected in(x, [a b]), got %v", ToString(in))
 		}
 	})
 	t.Run("string variable in variable StringArray", func(t *testing.T) { //nolint:dupl
-		in := In{Args: []Expression{Reference{Name: "x"}, Reference{Name: "y"}}}
+		in := In(Ref("x"), Ref("y"))
 		result := in.Evaluate(Input{"x": String("a"), "y": StringArray{String("a"), String("b")}})
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
@@ -42,22 +35,14 @@ func TestIn(t *testing.T) {
 		if result != Bool(false) {
 			t.Errorf("Expected false, got %v", result)
 		}
-		result = in.Evaluate(Input{"x": UNKNOWN, "y": StringArray{String("a"), String("b")}})
-		expected := In{Args: []Expression{Reference{Name: "x"}, StringArray{String("a"), String("b")}}}
+		result = in.Evaluate(Input{"y": StringArray{String("a"), String("b")}})
+		expected := In(Ref("x"), StringArray{String("a"), String("b")})
 		if !reflect.DeepEqual(result, expected) {
-			t.Errorf("Expected %v, got %v", expected, result)
-		}
-		result = in.Evaluate(Input{"x": IGNORE, "y": StringArray{String("a"), String("b")}})
-		if result != IGNORE {
-			t.Errorf("Expected IGNORE, got %v", result)
-		}
-		result = in.Evaluate(Input{"x": UNSET, "y": StringArray{String("a"), String("b")}})
-		if result != UNSET {
-			t.Errorf("Expected UNSET, got %v", result)
+			t.Errorf("Expected %+v, got %+v", expected, result)
 		}
 
-		result = in.Evaluate(Input{"x": String("a"), "y": UNKNOWN})
-		expected = In{Args: []Expression{String("a"), Reference{Name: "y"}}}
+		result = in.Evaluate(Input{"x": String("a")})
+		expected = In(String("a"), Ref("y"))
 		if !reflect.DeepEqual(result, expected) {
 			t.Errorf("Expected %v, got %v", expected, result)
 		}
@@ -68,7 +53,7 @@ func TestIn(t *testing.T) {
 	})
 
 	t.Run("number variable in constant NumberArray", func(t *testing.T) {
-		in := In{Args: []Expression{Reference{Name: "x"}, NumberArray{Number(1), Number(2)}}}
+		in := In(Ref("x"), NumberArray{Number(1), Number(2)})
 		result := in.Evaluate(Input{"x": Number(1)})
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
@@ -77,22 +62,14 @@ func TestIn(t *testing.T) {
 		if result != Bool(false) {
 			t.Errorf("Expected false, got %v", result)
 		}
-		result = in.Evaluate(Input{"x": UNKNOWN})
+		result = in.Evaluate(Input{})
 		if !reflect.DeepEqual(result, in) {
 			t.Errorf("Expected %v, got %v", in, result)
-		}
-		result = in.Evaluate(Input{"x": IGNORE})
-		if result != IGNORE {
-			t.Errorf("Expected IGNORE, got %v", result)
-		}
-		result = in.Evaluate(Input{"x": UNSET})
-		if result != UNSET {
-			t.Errorf("Expected UNSET, got %v", result)
 		}
 	})
 
 	t.Run("number variable in variable NumberArray", func(t *testing.T) { //nolint:dupl
-		in := In{Args: []Expression{Reference{Name: "x"}, Reference{Name: "y"}}}
+		in := In(Ref("x"), Ref("y"))
 		result := in.Evaluate(Input{"x": Number(1), "y": NumberArray{Number(1), Number(2)}})
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
@@ -101,22 +78,14 @@ func TestIn(t *testing.T) {
 		if result != Bool(false) {
 			t.Errorf("Expected false, got %v", result)
 		}
-		result = in.Evaluate(Input{"x": UNKNOWN, "y": NumberArray{Number(1), Number(2)}})
-		expected := In{Args: []Expression{Reference{Name: "x"}, NumberArray{Number(1), Number(2)}}}
+		result = in.Evaluate(Input{"y": NumberArray{Number(1), Number(2)}})
+		expected := In(Ref("x"), NumberArray{Number(1), Number(2)})
 		if !reflect.DeepEqual(result, expected) {
 			t.Errorf("Expected %v, got %v", expected, result)
 		}
-		result = in.Evaluate(Input{"x": IGNORE, "y": NumberArray{Number(1), Number(2)}})
-		if result != IGNORE {
-			t.Errorf("Expected IGNORE, got %v", result)
-		}
-		result = in.Evaluate(Input{"x": UNSET, "y": NumberArray{Number(1), Number(2)}})
-		if result != UNSET {
-			t.Errorf("Expected UNSET, got %v", result)
-		}
 
-		result = in.Evaluate(Input{"x": Number(1), "y": UNKNOWN})
-		expected = In{Args: []Expression{Number(1), Reference{Name: "y"}}}
+		result = in.Evaluate(Input{"x": Number(1)})
+		expected = In(Number(1), Ref("y"))
 		if !reflect.DeepEqual(result, expected) {
 			t.Errorf("Expected %v, got %v", expected, result)
 		}
@@ -127,7 +96,7 @@ func TestIn(t *testing.T) {
 	})
 
 	t.Run("bool variable in constant BoolArray", func(t *testing.T) {
-		in := In{Args: []Expression{Reference{Name: "x"}, BoolArray{Bool(true), Bool(false)}}}
+		in := In(Ref("x"), BoolArray{Bool(true), Bool(false)})
 		result := in.Evaluate(Input{"x": Bool(true)})
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
@@ -144,24 +113,16 @@ func TestIn(t *testing.T) {
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
 		}
-		result = in.Evaluate(Input{"x": UNKNOWN})
+		result = in.Evaluate(Input{})
 		if !reflect.DeepEqual(result, in) {
 			t.Errorf("Expected %v, got %v", in, result)
-		}
-		result = in.Evaluate(Input{"x": IGNORE})
-		if result != IGNORE {
-			t.Errorf("Expected IGNORE, got %v", result)
-		}
-		result = in.Evaluate(Input{"x": UNSET})
-		if result != UNSET {
-			t.Errorf("Expected UNSET, got %v", result)
 		}
 	})
 }
 
 func TestNotIn(t *testing.T) {
 	t.Run("string variable not in constant StringArray", func(t *testing.T) { //nolint:dupl
-		notIn := NotIn{Args: []Expression{Reference{Name: "x"}, StringArray{String("a"), String("b")}}}
+		notIn := NotIn(Ref("x"), StringArray{String("a"), String("b")})
 		result := notIn.Evaluate(Input{"x": String("a")})
 		if result != Bool(false) {
 			t.Errorf("Expected false, got %v", result)
@@ -170,25 +131,18 @@ func TestNotIn(t *testing.T) {
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
 		}
-		result = notIn.Evaluate(Input{"x": UNKNOWN})
+		result = notIn.Evaluate(Input{})
 		if !reflect.DeepEqual(result, notIn) {
 			t.Errorf("Expected %v, got %v", notIn, result)
 		}
-		result = notIn.Evaluate(Input{"x": IGNORE})
-		if result != IGNORE {
-			t.Errorf("Expected IGNORE, got %v", result)
-		}
-		result = notIn.Evaluate(Input{"x": UNSET})
-		if result != UNSET {
-			t.Errorf("Expected UNSET, got %v", result)
-		}
+
 		if ToString(notIn) != "not_in(x, [a b])" {
 			t.Errorf("Expected not_in(x, [a b]), got %v", ToString(notIn))
 		}
 	})
 
 	t.Run("string variable not in variable StringArray", func(t *testing.T) { //nolint:dupl
-		notIn := NotIn{Args: []Expression{Reference{Name: "x"}, Reference{Name: "y"}}}
+		notIn := NotIn(Ref("x"), Ref("y"))
 		result := notIn.Evaluate(Input{"x": String("a"), "y": StringArray{String("a"), String("b")}})
 		if result != Bool(false) {
 			t.Errorf("Expected false, got %v", result)
@@ -197,22 +151,14 @@ func TestNotIn(t *testing.T) {
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
 		}
-		result = notIn.Evaluate(Input{"x": UNKNOWN, "y": StringArray{String("a"), String("b")}})
-		expected := NotIn{Args: []Expression{Reference{Name: "x"}, StringArray{String("a"), String("b")}}}
+		result = notIn.Evaluate(Input{"y": StringArray{String("a"), String("b")}})
+		expected := NotIn(Ref("x"), StringArray{String("a"), String("b")})
 		if !reflect.DeepEqual(result, expected) {
 			t.Errorf("Expected %v, got %v", expected, result)
 		}
-		result = notIn.Evaluate(Input{"x": IGNORE, "y": StringArray{String("a"), String("b")}})
-		if result != IGNORE {
-			t.Errorf("Expected IGNORE, got %v", result)
-		}
-		result = notIn.Evaluate(Input{"x": UNSET, "y": StringArray{String("a"), String("b")}})
-		if result != UNSET {
-			t.Errorf("Expected UNSET, got %v", result)
-		}
 
-		result = notIn.Evaluate(Input{"x": String("a"), "y": UNKNOWN})
-		expected = NotIn{Args: []Expression{String("a"), Reference{Name: "y"}}}
+		result = notIn.Evaluate(Input{"x": String("a")})
+		expected = NotIn(String("a"), Ref("y"))
 		if !reflect.DeepEqual(result, expected) {
 			t.Errorf("Expected %v, got %v", expected, result)
 		}
@@ -223,20 +169,16 @@ func TestNotIn(t *testing.T) {
 	})
 
 	t.Run("In empty array is always false", func(t *testing.T) {
-		in := In{Args: []Expression{Reference{Name: "a"}, StringArray{}}}
-		result := in.Evaluate(Input{
-			"a": UNKNOWN,
-		})
+		in := In(Ref("a"), StringArray{})
+		result := in.Evaluate(Input{})
 		if result != Bool(false) {
 			t.Errorf("Expected false, got %v", result)
 		}
 	})
 
 	t.Run("NotIn empty array is always true", func(t *testing.T) {
-		notIn := NotIn{Args: []Expression{Reference{Name: "a"}, StringArray{}}}
-		result := notIn.Evaluate(Input{
-			"a": UNKNOWN,
-		})
+		notIn := NotIn(Ref("a"), StringArray{})
+		result := notIn.Evaluate(Input{})
 		if result != Bool(true) {
 			t.Errorf("Expected true, got %v", result)
 		}

@@ -31,7 +31,7 @@ func (p PolicySet) Evaluate(input expression.Input) expression.Expression {
 			results = append(results, r)
 		}
 	}
-	return expression.NewOr(results...)
+	return expression.Or(results...)
 }
 
 func (p Policy) Evaluate(input expression.Input) expression.Expression {
@@ -45,7 +45,7 @@ func (p Policy) Evaluate(input expression.Input) expression.Expression {
 			results = append(results, r)
 		}
 	}
-	return expression.NewOr(results...)
+	return expression.Or(results...)
 }
 
 func (p PolicySet) GetSubset(names []string, tenant string, includeDefault bool) PolicySet {
@@ -75,7 +75,7 @@ func (p PolicySet) GetSubset(names []string, tenant string, includeDefault bool)
 	return result
 }
 
-func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f expression.Functions) (PolicySet, error) {
+func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f *expression.FunctionContainer) (PolicySet, error) {
 	result := PolicySet{
 		allPolicies:     make(map[string]Policy),
 		defaultPolicies: make(map[string][]Policy),
