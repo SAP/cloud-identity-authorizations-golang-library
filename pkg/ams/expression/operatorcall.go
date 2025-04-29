@@ -1,9 +1,7 @@
 package expression
 
 import (
-	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -60,11 +58,7 @@ type OperatorCall struct {
 }
 
 func (o OperatorCall) String() string {
-	op, ok := operatorNames[o.operator]
-	if !ok {
-		op = strconv.Itoa(int(o.operator))
-	}
-	return fmt.Sprintf("{%s:%v}", op, o.args)
+	return ToString(o)
 }
 
 func (o OperatorCall) GetOperator() string {
