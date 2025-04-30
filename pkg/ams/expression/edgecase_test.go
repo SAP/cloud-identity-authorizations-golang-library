@@ -1,6 +1,7 @@
 package expression
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
@@ -45,6 +46,19 @@ func TestEdgeCases(t *testing.T) {
 		_, err := FromDCN(cExp, nil)
 		if err == nil {
 			t.Errorf("Expected error")
+		}
+	})
+
+	t.Run("Invalid call operator", func(t *testing.T) {
+		e := OperatorCall{
+			operator: callOperator(-1),
+		}
+		if e.GetOperator() != "" {
+			t.Errorf("Expected empty string, got %s", e.GetOperator())
+		}
+		got := e.Evaluate(Input{})
+		if !reflect.DeepEqual(got, e) {
+			t.Errorf("Expected %v, got %v", e, got)
 		}
 	})
 }

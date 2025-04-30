@@ -9,7 +9,7 @@ type Rule struct {
 	asExpression expression.Expression
 }
 
-func RuleFromDCN(rawRule dcn.Rule, f *expression.FunctionContainer) (Rule, error) {
+func RuleFromDCN(rawRule dcn.Rule, f *expression.FunctionRegistry) (Rule, error) {
 	var rule Rule
 	args := []expression.Expression{}
 

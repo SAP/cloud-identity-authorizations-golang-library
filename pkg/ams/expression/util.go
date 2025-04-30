@@ -19,15 +19,16 @@ func NullifyExcept(e Expression, unknowns map[string]bool) Expression {
 	}
 	return result
 }
+
 func nullifyExcept(e Expression, unknowns map[string]bool, inv bool) Expression {
 	switch e := e.(type) {
 	case Constant:
 		return e
 	case Reference:
 		if _, ok := unknowns[e.GetName()]; ok {
-			return null
+			return e
 		}
-		return e
+		return null
 	case OperatorCall:
 		switch e.operator { //nolint:exhaustive
 		case IS_NULL:
@@ -43,7 +44,7 @@ func nullifyExcept(e Expression, unknowns map[string]bool, inv bool) Expression 
 			}
 			return IsNotNull(arg)
 		case NOT:
-			arg := nullifyExcept(e.args[0], unknowns, inv)
+			arg := nullifyExcept(e.args[0], unknowns, !inv)
 			if arg == null {
 				return null
 			}
@@ -114,10 +115,7 @@ func nullifyExcept(e Expression, unknowns map[string]bool, inv bool) Expression 
 				if hasNull {
 					return null
 				}
-				if len(newArgs) > 0 {
-					return Or(newArgs...)
-				}
-				return FALSE
+				return Or(newArgs...)
 			}
 		default:
 			newArgs := []Expression{}
@@ -137,6 +135,7 @@ func nullifyExcept(e Expression, unknowns map[string]bool, inv bool) Expression 
 	}
 	return e
 }
+
 func UnknownIgnore(e Expression, unknowns, ignores map[string]bool) Expression {
 	res := unkownIgnore(e, unknowns, ignores, false)
 	if res == unset {

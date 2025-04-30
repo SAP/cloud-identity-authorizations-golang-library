@@ -74,7 +74,7 @@ func TestRun(t *testing.T) {
 											result := authz.Evaluate(input)
 											result = unsetIgnore(result, tInput)
 											result = NormalizeExpression(result)
-											expectedContainer, err := expression.FromDCN(assertion.Expect, &expression.FunctionContainer{})
+											expectedContainer, err := expression.FromDCN(assertion.Expect, &expression.FunctionRegistry{})
 											expected := NormalizeExpression(expectedContainer.Expression)
 											if err != nil {
 												t.Fatalf("error in expected expression: %v", err)

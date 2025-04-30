@@ -20,9 +20,9 @@ func TestIn(t *testing.T) {
 		if !reflect.DeepEqual(result, in) {
 			t.Errorf("Expected %+v, got %+v", in, result)
 		}
-
-		if ToString(in) != "in(x, [a b])" {
-			t.Errorf("Expected in(x, [a b]), got %v", ToString(in))
+		want := `in({x}, ["a" "b"])`
+		if ToString(in) != want {
+			t.Errorf("Expected %s, got %v", want, ToString(in))
 		}
 	})
 	t.Run("string variable in variable StringArray", func(t *testing.T) { //nolint:dupl
@@ -136,8 +136,9 @@ func TestNotIn(t *testing.T) {
 			t.Errorf("Expected %v, got %v", notIn, result)
 		}
 
-		if ToString(notIn) != "not_in(x, [a b])" {
-			t.Errorf("Expected not_in(x, [a b]), got %v", ToString(notIn))
+		want := `not_in({x}, ["a" "b"])`
+		if ToString(notIn) != want {
+			t.Errorf("Expected %s, got %v", want, ToString(notIn))
 		}
 	})
 

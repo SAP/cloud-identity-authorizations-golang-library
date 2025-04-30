@@ -167,6 +167,10 @@ func (s String) Evaluate(input Input) Expression {
 	return s
 }
 
+func (s String) String() string {
+	return `"` + string(s) + `"`
+}
+
 func (b Bool) Evaluate(input Input) Expression {
 	return b
 }

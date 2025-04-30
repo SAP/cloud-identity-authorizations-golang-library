@@ -2,7 +2,6 @@ package expression
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
@@ -35,7 +34,7 @@ func Ref(name string) Reference {
 	return Reference{Name: name}
 }
 
-func FromDCN(e dcn.Expression, f *FunctionContainer) (ExpressionContainer, error) {
+func FromDCN(e dcn.Expression, f *FunctionRegistry) (ExpressionContainer, error) {
 	result := ExpressionContainer{
 		References: make(referenceSet),
 	}
@@ -134,24 +133,7 @@ func (v Reference) GetName() string {
 }
 
 func ToString(e Expression) string {
-	return Visit(e,
-		func(name string, args []string) string {
-			return name + "(" + strings.Join(args, ", ") + ")"
-		},
-		func(v Reference) string {
-			return v.Name
-		},
-		func(c Constant) string {
-			switch c := c.(type) {
-			case String:
-				return fmt.Sprintf("\"%v\"", c)
-			case ArrayConstant:
-				return fmt.Sprintf("%v", c)
-			default:
-				return fmt.Sprintf("%v", c)
-			}
-		},
-	)
+	return fmt.Sprintf("%v", e)
 }
 
 func IsRestrictable(e Expression) bool {

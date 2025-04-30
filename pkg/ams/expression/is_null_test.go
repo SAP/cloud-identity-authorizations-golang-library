@@ -17,10 +17,11 @@ func TestIsNull(t *testing.T) { //nolint:dupl
 		if !reflect.DeepEqual(result, isNull) {
 			t.Errorf("Expected %v, got %v", isNull, result)
 		}
-
-		if ToString(isNull) != "is_null(x)" {
-			t.Errorf("Expected is_null(x), got %v", ToString(isNull))
+		want := "is_null({x})"
+		if ToString(isNull) != want {
+			t.Errorf("Expected %s, got %v", want, ToString(isNull))
 		}
+
 	})
 
 	t.Run("constant is null", func(t *testing.T) {
@@ -45,9 +46,11 @@ func TestIsNotNull(t *testing.T) { //nolint:dupl
 			t.Errorf("Expected %v, got %v", isNotNull, result)
 		}
 
-		if ToString(isNotNull) != "is_not_null(x)" {
-			t.Errorf("Expected is_not_null(x), got %v", ToString(isNotNull))
+		want := "is_not_null({x})"
+		if ToString(isNotNull) != want {
+			t.Errorf("Expected %s, got %v", want, ToString(isNotNull))
 		}
+
 	})
 
 	t.Run("constant is not null", func(t *testing.T) {

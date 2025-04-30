@@ -1,6 +1,7 @@
 package expression
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -58,7 +59,12 @@ type OperatorCall struct {
 }
 
 func (o OperatorCall) String() string {
-	return ToString(o)
+	args := make([]string, len(o.args))
+	for i, arg := range o.args {
+		args[i] = fmt.Sprintf("%v", arg)
+	}
+
+	return o.GetOperator() + "(" + strings.Join(args, ", ") + ")"
 }
 
 func (o OperatorCall) GetOperator() string {
@@ -307,13 +313,18 @@ func And(args ...Expression) Expression {
 }
 
 func Not(arg Expression) Expression {
+	if op, ok := arg.(OperatorCall); ok {
+		if op.operator == NOT {
+			return op.args[0]
+		}
+	}
 	return OperatorCall{
 		operator: NOT,
 		args:     []Expression{arg},
 	}
 }
 
-func Function(name string, container *FunctionContainer, args []Expression) Expression {
+func Function(name string, container *FunctionRegistry, args []Expression) Expression {
 	return FunctionCall{
 		name: name,
 		args: args,

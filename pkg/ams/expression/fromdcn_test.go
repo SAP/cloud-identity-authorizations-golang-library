@@ -523,7 +523,7 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 
 	t.Run("Function call", func(t *testing.T) {
 		var ec dcn.Expression
-		fc := NewFunctionContainer()
+		fc := NewFunctionRegistry()
 		input := `{"call": ["custom","function"]}`
 		fc.RegisterExpressionFunction(
 			"custom.function",

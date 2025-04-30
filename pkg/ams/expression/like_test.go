@@ -21,8 +21,9 @@ func TestLike(t *testing.T) {
 			t.Errorf("Expected %v, got %v", like, result)
 		}
 
-		if ToString(like) != "like(x, \"a\")" {
-			t.Errorf("Expected like(x, a), got %v", ToString(like))
+		want := "like({x}, \"a\")"
+		if ToString(like) != want {
+			t.Errorf("Expected %s, got %v", want, ToString(like))
 		}
 	})
 
@@ -41,8 +42,10 @@ func TestLike(t *testing.T) {
 			t.Errorf("Expected %v, got %v", like, result)
 		}
 
-		if ToString(like) != "like(x, \"a\", \"_\")" {
-			t.Errorf("Expected like(x, a, _), got %v", ToString(like))
+		want := "like({x}, \"a\", \"_\")"
+
+		if ToString(like) != want {
+			t.Errorf("Expected %s, got %v", want, ToString(like))
 		}
 	})
 
@@ -94,9 +97,9 @@ func TestNotLike(t *testing.T) {
 		if !reflect.DeepEqual(result, notLike) {
 			t.Errorf("Expected %v, got %v", notLike, result)
 		}
-
-		if ToString(notLike) != "not_like(x, \"a\")" {
-			t.Errorf("Expected not_like(x, a), got %v", ToString(notLike))
+		want := "not_like({x}, \"a\")"
+		if ToString(notLike) != want {
+			t.Errorf("Expected %s, got %v", want, ToString(notLike))
 		}
 	})
 
@@ -115,8 +118,10 @@ func TestNotLike(t *testing.T) {
 			t.Errorf("Expected %v, got %v", notLike, result)
 		}
 
-		if ToString(notLike) != "not_like(x, \"a\", \"_\")" {
-			t.Errorf("Expected not_like(x, a, _), got %v", ToString(notLike))
+		want := "not_like({x}, \"a\", \"_\")"
+		if ToString(notLike) != want {
+			t.Errorf("Expected %s, got %v", want, ToString(notLike))
 		}
 	})
+
 }

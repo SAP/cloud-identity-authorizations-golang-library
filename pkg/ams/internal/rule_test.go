@@ -160,7 +160,15 @@ func TestRule(t *testing.T) {
 			"$dcl.action": expression.String("read"),
 			"x":           expression.Number(1),
 		})
-		if expression.ToString(result) != "in($dcl.resource, [resource1 resource2 resource3])" {
+		want = expression.In(
+			expression.Ref("$dcl.resource"),
+			expression.StringArray{
+				expression.String("resource1"),
+				expression.String("resource2"),
+				expression.String("resource3"),
+			},
+		)
+		if !reflect.DeepEqual(result, want) {
 			t.Errorf("Unexpected result: %s", expression.ToString(result))
 		}
 	})

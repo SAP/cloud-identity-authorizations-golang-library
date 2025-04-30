@@ -75,7 +75,7 @@ func (p PolicySet) GetSubset(names []string, tenant string, includeDefault bool)
 	return result
 }
 
-func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f *expression.FunctionContainer) (PolicySet, error) {
+func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f *expression.FunctionRegistry) (PolicySet, error) {
 	result := PolicySet{
 		allPolicies:     make(map[string]Policy),
 		defaultPolicies: make(map[string][]Policy),

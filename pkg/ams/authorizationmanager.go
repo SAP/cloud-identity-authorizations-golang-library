@@ -26,7 +26,7 @@ type AuthorizationManager struct {
 	Tests              []dcn.Test
 	hasDCN             bool
 	hasAssignments     bool
-	functionContainer  *expression.FunctionContainer
+	functionContainer  *expression.FunctionRegistry
 }
 
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
@@ -42,7 +42,7 @@ func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.A
 		m:                  sync.RWMutex{},
 		hasDCN:             false,
 		hasAssignments:     false,
-		functionContainer:  expression.NewFunctionContainer(),
+		functionContainer:  expression.NewFunctionRegistry(),
 	}
 
 	go result.start()
