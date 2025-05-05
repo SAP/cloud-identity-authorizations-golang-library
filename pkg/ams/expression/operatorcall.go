@@ -318,17 +318,17 @@ func Not(arg Expression) Expression {
 			return op.args[0]
 		}
 	}
+
+	if arg == TRUE {
+		return FALSE
+	}
+	if arg == FALSE {
+		return TRUE
+	}
+
 	return OperatorCall{
 		operator: NOT,
 		args:     []Expression{arg},
-	}
-}
-
-func Function(name string, container *FunctionRegistry, args []Expression) Expression {
-	return FunctionCall{
-		name: name,
-		args: args,
-		fc:   container,
 	}
 }
 
@@ -374,7 +374,7 @@ func NotRestricted(arg Expression) OperatorCall {
 	}
 }
 
-func Eq(args ...Expression) OperatorCall {
+func Eq(args ...Expression) Expression {
 	return OperatorCall{
 		operator: EQ,
 		args:     args,
@@ -453,6 +453,9 @@ func NotLike(args ...Expression) OperatorCall {
 }
 
 func evaluateArgs(input Input, args []Expression) ([]Constant, []Expression) {
+	if args == nil {
+		return nil, nil
+	}
 	var constants []Constant
 	newArgs := make([]Expression, len(args))
 

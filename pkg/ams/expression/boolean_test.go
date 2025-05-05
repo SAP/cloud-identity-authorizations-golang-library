@@ -27,6 +27,15 @@ func TestAnd(t *testing.T) {
 			t.Errorf("Expected false, got %v", result)
 		}
 	})
+
+	t.Run("UNKNOWN and UNKNOWN", func(t *testing.T) {
+		and := And(Ref("x"), Ref("y"))
+		result := and.Evaluate(Input{})
+
+		if !reflect.DeepEqual(result, and) {
+			t.Errorf("Expected %v, got %v", and, result)
+		}
+	})
 }
 
 func TestOr(t *testing.T) {
@@ -77,7 +86,7 @@ func TestNot(t *testing.T) {
 		if result != Bool(false) {
 			t.Errorf("Expected false, got %v", result)
 		}
-		if ToString(not) != "not(true)" {
+		if ToString(not) != "false" {
 			t.Errorf("Expected !true, got %v", ToString(not))
 		}
 	})

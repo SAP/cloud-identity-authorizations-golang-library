@@ -65,7 +65,8 @@ func (n Number) equals(c Constant) bool {
 }
 
 func (n Number) lessThan(c Constant) bool {
-	return n < c.(Number) //nolint:forcetypeassert
+	n2 := c.(Number) //nolint:forcetypeassert
+	return n < n2    //nolint:forcetypeassert
 }
 
 func (s String) equals(c Constant) bool {

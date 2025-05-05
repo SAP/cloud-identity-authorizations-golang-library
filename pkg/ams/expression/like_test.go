@@ -25,6 +25,12 @@ func TestLike(t *testing.T) {
 		if ToString(like) != want {
 			t.Errorf("Expected %s, got %v", want, ToString(like))
 		}
+
+		got := like.GetArgs()
+		wantArgs := []Expression{Ref("x"), String("a")}
+		if len(got) != len(wantArgs) {
+			t.Errorf("Expected %v, got %v", wantArgs, got)
+		}
 	})
 
 	t.Run("evaluate like with _ as escape character", func(t *testing.T) { //nolint:dupl
@@ -124,4 +130,38 @@ func TestNotLike(t *testing.T) {
 		}
 	})
 
+}
+func TestLikeCreatedAsCallOperator(t *testing.T) {
+	t.Run("like created by CallOperator", func(t *testing.T) { //nolint:dupl
+		like := CallOperator("like", Ref("x"), String("a"))
+		result := like.Evaluate(Input{"x": String("a")})
+		if result != Bool(true) {
+			t.Errorf("Expected true, got %v", result)
+		}
+		result = like.Evaluate(Input{"x": String("c")})
+		if result != Bool(false) {
+			t.Errorf("Expected false, got %v", result)
+		}
+		result = like.Evaluate(Input{})
+		want := Like(Ref("x"), String("a"))
+		if !reflect.DeepEqual(result, want) {
+			t.Errorf("Expected %v, got %v", want, result)
+		}
+	})
+	t.Run("not_like created by CallOperator", func(t *testing.T) { //nolint:dupl
+		notLike := CallOperator("not_like", Ref("x"), String("a"))
+		result := notLike.Evaluate(Input{"x": String("a")})
+		if result != Bool(false) {
+			t.Errorf("Expected true, got %v", result)
+		}
+		result = notLike.Evaluate(Input{"x": String("c")})
+		if result != Bool(true) {
+			t.Errorf("Expected false, got %v", result)
+		}
+		result = notLike.Evaluate(Input{})
+		want := NotLike(Ref("x"), String("a"))
+		if !reflect.DeepEqual(result, want) {
+			t.Errorf("Expected %v, got %v", want, result)
+		}
+	})
 }

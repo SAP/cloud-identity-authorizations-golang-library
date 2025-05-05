@@ -21,6 +21,16 @@ func TestEq(t *testing.T) { //nolint:dupl
 		}
 	})
 
+	t.Run("Eq from CallOperator", func(t *testing.T) {
+		e := CallOperator("eq", Number(1), Number(2))
+		if got, want := ToString(e), "eq(1, 2)"; got != want {
+			t.Errorf("got %v, want %v", got, want)
+		}
+		if got, want := e.Evaluate(Input{}), DCNFalse; got != want {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+
 	t.Run("TestEq with variable and constant", func(t *testing.T) {
 		e := Eq(Ref("a"), Number(1))
 		if got, want := ToString(e), "eq({a}, 1)"; got != want {

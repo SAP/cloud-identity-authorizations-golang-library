@@ -23,7 +23,7 @@ func NewFunctionRegistry() *FunctionRegistry {
 func (o FunctionCall) Evaluate(input Input) Expression {
 	c, newArgs := evaluateArgs(input, o.args)
 	if len(c) < len(o.args) || o.fc == nil {
-		return &FunctionCall{
+		return FunctionCall{
 			name: o.name,
 			args: newArgs,
 			fc:   o.fc,
@@ -31,13 +31,21 @@ func (o FunctionCall) Evaluate(input Input) Expression {
 	}
 	r := o.fc.Call(o.name, input, c)
 	if r == nil {
-		return &FunctionCall{
+		return FunctionCall{
 			name: o.name,
 			args: newArgs,
 			fc:   o.fc,
 		}
 	}
 	return r
+}
+
+func Function(name string, container *FunctionRegistry, args []Expression) Expression {
+	return FunctionCall{
+		name: name,
+		args: args,
+		fc:   container,
+	}
 }
 
 // something like this in future for user privide functions

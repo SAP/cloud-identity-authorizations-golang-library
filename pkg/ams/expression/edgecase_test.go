@@ -61,4 +61,23 @@ func TestEdgeCases(t *testing.T) {
 			t.Errorf("Expected %v, got %v", e, got)
 		}
 	})
+
+	t.Run("Invalid call operator for CallOperator()", func(t *testing.T) {
+		e := CallOperator("invalid")
+		got := e.Evaluate(Input{})
+		if !reflect.DeepEqual(got, e) {
+			t.Errorf("Expected %v, got %v", e, got)
+		}
+	})
+
+	t.Run("Restrict on non reference", func(t *testing.T) {
+		e := Restricted(FALSE)
+		got := ApplyRestriction(e, []ExpressionContainer{
+			{Expression: Eq(Ref("foo"), String("bar"))},
+		})
+		if !reflect.DeepEqual(got, e) {
+			t.Errorf("Expected %v, got %v", e, got)
+		}
+	})
+
 }
