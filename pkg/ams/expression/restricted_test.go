@@ -37,7 +37,7 @@ func TestIsRestricted_Evaluate(t *testing.T) {
 		restr := []ExpressionContainer{
 			{
 				Expression: restrEq,
-				References: referenceSet{"foo": true},
+				References: referenceSet{"foo": 0},
 			},
 		}
 		e = ApplyRestriction(e, restr)
@@ -74,7 +74,7 @@ func TestIsRestricted_Evaluate(t *testing.T) {
 		restr := []ExpressionContainer{
 			{
 				Expression: Eq(Ref("bar"), String("baz")),
-				References: referenceSet{"bar": true},
+				References: referenceSet{"bar": 0},
 			},
 		}
 		result := ApplyRestriction(e, restr)

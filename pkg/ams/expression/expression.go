@@ -10,10 +10,11 @@ import (
 type Input map[string]Constant
 
 type Reference struct {
-	Name string
+	name string
 }
 type (
-	referenceSet        map[string]bool
+	// referenceSet is a map of reference names to the last index of its occurrence.
+	referenceSet        map[string]int
 	ExpressionContainer struct {
 		Expression Expression `json:"expression"`
 		References referenceSet
@@ -31,7 +32,7 @@ type Expression interface {
 }
 
 func Ref(name string) Reference {
-	return Reference{Name: name}
+	return Reference{name: name}
 }
 
 func FromDCN(e dcn.Expression, f *FunctionRegistry) (ExpressionContainer, error) {
@@ -50,7 +51,7 @@ func FromDCN(e dcn.Expression, f *FunctionRegistry) (ExpressionContainer, error)
 			}
 			args[i] = container.Expression
 			for name := range container.References {
-				result.References[name] = true
+				result.References[name] = i
 			}
 		}
 		if len(e.Call) == 1 {
@@ -108,8 +109,8 @@ func FromDCN(e dcn.Expression, f *FunctionRegistry) (ExpressionContainer, error)
 	}
 	if e.Ref != nil {
 		name := util.StringifyQualifiedName(e.Ref)
-		result.Expression = Reference{Name: name}
-		result.References[name] = true
+		result.Expression = Reference{name: name}
+		result.References[name] = 0
 	}
 	if e.Constant != nil {
 		result.Expression = ConstantFrom(e.Constant)
@@ -121,7 +122,7 @@ func FromDCN(e dcn.Expression, f *FunctionRegistry) (ExpressionContainer, error)
 }
 
 func (v Reference) Evaluate(input Input) Expression {
-	val, ok := input[v.Name]
+	val, ok := input[v.name]
 	if !ok {
 		return v
 	}
@@ -129,7 +130,7 @@ func (v Reference) Evaluate(input Input) Expression {
 }
 
 func (v Reference) GetName() string {
-	return v.Name
+	return v.name
 }
 
 func ToString(e Expression) string {
@@ -186,7 +187,7 @@ func ApplyRestriction(e Expression, restriction []ExpressionContainer) Expressio
 func Visit[T any](e Expression, fCall func(string, []T) T, fRef func(string) T, fConst func(Constant) T) T {
 	switch e := e.(type) {
 	case Reference:
-		return fRef(e.Name)
+		return fRef(e.name)
 	case Constant:
 		return fConst(e)
 	case OperatorCall:
