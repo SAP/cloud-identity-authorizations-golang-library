@@ -129,8 +129,8 @@ func TestNotLike(t *testing.T) {
 			t.Errorf("Expected %s, got %v", want, ToString(notLike))
 		}
 	})
-
 }
+
 func TestLikeCreatedAsCallOperator(t *testing.T) {
 	t.Run("like created by CallOperator", func(t *testing.T) { //nolint:dupl
 		like := CallOperator("like", Ref("x"), String("a"))

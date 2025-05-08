@@ -21,7 +21,6 @@ func TestIsNull(t *testing.T) { //nolint:dupl
 		if ToString(isNull) != want {
 			t.Errorf("Expected %s, got %v", want, ToString(isNull))
 		}
-
 	})
 
 	t.Run("constant is null", func(t *testing.T) {
@@ -50,7 +49,6 @@ func TestIsNotNull(t *testing.T) { //nolint:dupl
 		if ToString(isNotNull) != want {
 			t.Errorf("Expected %s, got %v", want, ToString(isNotNull))
 		}
-
 	})
 
 	t.Run("constant is not null", func(t *testing.T) {

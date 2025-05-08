@@ -118,7 +118,6 @@ func (s Schema) GetTenantForQualifiedName(qn dcn.QualifiedName) string {
 //   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to
 //     the schema name or the fields name is EXACTLY the same as the schema name
 //
-// expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
 // the env input is typically corresponding to the user information.
 // If you did not modify the $user or $env in your schema denfinitions
 // you can use the ams.Env struct. It will be mapped into $env fields.

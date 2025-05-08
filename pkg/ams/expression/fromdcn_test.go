@@ -6,7 +6,29 @@ import (
 	"testing"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
+
+func toDCN(e Expression) dcn.Expression {
+	return Visit(e,
+		func(s string, e []dcn.Expression) dcn.Expression {
+			return dcn.Expression{
+				Call: util.ParseQualifiedName(s),
+				Args: e,
+			}
+		},
+		func(s string) dcn.Expression {
+			return dcn.Expression{
+				Ref: util.ParseQualifiedName(s),
+			}
+		},
+		func(c Constant) dcn.Expression {
+			return dcn.Expression{
+				Constant: c,
+			}
+		},
+	)
+}
 
 func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 	t.Run("DCNBool", func(t *testing.T) {
@@ -23,6 +45,15 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 		}
 		if !reflect.DeepEqual(e.Expression, expected) {
 			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
+		}
+
+		got, err := json.Marshal(toDCN(expected))
+		if err != nil {
+			t.Fatalf("MarshalJSON() error = %v", err)
+		}
+
+		if string(got) != input {
+			t.Errorf("MarshalJSON() = %v, expected %v", string(got), input)
 		}
 	})
 
@@ -113,7 +144,7 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 
 	t.Run("Variable", func(t *testing.T) {
 		var ec dcn.Expression
-		input := `{"ref": ["x"]}`
+		input := `{"ref":["x"]}`
 		expected := Ref("x")
 		err := json.Unmarshal([]byte(input), &ec)
 		if err != nil {
@@ -126,11 +157,18 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 		if !reflect.DeepEqual(e.Expression, expected) {
 			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
 		}
+		got, err := json.Marshal(toDCN(expected))
+		if err != nil {
+			t.Fatalf("MarshalJSON() error = %v", err)
+		}
+		if string(got) != input {
+			t.Errorf("MarshalJSON() = %v, expected %v", string(got), input)
+		}
 	})
 
 	t.Run("And", func(t *testing.T) {
 		var ec dcn.Expression
-		input := `{"call": ["and"], "args": [true, false]}`
+		input := `{"call":["and"],"args":[true,false]}`
 		expected := And(Bool(true), Bool(false))
 		err := json.Unmarshal([]byte(input), &ec)
 		if err != nil {
@@ -142,6 +180,14 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 		}
 		if !reflect.DeepEqual(e.Expression, expected) {
 			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
+		}
+
+		got, err := json.Marshal(toDCN(expected))
+		if err != nil {
+			t.Fatalf("MarshalJSON() error = %v", err)
+		}
+		if string(got) != input {
+			t.Errorf("MarshalJSON() = %v, expected %v", string(got), input)
 		}
 	})
 
@@ -524,7 +570,7 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 	t.Run("Function call", func(t *testing.T) {
 		var ec dcn.Expression
 		fc := NewFunctionRegistry()
-		input := `{"call": ["custom","function"]}`
+		input := `{"call":["custom","function"],"args":[]}`
 		fc.RegisterExpressionFunction(
 			"custom.function",
 			Bool(true),
@@ -545,6 +591,50 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 		}
 		if !reflect.DeepEqual(e.Expression, expected) {
 			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
+		}
+
+		got, err := json.Marshal(toDCN(expected))
+		if err != nil {
+			t.Fatalf("MarshalJSON() error = %v", err)
+		}
+		if string(got) != input {
+			t.Errorf("MarshalJSON() = %v, expected %v", string(got), input)
+		}
+	})
+
+	t.Run("Function call with args", func(t *testing.T) {
+		var ec dcn.Expression
+		fc := NewFunctionRegistry()
+		input := `{"call":["custom","function"],"args":[1,2]}`
+		fc.RegisterExpressionFunction(
+			"custom.function",
+			Eq(Ref("a"), Ref("b")),
+		)
+		expected := Function(
+			"custom.function",
+			fc,
+			[]Expression{
+				Number(1),
+				Number(2),
+			},
+		)
+		err := json.Unmarshal([]byte(input), &ec)
+		if err != nil {
+			t.Fatalf("UnmarshalJSON() error = %v", err)
+		}
+		e, err := FromDCN(ec, fc)
+		if err != nil {
+			t.Fatalf("FromDCN() error = %v", err)
+		}
+		if !reflect.DeepEqual(e.Expression, expected) {
+			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
+		}
+		got, err := json.Marshal(toDCN(expected))
+		if err != nil {
+			t.Fatalf("MarshalJSON() error = %v", err)
+		}
+		if string(got) != input {
+			t.Errorf("MarshalJSON() = %v, expected %v", string(got), input)
 		}
 	})
 

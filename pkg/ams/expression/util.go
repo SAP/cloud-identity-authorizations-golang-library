@@ -12,6 +12,9 @@ func (w wildcard) Evaluate(input Input) Expression {
 	return nil
 }
 
+// NullifyExcept replaces all references in the expression with null, except for the ones in the unknowns map.
+// And propagates null values in the same way most SQL engines do.
+// If the overall result is null, it returns expression.FALSE.
 func NullifyExcept(e Expression, unknowns map[string]bool) Expression {
 	result := nullifyExcept(e, unknowns, false)
 	if result == null {
@@ -136,6 +139,9 @@ func nullifyExcept(e Expression, unknowns map[string]bool, inv bool) Expression 
 	return e
 }
 
+// Deprecated: Ignore should not be needed anymore, ignoring expressions should be achievable with
+// expr != expression.FALSE
+// for the "unknown" functionality use NullifyExcept. It is more transparent and easier to understand.
 func UnknownIgnore(e Expression, unknowns, ignores map[string]bool) Expression {
 	res := unkownIgnore(e, unknowns, ignores, false)
 	if res == unset {

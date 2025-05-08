@@ -18,7 +18,7 @@ func TestEdgeCases(t *testing.T) {
 		e := UnexpectedExpression{}
 		r := Visit(e, func(c string, args []string) string {
 			return c
-		}, func(Reference) string {
+		}, func(string) string {
 			return ""
 		}, func(Constant) string {
 			return ""
@@ -79,5 +79,4 @@ func TestEdgeCases(t *testing.T) {
 			t.Errorf("Expected %v, got %v", e, got)
 		}
 	})
-
 }

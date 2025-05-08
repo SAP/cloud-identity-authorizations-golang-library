@@ -73,6 +73,45 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		}
 	})
 
+	t.Run("with functions", func(t *testing.T) {
+		dcnChannel := make(chan dcn.DcnContainer)
+		assignmentsChannel := make(chan dcn.Assignments)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
+		assignmentsChannel <- dcn.Assignments{}
+		dcnChannel <- dcn.DcnContainer{
+			Policies: []dcn.Policy{
+				{
+					QualifiedName: []string{"pkg", "policy1"},
+					Rules: []dcn.Rule{
+						{
+							Condition: &dcn.Expression{
+								Call: []string{"pkg", "func1"},
+							},
+						},
+					},
+					Default: true,
+				},
+			},
+			Schemas: []dcn.Schema{},
+			Functions: []dcn.Function{
+				{
+					QualifiedName: []string{"pkg", "func1"},
+					Result: dcn.Expression{
+						Ref: []string{"x"},
+					},
+				},
+			},
+		}
+		<-am.WhenReady()
+
+		a := am.GetAuthorizations([]string{"pkg.policy1"})
+		got := a.Evaluate(expression.Input{})
+		want := expression.Ref("x")
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("expected %v, got %v", want, got)
+		}
+	})
+
 	t.Run("error in functions", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
@@ -196,7 +235,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 
 		<-am.WhenReady()
 
-		auths := am.GetAuthorizations([]string{"pkg.policy1"}, "tenant1", false)
+		auths := am.GetAuthorizations([]string{"pkg.policy1"})
 
 		r := auths.Evaluate(expression.Input{
 			"$dcl.resource": expression.String("resource1"),
@@ -213,7 +252,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			t.Errorf("expected false, got %v", r)
 		}
 
-		auth2 := am.GetAuthorizations([]string{"pkg.policy2"}, "tenant1", false)
+		auth2 := am.GetAuthorizations([]string{"pkg.policy2"})
 
 		r = auth2.Evaluate(expression.Input{
 			"$dcl.resource": expression.String("resource1"),
@@ -254,7 +293,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			t.Errorf("expected false, got %v", r)
 		}
 
-		auth3 := am.GetAuthorizations([]string{"pkg.policy3"}, "tenant1", false)
+		auth3 := am.GetAuthorizations([]string{"pkg.policy3"})
 
 		andJoined = auth2.AndJoin(auth3)
 		r = andJoined.Evaluate(expression.Input{
@@ -276,7 +315,16 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
 
 		dcnChannel <- dcn.DcnContainer{
-			Policies:  []dcn.Policy{},
+			Policies: []dcn.Policy{
+				{
+					QualifiedName: []string{"pkg", "policy1"},
+					Rules: []dcn.Rule{
+						{
+							Resources: []string{"resource1"},
+						},
+					},
+				},
+			},
 			Schemas:   []dcn.Schema{},
 			Functions: []dcn.Function{},
 		}
@@ -305,6 +353,63 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		}
 		r = am.GetAssignments("tenant2", "user1")
 		expected = []string{}
+		if !reflect.DeepEqual(r, expected) {
+			t.Errorf("expected %v, got %v", expected, r)
+		}
+
+		a := am.UserAuthorizations("tenant1", "user1")
+		got := a.Inquire("read", "resource1", nil, nil)
+		want := expression.TRUE
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("expected %v, got %v", want, got)
+		}
+		got = a.Inquire("read", "resource2", nil, nil)
+		want = expression.FALSE
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("expected %v, got %v", want, got)
+		}
+	})
+
+	t.Run("get default policy names", func(t *testing.T) {
+		dcnChannel := make(chan dcn.DcnContainer)
+		assignmentsChannel := make(chan dcn.Assignments)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
+
+		dcnChannel <- dcn.DcnContainer{
+			Policies: []dcn.Policy{
+				{
+					QualifiedName: []string{"pkg", "policy1"},
+					Rules:         []dcn.Rule{},
+					Default:       true,
+				},
+				{
+					QualifiedName: []string{"tenant1", "policy2"},
+					Rules:         []dcn.Rule{},
+					Default:       true,
+				},
+			},
+			Schemas: []dcn.Schema{
+				{QualifiedName: []string{"tenant1", "schema1"}, Tenant: "tenant1"},
+			},
+			Functions: []dcn.Function{},
+		}
+
+		if am.IsReady() {
+			t.Error("is ready before receiving DCN")
+		}
+
+		assignmentsChannel <- dcn.Assignments{}
+
+		<-am.WhenReady()
+
+		r := am.GetDefaultPolicyNames("")
+		expected := []string{"pkg.policy1"}
+		if !reflect.DeepEqual(r, expected) {
+			t.Errorf("expected %v, got %v", expected, r)
+		}
+
+		r = am.GetDefaultPolicyNames("tenant1")
+		expected = []string{"pkg.policy1", "tenant1.policy2"}
 		if !reflect.DeepEqual(r, expected) {
 			t.Errorf("expected %v, got %v", expected, r)
 		}

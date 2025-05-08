@@ -283,6 +283,18 @@ func TestPolicy(t *testing.T) { //nolint:maintidx
 		if len(sub.allPolicies) != 2 {
 			t.Errorf("Expected 2 policies, got %d", len(sub.allPolicies))
 		}
+
+		defaultNames := p.GetDefaultPolicyNames("mytenantid")
+		want := []string{"base.default", "tenant.package.name.p"}
+		if !reflect.DeepEqual(defaultNames, want) {
+			t.Errorf("Expected %v, got %v", want, defaultNames)
+		}
+
+		defaultNames = p.GetDefaultPolicyNames("non-existent-tenant")
+		want = []string{"base.default"}
+		if !reflect.DeepEqual(defaultNames, want) {
+			t.Errorf("Expected %v, got %v", want, defaultNames)
+		}
 	})
 
 	t.Run("use with broken restriction policy from DCN", func(t *testing.T) {

@@ -62,7 +62,7 @@ type Expression struct {
 	Ref []string `json:"ref,omitempty"`
 
 	Call []string     `json:"call,omitempty"`
-	Args []Expression `json:"args,omitempty"`
+	Args []Expression `json:"args"`
 }
 
 type Test struct {

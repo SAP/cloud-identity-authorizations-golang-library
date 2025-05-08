@@ -105,5 +105,13 @@ func TestNot(t *testing.T) {
 		if !reflect.DeepEqual(result, not) {
 			t.Errorf("Expected %v, got %v", not, result)
 		}
+		result = not.Evaluate(Input{"x": TRUE})
+		if result != FALSE {
+			t.Errorf("Expected false, got %v", result)
+		}
+		result = not.Evaluate(Input{"x": FALSE})
+		if result != TRUE {
+			t.Errorf("Expected true, got %v", result)
+		}
 	})
 }

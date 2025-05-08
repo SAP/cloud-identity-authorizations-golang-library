@@ -55,7 +55,7 @@ func (p PolicySet) GetSubset(names []string, tenant string, includeDefault bool)
 	}
 	for _, name := range names {
 		if policy, ok := p.allPolicies[name]; ok {
-			if policy.tenant == tenant || policy.tenant == "" {
+			if policy.tenant == tenant || policy.tenant == "" || tenant == "-" {
 				result.allPolicies[name] = policy
 			}
 		}
@@ -72,6 +72,23 @@ func (p PolicySet) GetSubset(names []string, tenant string, includeDefault bool)
 		}
 	}
 
+	return result
+}
+
+func (p PolicySet) GetDefaultPolicyNames(tenant string) []string {
+	result := []string{}
+
+	for _, policy := range p.defaultPolicies[""] {
+		result = append(result, policy.name)
+	}
+
+	if tenant != "" {
+		if policies, ok := p.defaultPolicies[tenant]; ok {
+			for _, policy := range policies {
+				result = append(result, policy.name)
+			}
+		}
+	}
 	return result
 }
 
