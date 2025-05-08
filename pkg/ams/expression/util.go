@@ -15,39 +15,39 @@ func (w wildcard) Evaluate(input Input) Expression {
 // NullifyExcept replaces all references in the expression with null, except for the ones in the unknowns map.
 // And propagates null values in the same way most SQL engines do.
 // If the overall result is null, it returns expression.FALSE.
-func NullifyExcept(e Expression, unknowns map[string]bool) Expression {
-	result := nullifyExcept(e, unknowns, false)
+func NullifyExcept(e Expression, keepRefs map[string]bool) Expression {
+	result := nullifyExcept(e, keepRefs, false)
 	if result == null {
 		return FALSE
 	}
 	return result
 }
 
-func nullifyExcept(e Expression, unknowns map[string]bool, inv bool) Expression {
+func nullifyExcept(e Expression, keepRefs map[string]bool, inv bool) Expression {
 	switch e := e.(type) {
 	case Constant:
 		return e
 	case Reference:
-		if _, ok := unknowns[e.GetName()]; ok {
+		if _, ok := keepRefs[e.GetName()]; ok {
 			return e
 		}
 		return null
 	case OperatorCall:
 		switch e.operator { //nolint:exhaustive
 		case IS_NULL:
-			arg := nullifyExcept(e.args[0], unknowns, inv)
+			arg := nullifyExcept(e.args[0], keepRefs, inv)
 			if arg == null {
 				return TRUE
 			}
 			return IsNull(arg)
 		case IS_NOT_NULL:
-			arg := nullifyExcept(e.args[0], unknowns, inv)
+			arg := nullifyExcept(e.args[0], keepRefs, inv)
 			if arg == null {
 				return FALSE
 			}
 			return IsNotNull(arg)
 		case NOT:
-			arg := nullifyExcept(e.args[0], unknowns, !inv)
+			arg := nullifyExcept(e.args[0], keepRefs, !inv)
 			if arg == null {
 				return null
 			}
@@ -62,7 +62,7 @@ func nullifyExcept(e Expression, unknowns map[string]bool, inv bool) Expression 
 			newArgs := []Expression{}
 			hasNull := false
 			for _, arg := range e.args {
-				arg := nullifyExcept(arg, unknowns, inv)
+				arg := nullifyExcept(arg, keepRefs, inv)
 				if arg == FALSE {
 					return FALSE
 				}
@@ -93,7 +93,7 @@ func nullifyExcept(e Expression, unknowns map[string]bool, inv bool) Expression 
 			newArgs := []Expression{}
 			hasNull := false
 			for _, arg := range e.args {
-				arg := nullifyExcept(arg, unknowns, inv)
+				arg := nullifyExcept(arg, keepRefs, inv)
 				if arg == TRUE {
 					return TRUE
 				}
@@ -123,7 +123,7 @@ func nullifyExcept(e Expression, unknowns map[string]bool, inv bool) Expression 
 		default:
 			newArgs := []Expression{}
 			for _, arg := range e.args {
-				arg := nullifyExcept(arg, unknowns, inv)
+				arg := nullifyExcept(arg, keepRefs, inv)
 				if arg == null {
 					return null
 				}
@@ -141,7 +141,7 @@ func nullifyExcept(e Expression, unknowns map[string]bool, inv bool) Expression 
 
 // Deprecated: Ignore should not be needed anymore, ignoring expressions should be achievable with
 // expr != expression.FALSE
-// for the "unknown" functionality use NullifyExcept. It is more transparent and easier to understand.
+// for the "unknowns" functionality use NullifyExcept. It is more transparent and easier to understand.
 func UnknownIgnore(e Expression, unknowns, ignores map[string]bool) Expression {
 	res := unkownIgnore(e, unknowns, ignores, false)
 	if res == unset {
