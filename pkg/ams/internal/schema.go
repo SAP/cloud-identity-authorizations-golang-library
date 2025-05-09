@@ -2,7 +2,6 @@ package internal
 
 import (
 	"reflect"
-	"strings"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
@@ -83,23 +82,23 @@ func (s *Schema) buildSchemaAttributes(a dcn.SchemaAttribute, path []string) {
 	}
 }
 
-// Modifies the privided input by setting the value of the given key to the provided value
-// if the value is a structure, all nested values are set to the provided value.
-func (s Schema) Set(input expression.Input, val string, value expression.Wildcard) {
-	t, ok := s.inputTypes[val]
-	if !ok {
-		return
-	}
-	if t == STRUCTURE {
-		for k, it := range s.inputTypes {
-			if strings.HasPrefix(k, val) && it != STRUCTURE {
-				input[k] = value
-			}
-		}
-	} else {
-		input[val] = value
-	}
-}
+// // Modifies the privided input by setting the value of the given key to the provided value
+// // if the value is a structure, all nested values are set to the provided value.
+// func (s Schema) Set(input expression.Input, val string, value expression.Wildcard) {
+// 	t, ok := s.inputTypes[val]
+// 	if !ok {
+// 		return
+// 	}
+// 	if t == STRUCTURE {
+// 		for k, it := range s.inputTypes {
+// 			if strings.HasPrefix(k, val) && it != STRUCTURE {
+// 				input[k] = value
+// 			}
+// 		}
+// 	} else {
+// 		input[val] = value
+// 	}
+// }
 
 // returns the owning tenant for a package
 // if the package is not owned by a tenant, the function returns an empty string.
@@ -119,7 +118,6 @@ func (s Schema) GetTenantForQualifiedName(qn dcn.QualifiedName) string {
 //   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to
 //     the schema name or the fields name is EXACTLY the same as the schema name
 //
-// expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
 // the env input is typically corresponding to the user information.
 // If you did not modify the $user or $env in your schema denfinitions
 // you can use the ams.Env struct. It will be mapped into $env fields.
@@ -284,10 +282,6 @@ func (s Schema) PurgeInvalidInput(input expression.Input) {
 		t, ok := s.inputTypes[k]
 		if !ok {
 			delete(input, k)
-			continue
-		}
-		_, ok = v.(expression.Wildcard)
-		if ok {
 			continue
 		}
 		switch t {

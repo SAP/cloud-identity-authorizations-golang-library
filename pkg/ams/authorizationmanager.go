@@ -11,6 +11,7 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal"
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
 
 type AuthorizationManager struct {
@@ -25,6 +26,7 @@ type AuthorizationManager struct {
 	Tests              []dcn.Test
 	hasDCN             bool
 	hasAssignments     bool
+	functionContainer  *expression.FunctionRegistry
 }
 
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
@@ -40,6 +42,7 @@ func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.A
 		m:                  sync.RWMutex{},
 		hasDCN:             false,
 		hasAssignments:     false,
+		functionContainer:  expression.NewFunctionRegistry(),
 	}
 
 	go result.start()
@@ -49,7 +52,7 @@ func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.A
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
-func AuthorizationManagerForAMS(iasUrl, amsInstanceID, cert, key string) (*AuthorizationManager, error) {
+func NewAuthorizationManagerForIAS(iasUrl, amsInstanceID, cert, key string) (*AuthorizationManager, error) {
 	// parse the cert and key
 	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
 	if err != nil {
@@ -85,7 +88,7 @@ func AuthorizationManagerForAMS(iasUrl, amsInstanceID, cert, key string) (*Autho
 // the provided path should contain the schema.dcn and the data.json files and subdirectories
 // containing the other dcn files// the data.json file should contain the assignments, if needed
 // and could be omitted.
-func AuthorizationManagerForLocal(path string) *AuthorizationManager {
+func NewAuthorizationManagerForLocal(path string) *AuthorizationManager {
 	loader := dcn.NewLocalLoader(path)
 	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel)
 	loader.RegisterErrorHandler(result.notifyError)
@@ -120,13 +123,17 @@ func (a *AuthorizationManager) start() {
 		case dcn := <-a.dcnChannel:
 			a.m.Lock()
 			a.schema = internal.SchemaFromDCN(dcn.Schemas)
-			functions, err := expression.FunctionsFromDCN(dcn.Functions)
-			if err != nil {
-				a.notifyError(err)
-				a.m.Unlock()
-				continue
+			for _, f := range dcn.Functions {
+				expr, err := expression.FromDCN(f.Result, a.functionContainer)
+				if err != nil {
+					a.notifyError(err)
+					continue
+				}
+				name := util.StringifyQualifiedName(f.QualifiedName)
+				a.functionContainer.RegisterExpressionFunction(name, expr.Expression)
 			}
-			a.policies, err = internal.PoliciesFromDCN(dcn.Policies, a.schema, functions)
+			var err error
+			a.policies, err = internal.PoliciesFromDCN(dcn.Policies, a.schema, a.functionContainer)
 			if err != nil {
 				a.notifyError(err)
 			} else {
@@ -169,20 +176,31 @@ func (a *AuthorizationManager) GetSchema() internal.Schema {
 // Returns Authorizations, based on the users assigned policies and default policies
 // basically just a convinience warpper around GetAssignments and GetAuthorizations.
 func (a *AuthorizationManager) UserAuthorizations(tenant, user string) *Authorizations {
-	pNames := a.GetAssignments(tenant, user)
-	return a.GetAuthorizations(pNames, tenant, true)
+	a.m.RLock()
+	defer a.m.RUnlock()
+	policyNames := a.GetAssignments(tenant, user)
+	return &Authorizations{
+		policies: a.policies.GetSubset(policyNames, tenant, true),
+		schema:   a.schema,
+	}
 }
 
 // Returns Authorizations, based on the provided policy names and optionally the default policies
 // and filtered filtering out admin policies from tenants other than the provided tenant.
 // for tenant-independent queries, use "" as tenant.
-func (a *AuthorizationManager) GetAuthorizations(names []string, tenant string, includeDefault bool) *Authorizations {
+func (a *AuthorizationManager) GetAuthorizations(policyNames []string) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()
 	return &Authorizations{
-		policies: a.policies.GetSubset(names, tenant, includeDefault),
+		policies: a.policies.GetSubset(policyNames, "-", false),
 		schema:   a.schema,
 	}
+}
+
+func (a *AuthorizationManager) GetDefaultPolicyNames(tenant string) []string {
+	a.m.RLock()
+	defer a.m.RUnlock()
+	return a.policies.GetDefaultPolicyNames(tenant)
 }
 
 // Returns the policies that are assigned to the user in the given tenant.

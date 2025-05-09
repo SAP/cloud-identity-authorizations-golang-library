@@ -57,7 +57,7 @@ func ConstantFrom(v any) Constant {
 		}
 		return result
 	}
-	return UNSET
+	return nil
 }
 
 func (n Number) equals(c Constant) bool {
@@ -65,7 +65,8 @@ func (n Number) equals(c Constant) bool {
 }
 
 func (n Number) lessThan(c Constant) bool {
-	return n < c.(Number) //nolint:forcetypeassert
+	n2 := c.(Number) //nolint:forcetypeassert
+	return n < n2    //nolint:forcetypeassert
 }
 
 func (s String) equals(c Constant) bool {
@@ -165,6 +166,10 @@ func (n Number) Evaluate(input Input) Expression {
 
 func (s String) Evaluate(input Input) Expression {
 	return s
+}
+
+func (s String) String() string {
+	return `"` + string(s) + `"`
 }
 
 func (b Bool) Evaluate(input Input) Expression {

@@ -27,7 +27,6 @@ type Env struct {
 //   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema
 //     name or the fields name is EXACTLY the same as the schema name
 //
-// expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types
 // the env input is typically corresponding to the user information. If you did not modify the $user or $env in your
 // schema denfinitions you can use the ams.Env struct. It will be mapped into $env fields.
 func (a Authorizations) Inquire(action, resource string, app any, env any) expression.Expression {
@@ -43,8 +42,7 @@ func (a Authorizations) Inquire(action, resource string, app any, env any) expre
 //   - the values are the expression constants that match exactly the schema types
 //   - the evaluation will panic if the input is wrongly typed
 //
-// the input can savely created/purged by the Schema
-// expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types.
+// the input can savely created/purged by the Schema.
 func (a Authorizations) Evaluate(input expression.Input) expression.Expression {
 	r := a.policies.Evaluate(input)
 	if r == expression.FALSE {
@@ -63,7 +61,7 @@ func (a Authorizations) Evaluate(input expression.Input) expression.Expression {
 			results = append(results, r)
 		}
 	}
-	return expression.NewAnd(results...)
+	return expression.And(results...)
 }
 
 // Restrict an authorizations object by another one

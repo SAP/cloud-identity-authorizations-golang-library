@@ -23,7 +23,7 @@ func TestRun(t *testing.T) {
 	}
 	for _, testDir := range testDirs {
 		t.Run(testDir.Name(), func(t *testing.T) {
-			ams := ams.AuthorizationManagerForLocal(path.Join("scenarios", testDir.Name()))
+			ams := ams.NewAuthorizationManagerForLocal(path.Join("scenarios", testDir.Name()))
 
 			ams.RegisterErrorHandler(func(err error) {
 				t.Errorf("error in authorization manager: %v", err)
@@ -51,7 +51,7 @@ func TestRun(t *testing.T) {
 								Ignores:  []dcn.Reference{},
 							}}
 						}
-						policies := []string{}
+						policies := ams.GetDefaultPolicyNames("")
 						for _, policy := range assertion.Policies {
 							policies = append(policies, util.StringifyQualifiedName(policy))
 						}
@@ -59,9 +59,9 @@ func TestRun(t *testing.T) {
 						for _, filter := range assertion.ScopeFilter {
 							scopeFilter = append(scopeFilter, util.StringifyQualifiedName(filter))
 						}
-						authz := ams.GetAuthorizations(policies, "", true)
+						authz := ams.GetAuthorizations(policies)
 						if len(scopeFilter) > 0 {
-							scopeFilter := ams.GetAuthorizations(scopeFilter, "", true)
+							scopeFilter := ams.GetAuthorizations(scopeFilter)
 							authz = authz.AndJoin(scopeFilter)
 						}
 						t.Run(fmt.Sprintf("policies: %v, scopeFilter: %v", policies, scopeFilter), func(t *testing.T) {
@@ -72,15 +72,16 @@ func TestRun(t *testing.T) {
 											input := createInput(ams.GetSchema(), tInput, action, resource)
 
 											result := authz.Evaluate(input)
+											result = unsetIgnore(result, tInput)
 											result = NormalizeExpression(result)
-											expectedContainer, err := expression.FromDCN(assertion.Expect, expression.Functions{})
+											expectedContainer, err := expression.FromDCN(assertion.Expect, &expression.FunctionRegistry{})
 											expected := NormalizeExpression(expectedContainer.Expression)
 											if err != nil {
 												t.Fatalf("error in expected expression: %v", err)
 											}
 											if !reflect.DeepEqual(result, expected) {
-												input := createInput(ams.GetSchema(), tInput, action, resource)
-												result := authz.Evaluate(input)
+												createInput(ams.GetSchema(), tInput, action, resource)
+												authz.Evaluate(input)
 												t.Errorf("expected %v, got %v", expected, result)
 											}
 										})
@@ -99,6 +100,18 @@ func assertionCaption(action string, resource string, input dcn.Input) string {
 	return fmt.Sprintf("action: %s, resource: %s, input: %+v", action, resource, input)
 }
 
+func unsetIgnore(e expression.Expression, input dcn.Input) expression.Expression {
+	u := map[string]bool{}
+	i := map[string]bool{}
+	for _, ref := range input.Unknowns {
+		u[util.StringifyQualifiedName(ref.Ref)] = true
+	}
+	for _, ref := range input.Ignores {
+		i[util.StringifyQualifiedName(ref.Ref)] = true
+	}
+	return expression.UnknownIgnore(e, u, i) //nolint:staticcheck
+}
+
 func createInput(schema internal.Schema, input dcn.Input, action, resource string) expression.Input {
 	app, ok := input.Input["$app"]
 	if !ok {
@@ -109,13 +122,6 @@ func createInput(schema internal.Schema, input dcn.Input, action, resource strin
 		env = nil
 	}
 	result := schema.CustomInput(action, resource, app, env)
-
-	for _, unknown := range input.Unknowns {
-		schema.Set(result, util.StringifyQualifiedName(unknown.Ref), expression.UNKNOWN)
-	}
-	for _, ignore := range input.Ignores {
-		schema.Set(result, util.StringifyQualifiedName(ignore.Ref), expression.IGNORE)
-	}
 
 	return result
 }

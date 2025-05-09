@@ -31,7 +31,7 @@ func (p PolicySet) Evaluate(input expression.Input) expression.Expression {
 			results = append(results, r)
 		}
 	}
-	return expression.NewOr(results...)
+	return expression.Or(results...)
 }
 
 func (p Policy) Evaluate(input expression.Input) expression.Expression {
@@ -45,7 +45,7 @@ func (p Policy) Evaluate(input expression.Input) expression.Expression {
 			results = append(results, r)
 		}
 	}
-	return expression.NewOr(results...)
+	return expression.Or(results...)
 }
 
 func (p PolicySet) GetSubset(names []string, tenant string, includeDefault bool) PolicySet {
@@ -55,7 +55,7 @@ func (p PolicySet) GetSubset(names []string, tenant string, includeDefault bool)
 	}
 	for _, name := range names {
 		if policy, ok := p.allPolicies[name]; ok {
-			if policy.tenant == tenant || policy.tenant == "" {
+			if policy.tenant == tenant || policy.tenant == "" || tenant == "-" {
 				result.allPolicies[name] = policy
 			}
 		}
@@ -75,7 +75,24 @@ func (p PolicySet) GetSubset(names []string, tenant string, includeDefault bool)
 	return result
 }
 
-func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f expression.Functions) (PolicySet, error) {
+func (p PolicySet) GetDefaultPolicyNames(tenant string) []string {
+	result := []string{}
+
+	for _, policy := range p.defaultPolicies[""] {
+		result = append(result, policy.name)
+	}
+
+	if tenant != "" {
+		if policies, ok := p.defaultPolicies[tenant]; ok {
+			for _, policy := range policies {
+				result = append(result, policy.name)
+			}
+		}
+	}
+	return result
+}
+
+func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f *expression.FunctionRegistry) (PolicySet, error) {
 	result := PolicySet{
 		allPolicies:     make(map[string]Policy),
 		defaultPolicies: make(map[string][]Policy),
