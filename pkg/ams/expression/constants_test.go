@@ -38,7 +38,7 @@ func TestDCNNumber_LessThan(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.n.lessThan(tt.c); got != tt.expected {
+			if got := tt.n.LessThan(tt.c); got != tt.expected {
 				t.Errorf("DCNNumber.lessThan() = %v, expected %v", got, tt.expected)
 			}
 		})
@@ -78,7 +78,7 @@ func TestDCNString_LessThan(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.s.lessThan(tt.c); got != tt.expected {
+			if got := tt.s.LessThan(tt.c); got != tt.expected {
 				t.Errorf("DCNString.lessThan() = %v, expected %v", got, tt.expected)
 			}
 		})
@@ -118,7 +118,7 @@ func TestDCNBool_LessThan(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.b.lessThan(tt.c); got != tt.expected {
+			if got := tt.b.LessThan(tt.c); got != tt.expected {
 				t.Errorf("DCNBool.lessThan() = %v, expected %v", got, tt.expected)
 			}
 		})
@@ -145,7 +145,7 @@ func TestDCNArrayConstant_Equals(t *testing.T) {
 			if got := tt.arr.equals(tt.c); got != tt.expected {
 				t.Errorf("DCNArrayConstant.equals() = %v, expected %v", got, tt.expected)
 			}
-			if got := tt.arr.lessThan(tt.arr); got != tt.expected {
+			if got := tt.arr.LessThan(tt.arr); got != tt.expected {
 				t.Errorf("DCNArrayConstant.lessThan() = %v, expected %v", got, tt.expected)
 			}
 		})

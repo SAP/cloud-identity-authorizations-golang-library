@@ -182,37 +182,37 @@ func (o OperatorCall) Evaluate(input Input) Expression {
 	case LT:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 2 {
-			return Bool(c[0].lessThan(c[1]))
+			return Bool(c[0].LessThan(c[1]))
 		}
 		return Lt(newArgs...)
 	case LE:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 2 {
-			return Bool(!c[1].lessThan(c[0]))
+			return Bool(!c[1].LessThan(c[0]))
 		}
 		return Le(newArgs...)
 	case GT:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 2 {
-			return Bool(c[1].lessThan(c[0]))
+			return Bool(c[1].LessThan(c[0]))
 		}
 		return Gt(newArgs...)
 	case GE:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 2 {
-			return Bool(!c[0].lessThan(c[1]))
+			return Bool(!c[0].LessThan(c[1]))
 		}
 		return Ge(newArgs...)
 	case BETWEEN:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 3 {
-			return Bool(!c[0].lessThan(c[1]) && !c[2].lessThan(c[0]))
+			return Bool(!c[0].LessThan(c[1]) && !c[2].LessThan(c[0]))
 		}
 		return Between(newArgs...)
 	case NOT_BETWEEN:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 3 {
-			return Bool(c[0].lessThan(c[1]) || c[2].lessThan(c[0]))
+			return Bool(c[0].LessThan(c[1]) || c[2].LessThan(c[0]))
 		}
 		return NotBetween(newArgs...)
 	}

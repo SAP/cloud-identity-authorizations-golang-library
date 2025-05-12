@@ -3,7 +3,7 @@ package expression
 type Constant interface {
 	Expression
 	equals(c Constant) bool
-	lessThan(c Constant) bool
+	LessThan(c Constant) bool
 }
 
 type ArrayConstant interface {
@@ -64,7 +64,7 @@ func (n Number) equals(c Constant) bool {
 	return n == c.(Number) //nolint:forcetypeassert
 }
 
-func (n Number) lessThan(c Constant) bool {
+func (n Number) LessThan(c Constant) bool {
 	n2 := c.(Number) //nolint:forcetypeassert
 	return n < n2    //nolint:forcetypeassert
 }
@@ -73,7 +73,7 @@ func (s String) equals(c Constant) bool {
 	return s == c.(String) //nolint:forcetypeassert
 }
 
-func (s String) lessThan(c Constant) bool {
+func (s String) LessThan(c Constant) bool {
 	return s < c.(String) //nolint:forcetypeassert
 }
 
@@ -81,7 +81,7 @@ func (b Bool) equals(c Constant) bool {
 	return b == c.(Bool) //nolint:forcetypeassert
 }
 
-func (b Bool) lessThan(c Constant) bool {
+func (b Bool) LessThan(c Constant) bool {
 	return bool(!b && c.(Bool)) //nolint:forcetypeassert
 }
 
@@ -180,7 +180,7 @@ func (s StringArray) equals(c Constant) bool {
 	return false
 }
 
-func (s StringArray) lessThan(c Constant) bool {
+func (s StringArray) LessThan(c Constant) bool {
 	return false
 }
 
@@ -188,7 +188,7 @@ func (b BoolArray) equals(c Constant) bool {
 	return false
 }
 
-func (b BoolArray) lessThan(c Constant) bool {
+func (b BoolArray) LessThan(c Constant) bool {
 	return false
 }
 
@@ -196,6 +196,6 @@ func (n NumberArray) equals(c Constant) bool {
 	return false
 }
 
-func (n NumberArray) lessThan(c Constant) bool {
+func (n NumberArray) LessThan(c Constant) bool {
 	return false
 }
