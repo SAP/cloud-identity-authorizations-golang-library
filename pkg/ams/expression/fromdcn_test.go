@@ -17,9 +17,9 @@ func toDCN(e Expression) dcn.Expression {
 				Args: e,
 			}
 		},
-		func(s string) dcn.Expression {
+		func(s Reference) dcn.Expression {
 			return dcn.Expression{
-				Ref: util.ParseQualifiedName(s),
+				Ref: util.ParseQualifiedName(s.GetName()),
 			}
 		},
 		func(c Constant) dcn.Expression {

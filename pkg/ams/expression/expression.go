@@ -184,10 +184,10 @@ func ApplyRestriction(e Expression, restriction []ExpressionContainer) Expressio
 	return e
 }
 
-func Visit[T any](e Expression, fCall func(string, []T) T, fRef func(string) T, fConst func(Constant) T) T {
+func Visit[T any](e Expression, fCall func(string, []T) T, fRef func(Reference) T, fConst func(Constant) T) T {
 	switch e := e.(type) {
 	case Reference:
-		return fRef(e.name)
+		return fRef(e)
 	case Constant:
 		return fConst(e)
 	case OperatorCall:

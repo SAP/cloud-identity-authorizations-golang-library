@@ -59,8 +59,8 @@ func NormalizeExpression(expr expression.Expression) expression.Expression {
 			}
 			return expression.CallOperator(s, e...)
 		},
-		func(name string) expression.Expression {
-			return expression.Ref(name)
+		func(ref expression.Reference) expression.Expression {
+			return expression.Ref(ref.GetName())
 		},
 		func(c expression.Constant) expression.Expression {
 			return c

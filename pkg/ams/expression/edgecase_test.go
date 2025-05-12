@@ -18,7 +18,7 @@ func TestEdgeCases(t *testing.T) {
 		e := UnexpectedExpression{}
 		r := Visit(e, func(c string, args []string) string {
 			return c
-		}, func(string) string {
+		}, func(Reference) string {
 			return ""
 		}, func(Constant) string {
 			return ""
