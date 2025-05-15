@@ -381,6 +381,13 @@ func TestVariablesWithQuotes(t *testing.T) {
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("Expected %v, got %v", want, got)
 		}
+
+		if schema.GetTypeOfReference("$app.\"\\\"quoted2\\\"\".findme") != STRING {
+			t.Errorf("Expected type STRING, got %v", schema.GetTypeOfReference("$app.\"\\\"quoted2\\\"\".findme"))
+		}
+		if schema.GetTypeOfReference("sdafgas") != UNDEFINED {
+			t.Errorf("Expected type UNDEFINED, got %v", schema.GetTypeOfReference("sdafgas"))
+		}
 	})
 
 	// t.Run("schema.Set ignores undefined fields", func(t *testing.T) {

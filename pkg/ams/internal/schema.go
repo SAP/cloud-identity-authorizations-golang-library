@@ -111,6 +111,14 @@ func (s Schema) GetTenantForQualifiedName(qn dcn.QualifiedName) string {
 	return tenant
 }
 
+func (s Schema) GetTypeOfReference(ref string) InputType {
+	t, ok := s.inputTypes[ref]
+	if !ok {
+		return UNDEFINED
+	}
+	return t
+}
+
 // the app input should correspond to the DCL schema definition and will be mapped
 // into $app fields. This can be achieved by providing either:
 //   - deeply nested map[string] where the keys are the schema names and the values
