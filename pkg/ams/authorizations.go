@@ -1,6 +1,8 @@
 package ams
 
 import (
+	"reflect"
+
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal"
 )
@@ -9,15 +11,7 @@ type Authorizations struct {
 	policies  internal.PolicySet
 	andJoined []*Authorizations
 	schema    internal.Schema
-}
-type User struct {
-	UUID   expression.String      `ams:"user_uuid"`
-	Groups expression.StringArray `ams:"groups"`
-	Email  expression.String      `ams:"email"`
-}
-
-type Env struct {
-	User User `ams:"$user"`
+	envInput  expression.Input
 }
 
 // Retrieve a access decision for a given action and resource and possibly some custom input
@@ -26,12 +20,28 @@ type Env struct {
 //   - deeply nested map[string] where the keys are the schema names and the values can translated to the schema types
 //   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema
 //     name or the fields name is EXACTLY the same as the schema name
-//
-// the env input is typically corresponding to the user information. If you did not modify the $user or $env in your
-// schema denfinitions you can use the ams.Env struct. It will be mapped into $env fields.
-func (a Authorizations) Inquire(action, resource string, app any, env any) expression.Expression {
-	i := a.schema.CustomInput(action, resource, app, env)
+func (a Authorizations) Inquire(action, resource string, app any) expression.Expression {
+
+	i := expression.Input{
+		"$dcl.action":   expression.String(action),
+		"$dcl.resource": expression.String(resource),
+	}
+	if action == "" {
+		delete(i, "$dcl.action")
+	}
+	if resource == "" {
+		delete(i, "$dcl.resource")
+	}
+	for k, v := range a.envInput {
+		i[k] = v
+	}
+	a.schema.InsertCustomInput(i, reflect.ValueOf(app), []string{"$app"})
 	return a.Evaluate(i)
+}
+
+func (a Authorizations) SetEnvInput(env any) {
+	a.envInput = expression.Input{}
+	a.schema.InsertCustomInput(a.envInput, reflect.ValueOf(env), []string{"$env"})
 }
 
 // Retrieve a access decision for a given action and resource and possibly some custom input
@@ -44,7 +54,13 @@ func (a Authorizations) Inquire(action, resource string, app any, env any) expre
 //
 // the input can savely created/purged by the Schema.
 func (a Authorizations) Evaluate(input expression.Input) expression.Expression {
+	for k, v := range a.envInput {
+		input[k] = v
+	}
 	r := a.policies.Evaluate(input)
+	for k := range a.envInput {
+		delete(input, k)
+	}
 	if r == expression.FALSE {
 		return r
 	}

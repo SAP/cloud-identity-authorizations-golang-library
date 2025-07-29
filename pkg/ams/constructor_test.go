@@ -42,7 +42,7 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 
 func TestAuthorizationManagerforLocal(t *testing.T) {
 	t.Run("with broken cert", func(t *testing.T) {
-		a := NewAuthorizationManagerForLocal("/tmp")
+		a := NewAuthorizationManagerForFs("/tmp")
 
 		if a == nil {
 			t.Errorf("Expected non-nil, got nil")
