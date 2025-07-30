@@ -20,7 +20,7 @@ type Authorizations struct {
 //   - deeply nested map[string] where the keys are the schema names and the values can translated to the schema types
 //   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema
 //     name or the fields name is EXACTLY the same as the schema name
-func (a Authorizations) Inquire(action, resource string, app any) expression.Expression {
+func (a Authorizations) Inquire(action, resource string, app any) Decision {
 
 	i := expression.Input{
 		"$dcl.action":   expression.String(action),
@@ -53,7 +53,7 @@ func (a Authorizations) SetEnvInput(env any) {
 //   - the evaluation will panic if the input is wrongly typed
 //
 // the input can savely created/purged by the Schema.
-func (a Authorizations) Evaluate(input expression.Input) expression.Expression {
+func (a Authorizations) Evaluate(input expression.Input) Decision {
 	for k, v := range a.envInput {
 		input[k] = v
 	}
@@ -69,15 +69,20 @@ func (a Authorizations) Evaluate(input expression.Input) expression.Expression {
 	}
 
 	for _, aa := range a.andJoined {
-		r := aa.Evaluate(input)
+		r := aa.Evaluate(input).Condition()
 		if r == expression.Bool(false) {
-			return r
+			return Decision{
+				condition: r,
+				schema:    a.schema,
+			}
 		}
 		if r != expression.Bool(true) {
 			results = append(results, r)
 		}
 	}
-	return expression.And(results...)
+	return Decision{
+		condition: expression.And(results...),
+	}
 }
 
 // Restrict an authorizations object by another one

@@ -31,7 +31,7 @@ func (a *API) Middleware(resource, action string, inputFunc func(*http.Request) 
 	return func(next http.Handler) http.Handler {
 
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			authz := authFromContext(r.Context())
+			authz := AuthzFromContext(r.Context())
 			nextR := r
 			identity, err := a.getIdentity(r.Context())
 			if err != nil {
@@ -61,10 +61,18 @@ func (a *API) Middleware(resource, action string, inputFunc func(*http.Request) 
 	}
 }
 
-func authFromContext(c context.Context) *ams.Authorizations {
-	authz, ok := c.Value("ams_auth").(*ams.Authorizations)
+func AuthzFromContext(c context.Context) *ams.Authorizations {
+	authz, ok := c.Value(AMSAuthzCtxKey).(*ams.Authorizations)
 	if !ok {
 		return nil
 	}
 	return authz
+}
+
+func AuthzDecisionFromContext(c context.Context) *expression.Expression {
+	expression, ok := c.Value(AMSDecisionCtxKey).(*expression.Expression)
+	if !ok {
+		return nil
+	}
+	return expression
 }

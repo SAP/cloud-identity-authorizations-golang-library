@@ -85,7 +85,6 @@ func (b *BundleLoader) bundleRequest() {
 		return
 	}
 	if resp.StatusCode == http.StatusNotModified {
-		b.handleError(err)
 		return
 	}
 	defer resp.Body.Close()
