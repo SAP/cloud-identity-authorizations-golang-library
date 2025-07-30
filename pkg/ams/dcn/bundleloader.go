@@ -23,7 +23,7 @@ type BundleLoader struct {
 	ticker             time.Ticker
 }
 
-func NewBundleLoader(targetURL *url.URL, client *http.Client, ticker time.Ticker) *BundleLoader {
+func NewBundleLoader(targetURL *url.URL, client *http.Client, ticker time.Ticker, errorHandler func(error)) *BundleLoader {
 	result := BundleLoader{
 		DCNChannel:         make(chan DcnContainer),
 		AssignmentsChannel: make(chan Assignments),
@@ -32,11 +32,19 @@ func NewBundleLoader(targetURL *url.URL, client *http.Client, ticker time.Ticker
 		url:                targetURL,
 		ticker:             ticker,
 	}
+
+	if errorHandler != nil {
+		result.errHandler = append(result.errHandler, errorHandler)
+	}
+
 	go result.start()
 	return &result
 }
 
 func (b *BundleLoader) RegisterErrorHandler(handler func(error)) {
+	if handler == nil {
+		return
+	}
 	b.errHandler = append(b.errHandler, handler)
 }
 

@@ -45,7 +45,7 @@ func TestScenarioAllowAction(t *testing.T) {
 		return result
 	}
 
-	loader := dcn.NewLocalLoader(absPath)
+	loader := dcn.NewLocalLoader(absPath, nil)
 	dcn := <-loader.DCNChannel
 	<-loader.AssignmentsChannel
 

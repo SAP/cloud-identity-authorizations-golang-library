@@ -41,7 +41,11 @@ func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.A
 		hasDCN:             false,
 		hasAssignments:     false,
 		functionContainer:  expression.NewFunctionRegistry(),
-		errHandlers:        []func(error){errorHandler},
+		errHandlers:        []func(error){},
+	}
+
+	if errorHandler != nil {
+		result.errHandlers = append(result.errHandlers, errorHandler)
 	}
 
 	go result.start()
@@ -81,10 +85,10 @@ func NewAuthorizationManagerForIAS(bundleUrl, amsInstanceID, cert, key string, e
 		parsedURL,
 		client,
 		*time.NewTicker(time.Second * 20),
+		errorHandler,
 	)
 
 	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, errorHandler)
-	loader.RegisterErrorHandler(result.notifyError)
 	return result, nil
 }
 
@@ -93,7 +97,7 @@ func NewAuthorizationManagerForIAS(bundleUrl, amsInstanceID, cert, key string, e
 // containing the other dcn files// the data.json file should contain the assignments, if needed
 // and could be omitted.
 func NewAuthorizationManagerForFs(path string, errorHandler func(error)) *AuthorizationManager {
-	loader := dcn.NewLocalLoader(path)
+	loader := dcn.NewLocalLoader(path, nil)
 	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, errorHandler)
 	loader.RegisterErrorHandler(result.notifyError)
 	return result
@@ -101,6 +105,9 @@ func NewAuthorizationManagerForFs(path string, errorHandler func(error)) *Author
 
 // Register a new error handler that will be called when an error occurs in the background update process.
 func (a *AuthorizationManager) RegisterErrorHandler(handler func(error)) {
+	if handler == nil {
+		return
+	}
 	a.m.Lock()
 	defer a.m.Unlock()
 	a.errHandlers = append(a.errHandlers, handler)

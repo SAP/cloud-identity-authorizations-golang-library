@@ -14,7 +14,7 @@ type Loader struct {
 	errHandlers        []func(error)
 }
 
-func NewLocalLoader(dir string) *Loader {
+func NewLocalLoader(dir string, errorHandler func(error)) *Loader {
 	loader := &Loader{
 		dir:                dir,
 		DCNChannel:         make(chan DcnContainer),
@@ -22,11 +22,19 @@ func NewLocalLoader(dir string) *Loader {
 
 		errHandlers: []func(error){},
 	}
+
+	if errorHandler != nil {
+		loader.errHandlers = append(loader.errHandlers, errorHandler)
+	}
+
 	go loader.start()
 	return loader
 }
 
 func (l *Loader) RegisterErrorHandler(handler func(error)) {
+	if handler == nil {
+		return
+	}
 	l.errHandlers = append(l.errHandlers, handler)
 }
 
