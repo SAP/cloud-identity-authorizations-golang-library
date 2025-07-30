@@ -73,7 +73,7 @@ func TestRun(t *testing.T) {
 										t.Run(assertionCaption(action, resource, tInput), func(t *testing.T) {
 											input := createInput(ams.GetSchema(), tInput, action, resource)
 
-											result := authz.Evaluate(input)
+											result := authz.Evaluate(input).Condition()
 											result = unsetIgnore(result, tInput)
 											result = NormalizeExpression(result)
 											expectedContainer, err := expression.FromDCN(assertion.Expect, &expression.FunctionRegistry{})

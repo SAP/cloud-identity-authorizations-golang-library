@@ -109,7 +109,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		<-am.WhenReady()
 
 		a := am.AuthorizationsForPolicies([]string{"pkg.policy1"})
-		got := a.Evaluate(expression.Input{})
+		got := a.Evaluate(expression.Input{}).Condition()
 		want := expression.Ref("x")
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("expected %v, got %v", want, got)
@@ -238,14 +238,14 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			"$dcl.resource": expression.String("resource1"),
 			"$dcl.action":   expression.String("action1"),
 		})
-		if r != expression.TRUE {
+		if !r.IsGranted() {
 			t.Errorf("expected true, got %v", r)
 		}
 		r = auths.Evaluate(expression.Input{
 			"$dcl.resource": expression.String("resource2"),
 			"$dcl.action":   expression.String("action2"),
 		})
-		if r != expression.FALSE {
+		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
 		}
 
@@ -255,14 +255,14 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			"$dcl.resource": expression.String("resource1"),
 			"$dcl.action":   expression.String("action1"),
 		})
-		if r != expression.FALSE {
+		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
 		}
 		r = auth2.Evaluate(expression.Input{
 			"$dcl.resource": expression.String("resource2"),
 			"$dcl.action":   expression.String("action2"),
 		})
-		if r != expression.TRUE {
+		if !r.IsGranted() {
 			t.Errorf("expected true, got %v", r)
 		}
 
@@ -272,21 +272,21 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			"$dcl.resource": expression.String("resource1"),
 			"$dcl.action":   expression.String("action1"),
 		})
-		if r != expression.FALSE {
+		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
 		}
 		r = andJoined.Evaluate(expression.Input{
 			"$dcl.resource": expression.String("resource2"),
 			"$dcl.action":   expression.String("action2"),
 		})
-		if r != expression.FALSE {
+		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
 		}
 
 		r = andJoined.Evaluate(expression.Input{
 			"$dcl.resource": expression.String("resource2"),
 		})
-		if r != expression.FALSE {
+		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
 		}
 
@@ -301,7 +301,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		in2 := expression.In(expression.Ref("$dcl.action"), expression.StringArray{"action3"})
 
 		expected := expression.And(in1, in2)
-		if !reflect.DeepEqual(r, expected) {
+		if !reflect.DeepEqual(r.Condition(), expected) {
 			t.Errorf("expected %+v, got %+v", expected, r)
 		}
 	})

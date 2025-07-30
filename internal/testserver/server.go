@@ -125,7 +125,7 @@ func (s *Router) handleEvaluatePolicies(w http.ResponseWriter, r *http.Request) 
 	result := auth.Evaluate(input)
 
 	response := EvaluationResponse{
-		Expression: expression.ToDCN(result),
+		Expression: expression.ToDCN(result.Condition()),
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
@@ -172,7 +172,7 @@ func (s *Router) handleEvaluatePoliciesScoped(w http.ResponseWriter, r *http.Req
 	result := auth.Evaluate(input)
 
 	response := EvaluationResponse{
-		Expression: expression.ToDCN(result),
+		Expression: expression.ToDCN(result.Condition()),
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")

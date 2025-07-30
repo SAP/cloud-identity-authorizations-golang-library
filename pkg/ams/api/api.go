@@ -51,7 +51,7 @@ func (a *API) Middleware(resource, action string, inputFunc func(*http.Request) 
 				input = inputFunc(r)
 			}
 			decision := authz.Inquire(action, resource, input)
-			if decision == expression.FALSE {
+			if decision.IsDenied() {
 				http.Error(w, "Forbidden", http.StatusForbidden)
 				return
 			}

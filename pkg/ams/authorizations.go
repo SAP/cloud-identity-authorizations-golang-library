@@ -62,7 +62,10 @@ func (a Authorizations) Evaluate(input expression.Input) Decision {
 		delete(input, k)
 	}
 	if r == expression.FALSE {
-		return r
+		return Decision{
+			condition: r,
+			schema:    a.schema,
+		}
 	}
 	results := []expression.Expression{
 		r,
@@ -82,6 +85,7 @@ func (a Authorizations) Evaluate(input expression.Input) Decision {
 	}
 	return Decision{
 		condition: expression.And(results...),
+		schema:    a.schema,
 	}
 }
 
