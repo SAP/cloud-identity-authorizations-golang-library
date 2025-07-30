@@ -27,7 +27,7 @@ const (
 	AMSAuthzCtxKey    AmsCtxKey = "ams_authz"
 )
 
-func (a *API) Middleware(resource, action string, input any) func(next http.Handler) http.Handler {
+func (a *API) Middleware(resource, action string, inputFunc func(*http.Request) any) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +46,10 @@ func (a *API) Middleware(resource, action string, input any) func(next http.Hand
 				authz = a.am.AuthorizationsForIndentiy(identity)
 				nextR = r.WithContext(context.WithValue(r.Context(), AMSAuthzCtxKey, authz))
 			}
-
+			var input any
+			if inputFunc != nil {
+				input = inputFunc(r)
+			}
 			decision := authz.Inquire(action, resource, input)
 			if decision == expression.FALSE {
 				http.Error(w, "Forbidden", http.StatusForbidden)
