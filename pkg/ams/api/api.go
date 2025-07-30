@@ -10,15 +10,22 @@ import (
 
 type API struct {
 	am          *ams.AuthorizationManager
-	getIdentity func(context.Context) ams.Identity
+	getIdentity func(context.Context) (ams.Identity, error)
 }
 
-func NewAPI(am *ams.AuthorizationManager, getIdentity func(context.Context) ams.Identity) *API {
+func NewAPI(am *ams.AuthorizationManager, getIdentity func(context.Context) (ams.Identity, error)) *API {
 	return &API{
 		am:          am,
 		getIdentity: getIdentity,
 	}
 }
+
+type AmsCtxKey string
+
+const (
+	AMSDecisionCtxKey AmsCtxKey = "ams_decision"
+	AMSAuthzCtxKey    AmsCtxKey = "ams_authz"
+)
 
 func (a *API) Middleware(resource, action string, input any) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -26,14 +33,18 @@ func (a *API) Middleware(resource, action string, input any) func(next http.Hand
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authz := authFromContext(r.Context())
 			nextR := r
-			identity := a.getIdentity(r.Context())
+			identity, err := a.getIdentity(r.Context())
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusNotExtended)
+				return
+			}
 			if identity == nil {
 				http.Error(w, "Missing identity in context", http.StatusNotExtended)
 				return
 			}
 			if authz == nil {
 				authz = a.am.AuthorizationsForIndentiy(identity)
-				nextR = r.WithContext(context.WithValue(r.Context(), "ams_auth", authz))
+				nextR = r.WithContext(context.WithValue(r.Context(), AMSAuthzCtxKey, authz))
 			}
 
 			decision := authz.Inquire(action, resource, input)
@@ -41,7 +52,7 @@ func (a *API) Middleware(resource, action string, input any) func(next http.Hand
 				http.Error(w, "Forbidden", http.StatusForbidden)
 				return
 			}
-			nextR = r.WithContext(context.WithValue(r.Context(), "ams_decision", authz))
+			nextR = r.WithContext(context.WithValue(r.Context(), AMSDecisionCtxKey, authz))
 			next.ServeHTTP(w, nextR)
 		})
 	}
