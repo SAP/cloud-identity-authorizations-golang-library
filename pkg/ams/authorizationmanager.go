@@ -2,7 +2,6 @@ package ams
 
 import (
 	"crypto/tls"
-	"log"
 	"net/http"
 	"net/url"
 	"sync"
@@ -23,16 +22,16 @@ type AuthorizationManager struct {
 	dcnChannel         chan dcn.DcnContainer
 	assignmentsChannel chan dcn.Assignments
 	Tests              []dcn.Test
-	l                  log.Logger
 	hasDCN             bool
 	hasAssignments     bool
 	functionContainer  *expression.FunctionRegistry
+	errHandlers        []func(error)
 }
 
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
 // to update its policies and assignments during runtime.
 // the instance must receive (possibly empty) data on both channels to be ready.
-func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.Assignments) *AuthorizationManager {
+func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.Assignments, errorHandler func(error)) *AuthorizationManager {
 	result := AuthorizationManager{
 		ready:              make(chan bool),
 		policies:           internal.PolicySet{},
@@ -42,6 +41,7 @@ func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.A
 		hasDCN:             false,
 		hasAssignments:     false,
 		functionContainer:  expression.NewFunctionRegistry(),
+		errHandlers:        []func(error){errorHandler},
 	}
 
 	go result.start()
@@ -51,7 +51,7 @@ func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.A
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
-func NewAuthorizationManagerForIAS(bundleUrl, amsInstanceID, cert, key string) (*AuthorizationManager, error) {
+func NewAuthorizationManagerForIAS(bundleUrl, amsInstanceID, cert, key string, errorHandler func(error)) (*AuthorizationManager, error) {
 	// parse the cert and key
 	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
 	if err != nil {
@@ -83,7 +83,7 @@ func NewAuthorizationManagerForIAS(bundleUrl, amsInstanceID, cert, key string) (
 		*time.NewTicker(time.Second * 20),
 	)
 
-	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel)
+	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, errorHandler)
 	loader.RegisterErrorHandler(result.notifyError)
 	return result, nil
 }
@@ -92,18 +92,24 @@ func NewAuthorizationManagerForIAS(bundleUrl, amsInstanceID, cert, key string) (
 // the provided path should contain the schema.dcn and the data.json files and subdirectories
 // containing the other dcn files// the data.json file should contain the assignments, if needed
 // and could be omitted.
-func NewAuthorizationManagerForFs(path string) *AuthorizationManager {
+func NewAuthorizationManagerForFs(path string, errorHandler func(error)) *AuthorizationManager {
 	loader := dcn.NewLocalLoader(path)
-	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel)
+	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, errorHandler)
 	loader.RegisterErrorHandler(result.notifyError)
 	return result
 }
 
-// Register a new log callback that will be called when a log message is generated.
-func (a *AuthorizationManager) SetLogger(l log.Logger) {
+// Register a new error handler that will be called when an error occurs in the background update process.
+func (a *AuthorizationManager) RegisterErrorHandler(handler func(error)) {
 	a.m.Lock()
 	defer a.m.Unlock()
-	a.l = l
+	a.errHandlers = append(a.errHandlers, handler)
+}
+
+func (a *AuthorizationManager) notifyError(err error) {
+	for _, handler := range a.errHandlers {
+		handler(err)
+	}
 }
 
 func (a *AuthorizationManager) start() {

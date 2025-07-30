@@ -23,7 +23,9 @@ func TestRun(t *testing.T) {
 	}
 	for _, testDir := range testDirs {
 		t.Run(testDir.Name(), func(t *testing.T) {
-			ams := ams.NewAuthorizationManagerForFs(path.Join("scenarios", testDir.Name()))
+			ams := ams.NewAuthorizationManagerForFs(path.Join("scenarios", testDir.Name()), func(err error) {
+				panic(err)
+			})
 
 			ams.RegisterErrorHandler(func(err error) {
 				t.Errorf("error in authorization manager: %v", err)

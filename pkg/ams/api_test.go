@@ -8,11 +8,15 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
+func nop(error) {
+	// no-op error handler
+}
+
 func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("has schema", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{},
@@ -36,7 +40,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("is ready after receiving DCN", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
 		assignmentsChannel <- dcn.Assignments{}
 
 		if am.IsReady() {
@@ -76,7 +80,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("with functions", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
 		assignmentsChannel <- dcn.Assignments{}
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -115,17 +119,13 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("error in functions", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
-		assignmentsChannel <- dcn.Assignments{}
-
 		errors := []error{}
-
 		done := make(chan struct{})
-
-		am.RegisterErrorHandler(func(err error) {
+		NewAuthorizationManager(dcnChannel, assignmentsChannel, func(err error) {
 			errors = append(errors, err)
 			done <- struct{}{}
 		})
+		assignmentsChannel <- dcn.Assignments{}
 
 		if len(errors) != 0 {
 			t.Error("errors before receiving DCN")
@@ -151,16 +151,13 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("error in policies", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
-		assignmentsChannel <- dcn.Assignments{}
-
 		errors := []error{}
 		done := make(chan struct{})
-
-		am.RegisterErrorHandler(func(err error) {
+		NewAuthorizationManager(dcnChannel, assignmentsChannel, func(err error) {
 			errors = append(errors, err)
 			done <- struct{}{}
 		})
+		assignmentsChannel <- dcn.Assignments{}
 
 		if len(errors) != 0 {
 			t.Error("errors before receiving DCN")
@@ -191,7 +188,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("get Authorizations", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
 		assignmentsChannel <- dcn.Assignments{}
 
 		dcnChannel <- dcn.DcnContainer{
@@ -312,7 +309,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("get assignments", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -373,7 +370,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("get default policy names", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{

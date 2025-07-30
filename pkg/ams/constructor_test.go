@@ -14,7 +14,7 @@ import (
 
 func TestAuthorizationManagerforIAS(t *testing.T) {
 	t.Run("with broken cert", func(t *testing.T) {
-		_, err := NewAuthorizationManagerForIAS("https://example.com", "brokencert", "test", "test")
+		_, err := NewAuthorizationManagerForIAS("https://example.com", "brokencert", "test", "test", nop)
 
 		if err == nil {
 			t.Errorf("Expected error, got nil")
@@ -24,7 +24,7 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 	t.Run("with broken url", func(t *testing.T) {
 		// create simple valid cert
 		cert, key := generateTestCert(t)
-		_, err := NewAuthorizationManagerForIAS("noprot://example.com ", "dummy-id", string(cert), string(key))
+		_, err := NewAuthorizationManagerForIAS("noprot://example.com ", "dummy-id", string(cert), string(key), nop)
 		if err == nil {
 			t.Errorf("Expected error, got nil")
 		}
@@ -33,7 +33,7 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 	t.Run("with valid cert", func(t *testing.T) {
 		// create simple valid cert
 		cert, key := generateTestCert(t)
-		_, err := NewAuthorizationManagerForIAS("https://example.com", "dummy-id", string(cert), string(key))
+		_, err := NewAuthorizationManagerForIAS("https://example.com/v1/bundles", "dummy-id", string(cert), string(key), nop)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
@@ -42,7 +42,7 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 
 func TestAuthorizationManagerforLocal(t *testing.T) {
 	t.Run("with broken cert", func(t *testing.T) {
-		a := NewAuthorizationManagerForFs("/tmp")
+		a := NewAuthorizationManagerForFs("/tmp", nop)
 
 		if a == nil {
 			t.Errorf("Expected non-nil, got nil")
