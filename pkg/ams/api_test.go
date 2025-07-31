@@ -235,15 +235,15 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		auths := am.AuthorizationsForPolicies([]string{"pkg.policy1"})
 
 		r := auths.Evaluate(expression.Input{
-			"$dcl.resource": expression.String("resource1"),
-			"$dcl.action":   expression.String("action1"),
+			DCL_RESOURCE: expression.String("resource1"),
+			DCL_ACTION:   expression.String("action1"),
 		})
 		if !r.IsGranted() {
 			t.Errorf("expected true, got %v", r)
 		}
 		r = auths.Evaluate(expression.Input{
-			"$dcl.resource": expression.String("resource2"),
-			"$dcl.action":   expression.String("action2"),
+			DCL_RESOURCE: expression.String("resource2"),
+			DCL_ACTION:   expression.String("action2"),
 		})
 		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
@@ -252,15 +252,15 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		auth2 := am.AuthorizationsForPolicies([]string{"pkg.policy2"})
 
 		r = auth2.Evaluate(expression.Input{
-			"$dcl.resource": expression.String("resource1"),
-			"$dcl.action":   expression.String("action1"),
+			DCL_RESOURCE: expression.String("resource1"),
+			DCL_ACTION:   expression.String("action1"),
 		})
 		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
 		}
 		r = auth2.Evaluate(expression.Input{
-			"$dcl.resource": expression.String("resource2"),
-			"$dcl.action":   expression.String("action2"),
+			DCL_RESOURCE: expression.String("resource2"),
+			DCL_ACTION:   expression.String("action2"),
 		})
 		if !r.IsGranted() {
 			t.Errorf("expected true, got %v", r)
@@ -269,22 +269,22 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		andJoined := auths.AndJoin(auth2)
 
 		r = andJoined.Evaluate(expression.Input{
-			"$dcl.resource": expression.String("resource1"),
-			"$dcl.action":   expression.String("action1"),
+			DCL_RESOURCE: expression.String("resource1"),
+			DCL_ACTION:   expression.String("action1"),
 		})
 		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
 		}
 		r = andJoined.Evaluate(expression.Input{
-			"$dcl.resource": expression.String("resource2"),
-			"$dcl.action":   expression.String("action2"),
+			DCL_RESOURCE: expression.String("resource2"),
+			DCL_ACTION:   expression.String("action2"),
 		})
 		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
 		}
 
 		r = andJoined.Evaluate(expression.Input{
-			"$dcl.resource": expression.String("resource2"),
+			DCL_RESOURCE: expression.String("resource2"),
 		})
 		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
@@ -294,11 +294,11 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 
 		andJoined = auth2.AndJoin(auth3)
 		r = andJoined.Evaluate(expression.Input{
-			"$dcl.resource": expression.String("resource2"),
+			DCL_RESOURCE: expression.String("resource2"),
 		})
 
-		in1 := expression.In(expression.Ref("$dcl.action"), expression.StringArray{"action2"})
-		in2 := expression.In(expression.Ref("$dcl.action"), expression.StringArray{"action3"})
+		in1 := expression.In(expression.Ref(DCL_ACTION), expression.StringArray{"action2"})
+		in2 := expression.In(expression.Ref(DCL_ACTION), expression.StringArray{"action3"})
 
 		expected := expression.And(in1, in2)
 		if !reflect.DeepEqual(r.Condition(), expected) {

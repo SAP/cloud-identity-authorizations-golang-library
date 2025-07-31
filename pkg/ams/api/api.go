@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
 type API struct {
@@ -55,7 +54,7 @@ func (a *API) Middleware(resource, action string, inputFunc func(*http.Request) 
 				http.Error(w, "Forbidden", http.StatusForbidden)
 				return
 			}
-			nextR = r.WithContext(context.WithValue(r.Context(), AMSDecisionCtxKey, authz))
+			nextR = r.WithContext(context.WithValue(r.Context(), AMSDecisionCtxKey, decision))
 			next.ServeHTTP(w, nextR)
 		})
 	}
@@ -69,10 +68,10 @@ func AuthzFromContext(c context.Context) *ams.Authorizations {
 	return authz
 }
 
-func AuthzDecisionFromContext(c context.Context) *expression.Expression {
-	expression, ok := c.Value(AMSDecisionCtxKey).(*expression.Expression)
+func AuthzDecisionFromContext(c context.Context) *ams.Decision {
+	decision, ok := c.Value(AMSDecisionCtxKey).(*ams.Decision)
 	if !ok {
 		return nil
 	}
-	return expression
+	return decision
 }

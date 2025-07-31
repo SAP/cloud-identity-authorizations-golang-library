@@ -14,6 +14,9 @@ type Authorizations struct {
 	envInput  expression.Input
 }
 
+const DCL_ACTION = "$dcl.action"
+const DCL_RESOURCE = "$dcl.resource"
+
 // Retrieve a access decision for a given action and resource and possibly some custom input
 // the app input should correspond to the DCL schema definition and will be mapped into $app fields.
 // This can be achieved by providing either:
@@ -23,14 +26,14 @@ type Authorizations struct {
 func (a Authorizations) Inquire(action, resource string, app any) Decision {
 
 	i := expression.Input{
-		"$dcl.action":   expression.String(action),
-		"$dcl.resource": expression.String(resource),
+		DCL_ACTION:   expression.String(action),
+		DCL_RESOURCE: expression.String(resource),
 	}
 	if action == "" {
-		delete(i, "$dcl.action")
+		delete(i, DCL_ACTION)
 	}
 	if resource == "" {
-		delete(i, "$dcl.resource")
+		delete(i, DCL_RESOURCE)
 	}
 	for k, v := range a.envInput {
 		i[k] = v
