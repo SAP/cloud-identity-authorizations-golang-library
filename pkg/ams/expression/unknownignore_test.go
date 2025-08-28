@@ -346,6 +346,15 @@ func TestNullifyExcept(t *testing.T) {
 		}
 	})
 
+	t.Run("not(true=false and unset) => not(true=false) => true??", func(t *testing.T) {
+		e := Not(And(Eq(TRUE, FALSE), Ref("x")))
+		result := NullifyExcept(e, empty)
+		eval := result.Evaluate(nil)
+		if eval != FALSE {
+			t.Errorf("Expected false, got %v", eval)
+		}
+	})
+
 	t.Run("unset and y => unset => false", func(t *testing.T) {
 		e := And(Ref("x"), Ref("y"))
 		result := NullifyExcept(e, yl)
