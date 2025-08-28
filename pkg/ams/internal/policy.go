@@ -169,8 +169,8 @@ func (p PolicySet) GetResources() []string {
 	for i := range p.allPolicies {
 		for j := range p.allPolicies[i].rules {
 			rule := &p.allPolicies[i].rules[j]
-			for _, resource := range rule.resources {
-				resources[resource] = struct{}{}
+			for k := range rule.resources {
+				resources[rule.resources[k]] = struct{}{}
 			}
 		}
 	}
@@ -189,8 +189,8 @@ func (p PolicySet) GetActions(resource string) []string {
 			if len(rule.resources) > 0 && !slices.Contains(rule.resources, resource) {
 				continue
 			}
-			for _, action := range rule.actions {
-				actions[action] = struct{}{}
+			for k := range rule.actions {
+				actions[rule.actions[k]] = struct{}{}
 			}
 		}
 	}
