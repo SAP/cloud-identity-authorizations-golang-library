@@ -194,11 +194,7 @@ func (p PolicySet) GetActions(resource string) []string {
 		}
 	}
 
-	result := []string{}
-	for s := range maps.Keys(actions) {
-		result = append(result, s)
-	}
-	return result
+	return slices.Collect(maps.Keys(actions))
 }
 
 func topologicalSort(policies []dcn.Policy) ([]dcn.Policy, error) {

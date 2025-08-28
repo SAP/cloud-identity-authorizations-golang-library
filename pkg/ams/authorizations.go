@@ -51,7 +51,7 @@ func (a Authorizations) GetResources() []string {
 	return a.policies.GetResources()
 }
 
-func (a Authorizations) GetAction(resource string) []string {
+func (a Authorizations) GetActions(resource string) []string {
 	return a.policies.GetActions(resource)
 }
 
