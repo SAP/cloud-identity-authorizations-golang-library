@@ -175,6 +175,9 @@ func (p PolicySet) GetResources() []string {
 		}
 	}
 
+	if len(resources) == 0 {
+		return []string{}
+	}
 	return slices.Collect(maps.Keys(resources))
 }
 
@@ -192,6 +195,9 @@ func (p PolicySet) GetActions(resource string) []string {
 		}
 	}
 
+	if len(actions) == 0 {
+		return []string{}
+	}
 	return slices.Collect(maps.Keys(actions))
 }
 

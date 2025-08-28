@@ -338,8 +338,9 @@ func TestPolicy(t *testing.T) { //nolint:maintidx
 
 			t.Run("returns empty array for non-existing resource", func(t *testing.T) {
 				expected := []string{}
-				if !reflect.DeepEqual(ps.GetActions("non-existent"), expected) {
-					t.Errorf("Expected %v, got %v", expected, ps.GetResources())
+				actual := ps.GetActions("non-existent")
+				if !reflect.DeepEqual(actual, expected) {
+					t.Errorf("Expected %v, got %v", expected, actual)
 				}
 			})
 
