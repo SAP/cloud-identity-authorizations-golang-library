@@ -166,25 +166,23 @@ func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f *expression.Functio
 
 func (p PolicySet) GetResources() []string {
 	resources := map[string]struct{}{}
-	for _, policy := range p.allPolicies {
-		for _, rule := range policy.rules {
+	for i := range p.allPolicies {
+		for j := range p.allPolicies[i].rules {
+			rule := &p.allPolicies[i].rules[j]
 			for _, resource := range rule.resources {
 				resources[resource] = struct{}{}
 			}
 		}
 	}
 
-	result := []string{}
-	for s := range maps.Keys(resources) {
-		result = append(result, s)
-	}
-	return result
+	return slices.Collect(maps.Keys(resources))
 }
 
 func (p PolicySet) GetActions(resource string) []string {
 	actions := map[string]struct{}{}
-	for _, policy := range p.allPolicies {
-		for _, rule := range policy.rules {
+	for i := range p.allPolicies {
+		for j := range p.allPolicies[i].rules {
+			rule := &p.allPolicies[i].rules[j]
 			if len(rule.resources) > 0 && !slices.Contains(rule.resources, resource) {
 				continue
 			}
