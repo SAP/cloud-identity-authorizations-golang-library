@@ -185,7 +185,7 @@ func (a *AuthorizationManager) GetSchema() internal.Schema {
 }
 
 // Returns Authorizations, based on the provided identity and the default policies
-func (a *AuthorizationManager) AuthorizationsForIndentiy(i Identity) *Authorizations {
+func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()
 	if i == nil {

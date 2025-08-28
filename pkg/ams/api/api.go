@@ -42,7 +42,7 @@ func (a *API) Middleware(resource, action string, inputFunc func(*http.Request) 
 				return
 			}
 			if authz == nil {
-				authz = a.am.AuthorizationsForIndentiy(identity)
+				authz = a.am.AuthorizationsForIdentity(identity)
 				nextR = r.WithContext(context.WithValue(r.Context(), AMSAuthzCtxKey, authz))
 			}
 			var input any
