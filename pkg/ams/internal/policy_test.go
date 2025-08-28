@@ -309,6 +309,43 @@ func TestPolicy(t *testing.T) { //nolint:maintidx
 		}
 	})
 
+	t.Run("get meta info", func(t *testing.T) {
+		var sp []dcn.Policy
+		err := json.Unmarshal(simplePolicy, &sp)
+		if err != nil {
+			t.Errorf("Error parsing policy: %v", err)
+		}
+
+		ps, err := PoliciesFromDCN(sp, schema, nil)
+		if err != nil {
+			t.Errorf("Error creating policy set: %v", err)
+		}
+
+		t.Run("get resources", func(t *testing.T) {
+			expected := []string{"data"}
+			if !reflect.DeepEqual(ps.GetResources(), expected) {
+				t.Errorf("Expected %v, got %v", expected, ps.GetResources())
+			}
+		})
+
+		t.Run("get actions", func(t *testing.T) {
+			t.Run("returns read for resource data", func(t *testing.T) {
+				expected := []string{"read"}
+				if !reflect.DeepEqual(ps.GetActions("data"), expected) {
+					t.Errorf("Expected %v, got %v", expected, ps.GetResources())
+				}
+			})
+
+			t.Run("returns empty array for non-existing resource", func(t *testing.T) {
+				expected := []string{}
+				if !reflect.DeepEqual(ps.GetActions("non-existent"), expected) {
+					t.Errorf("Expected %v, got %v", expected, ps.GetResources())
+				}
+			})
+
+		})
+	})
+
 	// t.Run("error on not parseable policy", func(t *testing.T) {
 
 	// 	_, err := PoliciesFromDCN([]byte("not a policy"), schema)

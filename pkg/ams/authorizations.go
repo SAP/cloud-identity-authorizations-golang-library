@@ -47,6 +47,14 @@ func (a Authorizations) SetEnvInput(env any) {
 	a.schema.InsertCustomInput(a.envInput, reflect.ValueOf(env), []string{"$env"})
 }
 
+func (a Authorizations) GetResources() []string {
+	return a.policies.GetResources()
+}
+
+func (a Authorizations) GetAction(resource string) []string {
+	return a.policies.GetActions(resource)
+}
+
 // Retrieve a access decision for a given action and resource and possibly some custom input
 // this function is ment to provide generic quick access to the authorizations and is dangerous to use
 // the provided input must be a map[string]expression.Constant where:
