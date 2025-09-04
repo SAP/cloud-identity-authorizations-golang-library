@@ -74,12 +74,12 @@ func TestScenarioAllowAction(t *testing.T) {
 		got := ec.Expression
 		want := x.Or(
 			x.In(
-				x.Ref("$dcl.resource"),
-				x.StringArray{x.String("Resource1")},
-			),
-			x.In(
 				x.Ref("$dcl.action"),
 				x.StringArray{x.String("Action1")},
+			),
+			x.In(
+				x.Ref("$dcl.resource"),
+				x.StringArray{x.String("Resource1")},
 			),
 		)
 
