@@ -71,18 +71,25 @@ func TestScenarioAllowAction(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to convert response expression: %v", err)
 		}
-		got := ec.Expression
-		want := x.Or(
-			x.In(
-				x.Ref("$dcl.action"),
-				x.StringArray{x.String("Action1")},
-			),
-			x.In(
-				x.Ref("$dcl.resource"),
-				x.StringArray{x.String("Resource1")},
-			),
+		got := ec.Expression.Evaluate(x.Input{
+			"$dcl.action": x.String("wrong action"),
+		})
+		want := x.In(
+			x.Ref("$dcl.resource"),
+			x.StringArray{x.String("Resource1")},
 		)
 
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Expected expression %v, got %v", want, got)
+		}
+
+		got = ec.Expression.Evaluate(x.Input{
+			"$dcl.resource": x.String("wrong resource"),
+		})
+		want = x.In(
+			x.Ref("$dcl.action"),
+			x.StringArray{x.String("Action1")},
+		)
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("Expected expression %v, got %v", want, got)
 		}
