@@ -1,6 +1,5 @@
 version: "2"
 linters:
-  default: none
   enable:
     - asasalint
     - asciicheck
@@ -86,9 +85,4 @@ formatters:
     - gofmt
     - gofumpt
     - goimports
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+
