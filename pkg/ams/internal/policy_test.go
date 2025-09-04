@@ -343,7 +343,6 @@ func TestPolicy(t *testing.T) { //nolint:maintidx
 					t.Errorf("Expected %v, got %v", expected, actual)
 				}
 			})
-
 		})
 	})
 

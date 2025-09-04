@@ -14,8 +14,10 @@ type Authorizations struct {
 	envInput  expression.Input
 }
 
-const DCL_ACTION = "$dcl.action"
-const DCL_RESOURCE = "$dcl.resource"
+const (
+	DCL_ACTION   = "$dcl.action"
+	DCL_RESOURCE = "$dcl.resource"
+)
 
 // Retrieve a access decision for a given action and resource and possibly some custom input
 // the app input should correspond to the DCL schema definition and will be mapped into $app fields.
@@ -24,7 +26,6 @@ const DCL_RESOURCE = "$dcl.resource"
 //   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema
 //     name or the fields name is EXACTLY the same as the schema name
 func (a Authorizations) Inquire(action, resource string, app any) Decision {
-
 	i := expression.Input{
 		DCL_ACTION:   expression.String(action),
 		DCL_RESOURCE: expression.String(resource),

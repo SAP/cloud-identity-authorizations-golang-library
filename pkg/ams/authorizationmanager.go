@@ -31,7 +31,11 @@ type AuthorizationManager struct {
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
 // to update its policies and assignments during runtime.
 // the instance must receive (possibly empty) data on both channels to be ready.
-func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.Assignments, errorHandler func(error)) *AuthorizationManager {
+func NewAuthorizationManager(
+	dcnC chan dcn.DcnContainer,
+	assignmentsC chan dcn.Assignments,
+	errorHandler func(error),
+) *AuthorizationManager {
 	result := AuthorizationManager{
 		ready:              make(chan bool),
 		policies:           internal.PolicySet{},
@@ -55,7 +59,13 @@ func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.A
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
-func NewAuthorizationManagerForIAS(bundleUrl, amsInstanceID, cert, key string, errorHandler func(error)) (*AuthorizationManager, error) {
+func NewAuthorizationManagerForIAS(
+	bundleUrl,
+	amsInstanceID,
+	cert,
+	key string,
+	errorHandler func(error),
+) (*AuthorizationManager, error) {
 	// parse the cert and key
 	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
 	if err != nil {
@@ -184,7 +194,7 @@ func (a *AuthorizationManager) GetSchema() internal.Schema {
 	return a.schema
 }
 
-// Returns Authorizations, based on the provided identity and the default policies
+// Returns Authorizations, based on the provided identity and the default policies.
 func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()

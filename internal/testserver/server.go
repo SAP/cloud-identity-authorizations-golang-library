@@ -3,6 +3,7 @@ package testserver
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
@@ -82,11 +83,11 @@ func (s *Router) handleLoadDCN(w http.ResponseWriter, r *http.Request) {
 	assignmentsChannel := make(chan dcn.Assignments, 1)
 
 	s.am = ams.NewAuthorizationManager(dcnChannel, assignmentsChannel, func(err error) {
-		fmt.Printf("error in authorization manager: %v\n", err)
+		log.Printf("error in authorization manager: %v\n", err)
 	})
 	done := false
 	s.am.RegisterErrorHandler(func(err error) {
-		fmt.Printf("error in authorization manager: %v\n", err)
+		log.Printf("error in authorization manager: %v\n", err)
 		if !done {
 			http.Error(w, fmt.Sprintf("error in authorization manager: %v", err), http.StatusInternalServerError)
 		}
@@ -96,7 +97,10 @@ func (s *Router) handleLoadDCN(w http.ResponseWriter, r *http.Request) {
 
 	<-s.am.WhenReady()
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`"OK"`))
+	_, err = w.Write([]byte(`"OK"`))
+	if err != nil {
+		log.Printf("could not write response %v\n", err)
+	}
 	done = true
 }
 
@@ -134,7 +138,6 @@ func (s *Router) handleEvaluatePolicies(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, fmt.Sprintf("could not encode response %v", err), http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func (s *Router) handleEvaluatePoliciesScoped(w http.ResponseWriter, r *http.Request) {
@@ -242,7 +245,6 @@ func (s *Router) handleNullifyExcept(w http.ResponseWriter, r *http.Request) {
 	keepRefs := make(map[string]bool)
 	for _, ref := range rb.KeepRefs {
 		keepRefs[util.StringifyQualifiedName(ref)] = true
-
 	}
 	result := expression.NullifyExcept(e.Expression, keepRefs)
 

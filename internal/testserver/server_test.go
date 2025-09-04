@@ -33,13 +33,14 @@ func TestScenarioAllowAction(t *testing.T) {
 	defer testserver.Close()
 
 	post := func(t *testing.T, path string, body any) *httptest.ResponseRecorder {
+		t.Helper()
 		result := httptest.NewRecorder()
 
 		data, err := json.Marshal(body)
 		if err != nil {
 			t.Fatalf("Failed to marshal request body: %v", err)
 		}
-		req := httptest.NewRequest("POST", testserver.URL+path, bytes.NewReader(data))
+		req := httptest.NewRequest(http.MethodPost, testserver.URL+path, bytes.NewReader(data))
 		req.Header.Set("Content-Type", "application/json")
 		mux.ServeHTTP(result, req)
 		return result
@@ -89,7 +90,8 @@ func TestScenarioAllowAction(t *testing.T) {
 			Expression: result.Expression,
 			KeepRefs: [][]string{
 				{"$dcl", "action"},
-			}})
+			},
+		})
 		if resp.Code != http.StatusOK {
 			t.Fatalf("Expected status code %d, got %d", http.StatusOK, resp.Code)
 		}
@@ -128,5 +130,4 @@ func TestScenarioAllowAction(t *testing.T) {
 			t.Errorf("Expected policies %v, got %v", expectedPolicies, result.Policies)
 		}
 	})
-
 }

@@ -26,12 +26,14 @@ const (
 	AMSAuthzCtxKey    AmsCtxKey = "ams_authz"
 )
 
-func (a *API) Middleware(resource, action string, inputFunc func(*http.Request) any) func(next http.Handler) http.Handler {
+func (a *API) Middleware(
+	resource,
+	action string,
+	inputFunc func(*http.Request) any,
+) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authz := AuthzFromContext(r.Context())
-			nextR := r
 			identity, err := a.getIdentity(r.Context())
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotExtended)
@@ -43,7 +45,7 @@ func (a *API) Middleware(resource, action string, inputFunc func(*http.Request) 
 			}
 			if authz == nil {
 				authz = a.am.AuthorizationsForIdentity(identity)
-				nextR = r.WithContext(context.WithValue(r.Context(), AMSAuthzCtxKey, authz))
+				r = r.WithContext(context.WithValue(r.Context(), AMSAuthzCtxKey, authz))
 			}
 			var input any
 			if inputFunc != nil {
@@ -54,8 +56,8 @@ func (a *API) Middleware(resource, action string, inputFunc func(*http.Request) 
 				http.Error(w, "Forbidden", http.StatusForbidden)
 				return
 			}
-			nextR = r.WithContext(context.WithValue(r.Context(), AMSDecisionCtxKey, decision))
-			next.ServeHTTP(w, nextR)
+			r = r.WithContext(context.WithValue(r.Context(), AMSDecisionCtxKey, decision))
+			next.ServeHTTP(w, r)
 		})
 	}
 }
