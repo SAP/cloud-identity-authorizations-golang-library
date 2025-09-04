@@ -67,10 +67,11 @@ func TestScenarioAllowAction(t *testing.T) {
 			t.Fatalf("Failed to decode response body: %v", err)
 		}
 
-		got, err := x.FromDCN(result.Expression, nil)
+		ec, err := x.FromDCN(result.Expression, nil)
 		if err != nil {
 			t.Fatalf("Failed to convert response expression: %v", err)
 		}
+		got := ec.Expression
 		want := x.Or(
 			x.In(
 				x.Ref("$dcl.resource"),
@@ -82,7 +83,7 @@ func TestScenarioAllowAction(t *testing.T) {
 			),
 		)
 
-		if !reflect.DeepEqual(got.Expression, want) {
+		if !reflect.DeepEqual(got, want) {
 			t.Errorf("Expected expression %v, got %v", want, got)
 		}
 
