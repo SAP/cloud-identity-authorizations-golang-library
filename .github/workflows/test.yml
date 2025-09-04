@@ -20,5 +20,5 @@ jobs:
         go-version: ${{ matrix.go-version }}
     
     - name: Run tests
-      run: go test -v -coverprofile=coverage.out ./...
+      run: go test -coverprofile=coverage.out ./...
     
