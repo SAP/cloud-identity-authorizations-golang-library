@@ -1,0 +1,53 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    # Run weekly on Sundays at 00:00 UTC
+    - cron: '0 0 * * 0'
+
+jobs:
+  vulnerability-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+    
+    - name: Run govulncheck
+      run: |
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+        govulncheck ./...
+
+#   code-analysis:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v4
+    
+#     - name: Set up Go
+#       uses: actions/setup-go@v5
+#       with:
+#         go-version: '1.23'
+    
+    
+#     - name: Run staticcheck
+#       run: |
+#         go install honnef.co/go/tools/cmd/staticcheck@latest
+#         staticcheck ./...
+    
+#     - name: Run ineffassign
+#       run: |
+#         go install github.com/gordonklaus/ineffassign@latest
+#         ineffassign ./...
+    
+#     - name: Run misspell
+#       run: |
+#         go install github.com/client9/misspell/cmd/misspell@latest
+#         misspell -error .
+
