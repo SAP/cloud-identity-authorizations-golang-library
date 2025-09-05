@@ -7,11 +7,15 @@ import (
 
 type Rule struct {
 	asExpression expression.Expression
+	actions      []string
+	resources    []string
 }
 
 func RuleFromDCN(rawRule dcn.Rule, f *expression.FunctionRegistry) (Rule, error) {
 	var rule Rule
 	args := []expression.Expression{}
+	rule.actions = []string{}
+	rule.resources = []string{}
 
 	if rawRule.Condition != nil {
 		cond, err := expression.FromDCN(*rawRule.Condition, f)
@@ -21,18 +25,21 @@ func RuleFromDCN(rawRule dcn.Rule, f *expression.FunctionRegistry) (Rule, error)
 		args = append(args, cond.Expression)
 	}
 	if len(rawRule.Actions) > 0 {
+		rule.actions = rawRule.Actions
 		args = append(args, expression.In(
 			expression.Ref("$dcl.action"),
 			expression.ConstantFrom(rawRule.Actions),
 		))
 	}
 	if len(rawRule.Resources) > 0 {
+		rule.resources = rawRule.Resources
 		args = append(args, expression.In(
 			expression.Ref("$dcl.resource"),
 			expression.ConstantFrom(rawRule.Resources),
 		))
 	}
 	rule.asExpression = expression.And(args...)
+
 	return rule, nil
 }
 

@@ -35,6 +35,35 @@ func Ref(name string) Reference {
 	return Reference{name: name}
 }
 
+func ToDCN(e Expression) dcn.Expression {
+	switch e := e.(type) {
+	case Reference:
+		return dcn.Expression{Ref: util.ParseQualifiedName(e.name)}
+	case Constant:
+		return dcn.Expression{Constant: e}
+	case OperatorCall:
+		args := make([]dcn.Expression, len(e.args))
+		for i, arg := range e.args {
+			args[i] = ToDCN(arg)
+		}
+		return dcn.Expression{
+			Call: []string{operatorNames[e.operator]},
+			Args: args,
+		}
+	case FunctionCall:
+		args := make([]dcn.Expression, len(e.args))
+		for i, arg := range e.args {
+			args[i] = ToDCN(arg)
+		}
+		return dcn.Expression{
+			Call: util.ParseQualifiedName(e.name),
+			Args: args,
+		}
+	default:
+		panic(fmt.Sprintf("unexpected expression type %T", e))
+	}
+}
+
 func FromDCN(e dcn.Expression, f *FunctionRegistry) (ExpressionContainer, error) {
 	result := ExpressionContainer{
 		References: make(referenceSet),

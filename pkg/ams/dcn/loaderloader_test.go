@@ -11,7 +11,7 @@ import (
 func TestLocalLoader(t *testing.T) {
 	t.Run("on testfolder", func(t *testing.T) {
 		errors := []error{}
-		loader := NewLocalLoader("testfolder")
+		loader := NewLocalLoader("testfolder", nil)
 		loader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 		})
@@ -41,7 +41,7 @@ func TestLocalLoader(t *testing.T) {
 		errReceived := make(chan bool)
 		errors := []error{}
 
-		loader := NewLocalLoader("edgecases/broken-data-json")
+		loader := NewLocalLoader("edgecases/broken-data-json", nil)
 		loader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true
@@ -57,7 +57,7 @@ func TestLocalLoader(t *testing.T) {
 		errReceived := make(chan bool)
 		errors := []error{}
 
-		loader := NewLocalLoader("edgecases/broken-dcn")
+		loader := NewLocalLoader("edgecases/broken-dcn", nil)
 		loader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true
@@ -74,7 +74,7 @@ func TestLocalLoader(t *testing.T) {
 		errors := []error{}
 		tmp := createTempFolderWithUnreadableFile("data.json")
 		defer os.RemoveAll(tmp) // Clean up
-		loader := NewLocalLoader(tmp)
+		loader := NewLocalLoader(tmp, nil)
 		loader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true
@@ -92,7 +92,7 @@ func TestLocalLoader(t *testing.T) {
 
 		tmp := createTempFolderWithUnreadableFile("x.dcn")
 		defer os.RemoveAll(tmp) // Clean up
-		loader := NewLocalLoader(tmp)
+		loader := NewLocalLoader(tmp, nil)
 		loader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true
@@ -108,7 +108,7 @@ func TestLocalLoader(t *testing.T) {
 		errReceived := make(chan bool)
 		errors := []error{}
 
-		loader := NewLocalLoader("edgecases/non-existent-directory")
+		loader := NewLocalLoader("edgecases/non-existent-directory", nil)
 		loader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true

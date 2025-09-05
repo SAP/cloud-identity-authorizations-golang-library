@@ -2,7 +2,6 @@ package ams
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net/http"
 	"net/url"
 	"sync"
@@ -22,27 +21,35 @@ type AuthorizationManager struct {
 	schema             internal.Schema
 	dcnChannel         chan dcn.DcnContainer
 	assignmentsChannel chan dcn.Assignments
-	errHandlers        []func(error)
 	Tests              []dcn.Test
 	hasDCN             bool
 	hasAssignments     bool
 	functionContainer  *expression.FunctionRegistry
+	errHandlers        []func(error)
 }
 
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
 // to update its policies and assignments during runtime.
 // the instance must receive (possibly empty) data on both channels to be ready.
-func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.Assignments) *AuthorizationManager {
+func NewAuthorizationManager(
+	dcnC chan dcn.DcnContainer,
+	assignmentsC chan dcn.Assignments,
+	errorHandler func(error),
+) *AuthorizationManager {
 	result := AuthorizationManager{
 		ready:              make(chan bool),
 		policies:           internal.PolicySet{},
 		dcnChannel:         dcnC,
 		assignmentsChannel: assignmentsC,
-		errHandlers:        []func(error){},
 		m:                  sync.RWMutex{},
 		hasDCN:             false,
 		hasAssignments:     false,
 		functionContainer:  expression.NewFunctionRegistry(),
+		errHandlers:        []func(error){},
+	}
+
+	if errorHandler != nil {
+		result.errHandlers = append(result.errHandlers, errorHandler)
 	}
 
 	go result.start()
@@ -52,14 +59,25 @@ func NewAuthorizationManager(dcnC chan dcn.DcnContainer, assignmentsC chan dcn.A
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
-func NewAuthorizationManagerForIAS(iasUrl, amsInstanceID, cert, key string) (*AuthorizationManager, error) {
+func NewAuthorizationManagerForIAS(
+	bundleUrl,
+	amsInstanceID,
+	cert,
+	key string,
+	errorHandler func(error),
+) (*AuthorizationManager, error) {
 	// parse the cert and key
 	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
 	if err != nil {
 		return nil, err
 	}
 
-	parsedURL, err := url.Parse(fmt.Sprintf("%s/bundle-gateway/%s.dcn.tar.gz", iasUrl, amsInstanceID))
+	stringURL, err := url.JoinPath(bundleUrl, amsInstanceID+".dcn.tar.gz")
+	if err != nil {
+		return nil, err
+	}
+
+	parsedURL, err := url.Parse(stringURL)
 	if err != nil {
 		return nil, err
 	}
@@ -77,10 +95,10 @@ func NewAuthorizationManagerForIAS(iasUrl, amsInstanceID, cert, key string) (*Au
 		parsedURL,
 		client,
 		*time.NewTicker(time.Second * 20),
+		errorHandler,
 	)
 
-	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel)
-	loader.RegisterErrorHandler(result.notifyError)
+	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, errorHandler)
 	return result, nil
 }
 
@@ -88,15 +106,18 @@ func NewAuthorizationManagerForIAS(iasUrl, amsInstanceID, cert, key string) (*Au
 // the provided path should contain the schema.dcn and the data.json files and subdirectories
 // containing the other dcn files// the data.json file should contain the assignments, if needed
 // and could be omitted.
-func NewAuthorizationManagerForLocal(path string) *AuthorizationManager {
-	loader := dcn.NewLocalLoader(path)
-	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel)
+func NewAuthorizationManagerForFs(path string, errorHandler func(error)) *AuthorizationManager {
+	loader := dcn.NewLocalLoader(path, nil)
+	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, errorHandler)
 	loader.RegisterErrorHandler(result.notifyError)
 	return result
 }
 
 // Register a new error handler that will be called when an error occurs in the background update process.
 func (a *AuthorizationManager) RegisterErrorHandler(handler func(error)) {
+	if handler == nil {
+		return
+	}
 	a.m.Lock()
 	defer a.m.Unlock()
 	a.errHandlers = append(a.errHandlers, handler)
@@ -173,22 +194,36 @@ func (a *AuthorizationManager) GetSchema() internal.Schema {
 	return a.schema
 }
 
-// Returns Authorizations, based on the users assigned policies and default policies
-// basically just a convinience warpper around GetAssignments and GetAuthorizations.
-func (a *AuthorizationManager) UserAuthorizations(tenant, user string) *Authorizations {
+// Returns Authorizations, based on the provided identity and the default policies.
+func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()
-	policyNames := a.GetAssignments(tenant, user)
+	if i == nil {
+		return &Authorizations{
+			policies: a.policies.GetSubset([]string{}, "", true),
+			schema:   a.schema,
+		}
+	}
+
+	policyNames := a.policies.GetDefaultPolicyNames(i.AppTID())
+
+	policyNames = append(policyNames, a.GetAssignments(i.AppTID(), i.ScimID())...)
+
 	return &Authorizations{
-		policies: a.policies.GetSubset(policyNames, tenant, true),
+		policies: a.policies.GetSubset(policyNames, i.AppTID(), true),
 		schema:   a.schema,
+		envInput: expression.Input{
+			"$env.$user.email":     expression.String(i.Email()),
+			"$env.$user.user_uuid": expression.String(i.UserUUID()),
+			"$env.$user.groups":    expression.StringArrayFrom(i.Groups()),
+		},
 	}
 }
 
 // Returns Authorizations, based on the provided policy names and optionally the default policies
 // and filtered filtering out admin policies from tenants other than the provided tenant.
 // for tenant-independent queries, use "" as tenant.
-func (a *AuthorizationManager) GetAuthorizations(policyNames []string) *Authorizations {
+func (a *AuthorizationManager) AuthorizationsForPolicies(policyNames []string) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()
 	return &Authorizations{

@@ -2,6 +2,8 @@ package internal
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
@@ -160,6 +162,43 @@ func PoliciesFromDCN(policies []dcn.Policy, schema Schema, f *expression.Functio
 		}
 	}
 	return result, nil
+}
+
+func (p PolicySet) GetResources() []string {
+	resources := map[string]struct{}{}
+	for i := range p.allPolicies {
+		for j := range p.allPolicies[i].rules {
+			rule := &p.allPolicies[i].rules[j]
+			for k := range rule.resources {
+				resources[rule.resources[k]] = struct{}{}
+			}
+		}
+	}
+
+	if len(resources) == 0 {
+		return []string{}
+	}
+	return slices.Collect(maps.Keys(resources))
+}
+
+func (p PolicySet) GetActions(resource string) []string {
+	actions := map[string]struct{}{}
+	for i := range p.allPolicies {
+		for j := range p.allPolicies[i].rules {
+			rule := &p.allPolicies[i].rules[j]
+			if len(rule.resources) > 0 && !slices.Contains(rule.resources, resource) {
+				continue
+			}
+			for k := range rule.actions {
+				actions[rule.actions[k]] = struct{}{}
+			}
+		}
+	}
+
+	if len(actions) == 0 {
+		return []string{}
+	}
+	return slices.Collect(maps.Keys(actions))
 }
 
 func topologicalSort(policies []dcn.Policy) ([]dcn.Policy, error) {

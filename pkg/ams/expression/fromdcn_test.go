@@ -6,29 +6,7 @@ import (
 	"testing"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
-
-func toDCN(e Expression) dcn.Expression {
-	return Visit(e,
-		func(s string, e []dcn.Expression) dcn.Expression {
-			return dcn.Expression{
-				Call: util.ParseQualifiedName(s),
-				Args: e,
-			}
-		},
-		func(s Reference) dcn.Expression {
-			return dcn.Expression{
-				Ref: util.ParseQualifiedName(s.GetName()),
-			}
-		},
-		func(c Constant) dcn.Expression {
-			return dcn.Expression{
-				Constant: c,
-			}
-		},
-	)
-}
 
 func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 	t.Run("DCNBool", func(t *testing.T) {
@@ -47,7 +25,7 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
 		}
 
-		got, err := json.Marshal(toDCN(expected))
+		got, err := json.Marshal(ToDCN(expected))
 		if err != nil {
 			t.Fatalf("MarshalJSON() error = %v", err)
 		}
@@ -157,7 +135,7 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 		if !reflect.DeepEqual(e.Expression, expected) {
 			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
 		}
-		got, err := json.Marshal(toDCN(expected))
+		got, err := json.Marshal(ToDCN(expected))
 		if err != nil {
 			t.Fatalf("MarshalJSON() error = %v", err)
 		}
@@ -182,7 +160,7 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
 		}
 
-		got, err := json.Marshal(toDCN(expected))
+		got, err := json.Marshal(ToDCN(expected))
 		if err != nil {
 			t.Fatalf("MarshalJSON() error = %v", err)
 		}
@@ -593,7 +571,7 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
 		}
 
-		got, err := json.Marshal(toDCN(expected))
+		got, err := json.Marshal(ToDCN(expected))
 		if err != nil {
 			t.Fatalf("MarshalJSON() error = %v", err)
 		}
@@ -629,7 +607,7 @@ func TestUnmarshalJSON(t *testing.T) { //nolint:maintidx
 		if !reflect.DeepEqual(e.Expression, expected) {
 			t.Errorf("UnmarshalJSON() = %v, expected %v", e.Expression, expected)
 		}
-		got, err := json.Marshal(toDCN(expected))
+		got, err := json.Marshal(ToDCN(expected))
 		if err != nil {
 			t.Fatalf("MarshalJSON() error = %v", err)
 		}

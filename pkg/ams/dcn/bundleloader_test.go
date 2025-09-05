@@ -142,7 +142,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
 
 		gotDCN := <-bundleLoader.DCNChannel
 		gotAssignments := <-bundleLoader.AssignmentsChannel
@@ -187,7 +187,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		errors := []error{}
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
 		bundleLoader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true
@@ -217,7 +217,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		errors := []error{}
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
 		bundleLoader.RegisterErrorHandler(func(err error) {
 			errReceived <- true
 			errors = append(errors, err)
@@ -240,7 +240,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		errors := []error{}
 
-		bundleLoader := NewBundleLoader(targetURL, &http.Client{}, ticker)
+		bundleLoader := NewBundleLoader(targetURL, &http.Client{}, ticker, nil)
 		bundleLoader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 		})
@@ -265,7 +265,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		errors := []error{}
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
 		bundleLoader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true
@@ -295,7 +295,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		errors := []error{}
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
 		bundleLoader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true
@@ -325,7 +325,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		errors := []error{}
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
 		bundleLoader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true
@@ -355,7 +355,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		errors := []error{}
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
 		bundleLoader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true
@@ -385,7 +385,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		errors := []error{}
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
 		bundleLoader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true
@@ -415,7 +415,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		errors := []error{}
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
 		bundleLoader.RegisterErrorHandler(func(err error) {
 			errors = append(errors, err)
 			errReceived <- true

@@ -1,0 +1,79 @@
+package api
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
+)
+
+type API struct {
+	am          *ams.AuthorizationManager
+	getIdentity func(context.Context) (ams.Identity, error)
+}
+
+func NewAPI(am *ams.AuthorizationManager, getIdentity func(context.Context) (ams.Identity, error)) *API {
+	return &API{
+		am:          am,
+		getIdentity: getIdentity,
+	}
+}
+
+type AmsCtxKey string
+
+const (
+	AMSDecisionCtxKey AmsCtxKey = "ams_decision"
+	AMSAuthzCtxKey    AmsCtxKey = "ams_authz"
+)
+
+func (a *API) Middleware(
+	resource,
+	action string,
+	inputFunc func(*http.Request) any,
+) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			authz := AuthzFromContext(r.Context())
+			identity, err := a.getIdentity(r.Context())
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusNotExtended)
+				return
+			}
+			if identity == nil {
+				http.Error(w, "Missing identity in context", http.StatusNotExtended)
+				return
+			}
+			if authz == nil {
+				authz = a.am.AuthorizationsForIdentity(identity)
+				r = r.WithContext(context.WithValue(r.Context(), AMSAuthzCtxKey, authz))
+			}
+			var input any
+			if inputFunc != nil {
+				input = inputFunc(r)
+			}
+			decision := authz.Inquire(action, resource, input)
+			if decision.IsDenied() {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				return
+			}
+			r = r.WithContext(context.WithValue(r.Context(), AMSDecisionCtxKey, decision))
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func AuthzFromContext(c context.Context) *ams.Authorizations {
+	authz, ok := c.Value(AMSAuthzCtxKey).(*ams.Authorizations)
+	if !ok {
+		return nil
+	}
+	return authz
+}
+
+func AuthzDecisionFromContext(c context.Context) *ams.Decision {
+	decision, ok := c.Value(AMSDecisionCtxKey).(*ams.Decision)
+	if !ok {
+		return nil
+	}
+	return decision
+}

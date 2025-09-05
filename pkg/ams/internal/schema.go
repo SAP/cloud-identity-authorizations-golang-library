@@ -134,15 +134,21 @@ func (s Schema) CustomInput(action, resource string, input any, env any) express
 		"$dcl.action":   expression.String(action),
 		"$dcl.resource": expression.String(resource),
 	}
+	if action == "" {
+		delete(result, "$dcl.action")
+	}
+	if resource == "" {
+		delete(result, "$dcl.resource")
+	}
 
-	s.convertCustomInput(result, reflect.ValueOf(input), []string{"$app"})
+	s.InsertCustomInput(result, reflect.ValueOf(input), []string{"$app"})
 
-	s.convertCustomInput(result, reflect.ValueOf(env), []string{"$env"})
+	s.InsertCustomInput(result, reflect.ValueOf(env), []string{"$env"})
 
 	return result
 }
 
-func (s Schema) convertCustomInput(result expression.Input, input reflect.Value, path []string) {
+func (s Schema) InsertCustomInput(result expression.Input, input reflect.Value, path []string) {
 	v := input
 	kind := v.Kind()
 	currentPath := util.StringifyQualifiedName(path)
@@ -164,7 +170,7 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 			result[currentPath] = c
 			return
 		}
-		s.convertCustomInput(result, v.Elem(), path)
+		s.InsertCustomInput(result, v.Elem(), path)
 		return
 	}
 
@@ -182,7 +188,7 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 				if name == "" {
 					name = field.Name
 				}
-				s.convertCustomInput(result, fieldValue, append(path, name))
+				s.InsertCustomInput(result, fieldValue, append(path, name))
 			}
 		case reflect.Map:
 			if v.IsNil() {
@@ -190,7 +196,7 @@ func (s Schema) convertCustomInput(result expression.Input, input reflect.Value,
 			}
 			for _, k := range v.MapKeys() {
 				fieldValue := v.MapIndex(k)
-				s.convertCustomInput(result, fieldValue, append(path, k.String()))
+				s.InsertCustomInput(result, fieldValue, append(path, k.String()))
 			}
 		}
 	case STRING:

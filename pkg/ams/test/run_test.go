@@ -23,7 +23,9 @@ func TestRun(t *testing.T) {
 	}
 	for _, testDir := range testDirs {
 		t.Run(testDir.Name(), func(t *testing.T) {
-			ams := ams.NewAuthorizationManagerForLocal(path.Join("scenarios", testDir.Name()))
+			ams := ams.NewAuthorizationManagerForFs(path.Join("scenarios", testDir.Name()), func(err error) {
+				panic(err)
+			})
 
 			ams.RegisterErrorHandler(func(err error) {
 				t.Errorf("error in authorization manager: %v", err)
@@ -59,9 +61,9 @@ func TestRun(t *testing.T) {
 						for _, filter := range assertion.ScopeFilter {
 							scopeFilter = append(scopeFilter, util.StringifyQualifiedName(filter))
 						}
-						authz := ams.GetAuthorizations(policies)
+						authz := ams.AuthorizationsForPolicies(policies)
 						if len(scopeFilter) > 0 {
-							scopeFilter := ams.GetAuthorizations(scopeFilter)
+							scopeFilter := ams.AuthorizationsForPolicies(scopeFilter)
 							authz = authz.AndJoin(scopeFilter)
 						}
 						t.Run(fmt.Sprintf("policies: %v, scopeFilter: %v", policies, scopeFilter), func(t *testing.T) {
@@ -71,7 +73,7 @@ func TestRun(t *testing.T) {
 										t.Run(assertionCaption(action, resource, tInput), func(t *testing.T) {
 											input := createInput(ams.GetSchema(), tInput, action, resource)
 
-											result := authz.Evaluate(input)
+											result := authz.Evaluate(input).Condition()
 											result = unsetIgnore(result, tInput)
 											result = NormalizeExpression(result)
 											expectedContainer, err := expression.FromDCN(assertion.Expect, &expression.FunctionRegistry{})
