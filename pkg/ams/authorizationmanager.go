@@ -136,7 +136,7 @@ func (a *AuthorizationManager) start() {
 			a.m.Lock()
 			a.Assignments = assignments
 			a.hasAssignments = true
-			if a.hasDCN {
+			if !a.IsReady() && a.hasDCN {
 				close(a.ready)
 			}
 			a.m.Unlock()
