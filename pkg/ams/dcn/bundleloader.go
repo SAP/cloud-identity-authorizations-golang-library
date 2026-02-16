@@ -3,6 +3,7 @@ package dcn
 import (
 	"archive/tar"
 	"compress/gzip"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +13,9 @@ import (
 	"strings"
 	"time"
 )
+
+//go:embed VERSION
+var version string
 
 type BundleLoader struct {
 	DCNChannel         chan DcnContainer
@@ -80,6 +84,7 @@ func (b *BundleLoader) bundleRequest() {
 		URL:    b.url,
 		Header: http.Header{
 			"If-None-Match": []string{b.lastEtag},
+			"User-Agent":    []string{fmt.Sprintf("golang-dcn-%s", version)},
 		},
 	}
 

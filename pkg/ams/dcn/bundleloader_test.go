@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	_ "embed"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -177,6 +178,12 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 		got := recordedRequests[1].Header.Get("If-None-Match")
 		if got != want {
 			t.Fatalf("expected If-None-Match header to be '%s', got '%s'", want, got)
+		}
+
+		want = fmt.Sprintf("golang-dcn-%s", version)
+		got = recordedRequests[1].Header.Get("User-Agent")
+		if got != want {
+			t.Fatalf("expected User-Agent header to be '%s', got '%s'", want, got)
 		}
 	})
 
