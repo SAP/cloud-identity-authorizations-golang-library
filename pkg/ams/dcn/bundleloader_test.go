@@ -173,6 +173,11 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 		if len(recordedRequests) != 2 {
 			t.Fatalf("expected 2 request, got %d", len(recordedRequests))
 		}
+		want := "test-etag"
+		got := recordedRequests[1].Header.Get("If-None-Match")
+		if got != want {
+			t.Fatalf("expected If-None-Match header to be '%s', got '%s'", want, got)
+		}
 	})
 
 	t.Run("broken server", func(t *testing.T) {
