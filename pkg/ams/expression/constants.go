@@ -9,7 +9,6 @@ type Constant interface {
 type ArrayConstant interface {
 	Contains(c Constant) bool
 	IsEmpty() bool
-	Elements() []Constant
 	Constant
 }
 
@@ -124,26 +123,26 @@ func (b BoolArray) IsEmpty() bool {
 	return len(b) == 0
 }
 
-func (n NumberArray) Elements() []Constant {
-	result := make([]Constant, len(n))
-	for i, v := range n {
-		result[i] = v
+func (n NumberArray) AsFloat() []float64 {
+	result := make([]float64, len(n))
+	for i, n := range n {
+		result[i] = float64(n)
 	}
 	return result
 }
 
-func (s StringArray) Elements() []Constant {
-	result := make([]Constant, len(s))
-	for i, v := range s {
-		result[i] = v
+func (s StringArray) AsString() []string {
+	result := make([]string, len(s))
+	for i, s := range s {
+		result[i] = string(s)
 	}
 	return result
 }
 
-func (b BoolArray) Elements() []Constant {
-	result := make([]Constant, len(b))
-	for i, v := range b {
-		result[i] = v
+func (b BoolArray) AsBool() []bool {
+	result := make([]bool, len(b))
+	for i, b := range b {
+		result[i] = bool(b)
 	}
 	return result
 }

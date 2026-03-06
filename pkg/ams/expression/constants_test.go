@@ -1,7 +1,6 @@
 package expression
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -207,26 +206,6 @@ func TestDCNBoolArray_Contains(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.arr.Contains(tt.c); got != tt.expected {
 				t.Errorf("DCNBoolArray.Contains() = %v, expected %v", got, tt.expected)
-			}
-		})
-	}
-}
-
-func TestDCNArrayConstant_Elements(t *testing.T) {
-	tests := []struct {
-		name     string
-		arr      ArrayConstant
-		expected []Constant
-	}{
-		{"Number array", NumberArray{1, 2, 3}, []Constant{Number(1), Number(2), Number(3)}},
-		{"String array", StringArray{"a", "b", "c"}, []Constant{String("a"), String("b"), String("c")}},
-		{"Bool array", BoolArray{true, false}, []Constant{Bool(true), Bool(false)}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.arr.Elements(); !reflect.DeepEqual(got, tt.expected) {
-				t.Errorf("DCNArrayConstant.Elements() = %v, expected %v", got, tt.expected)
 			}
 		})
 	}
