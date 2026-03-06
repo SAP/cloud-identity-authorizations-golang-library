@@ -17,25 +17,44 @@ func NormalizeExpression(expr expression.Expression) expression.Expression {
 			case "or":
 				return normalizeOr(e)
 			case "in":
-				array, ok := e[1].(expression.ArrayConstant)
-				if !ok {
-					return expression.In(e[0], e[1])
-				}
 				newArgs := []expression.Expression{}
-				for _, arg := range array.Elements() {
-					newArgs = append(newArgs, expression.Eq(e[0], arg))
+				switch array := e[1].(type) {
+				case expression.StringArray:
+					for _, arg := range array {
+						newArgs = append(newArgs, expression.Eq(e[0], arg))
+					}
+				case expression.NumberArray:
+					for _, arg := range array {
+						newArgs = append(newArgs, expression.Eq(e[0], arg))
+					}
+				case expression.BoolArray:
+					for _, arg := range array {
+						newArgs = append(newArgs, expression.Eq(e[0], arg))
+					}
+				default:
+					return expression.In(e[0], e[1])
 				}
 				return expression.Or(newArgs...)
 			case "not_in":
-				array, ok := e[1].(expression.ArrayConstant)
-				if !ok {
+				newArgs := []expression.Expression{}
+				switch array := e[1].(type) {
+				case expression.StringArray:
+					for _, arg := range array {
+						newArgs = append(newArgs, expression.Ne(e[0], arg))
+					}
+				case expression.NumberArray:
+					for _, arg := range array {
+						newArgs = append(newArgs, expression.Ne(e[0], arg))
+					}
+				case expression.BoolArray:
+					for _, arg := range array {
+						newArgs = append(newArgs, expression.Ne(e[0], arg))
+					}
+				default:
 					return expression.NotIn(e[0], e[1])
 				}
-				newArgs := []expression.Expression{}
-				for _, arg := range array.Elements() {
-					newArgs = append(newArgs, expression.Ne(e[0], arg))
-				}
 				return expression.And(newArgs...)
+
 			case "eq":
 				l, ok := e[1].(expression.Reference)
 				if ok {
