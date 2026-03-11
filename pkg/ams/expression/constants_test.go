@@ -1,6 +1,7 @@
 package expression
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -209,4 +210,54 @@ func TestDCNBoolArray_Contains(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDCNArrayConstant_Elements(t *testing.T) {
+	tests := []struct {
+		name     string
+		arr      ArrayConstant
+		expected []Constant
+	}{
+		{"Number array", NumberArray{1, 2, 3}, []Constant{Number(1), Number(2), Number(3)}},
+		{"String array", StringArray{"a", "b", "c"}, []Constant{String("a"), String("b"), String("c")}},
+		{"Bool array", BoolArray{true, false}, []Constant{Bool(true), Bool(false)}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.arr.Elements(); !reflect.DeepEqual(got, tt.expected) {
+				t.Errorf("DCNArrayConstant.Elements() = %v, expected %v", got, tt.expected)
+			}
+		})
+	}
+	t.Run("Number array toFloat", func(t *testing.T) {
+		expected := []float64{1.0, 2.0, 3.0}
+		arr, ok := ArrayFrom(expected).(NumberArray)
+		if !ok {
+			t.Errorf("Expected NumberArray, got %T", arr)
+		}
+		if got := arr.AsFloat(); !reflect.DeepEqual(got, expected) {
+			t.Errorf("DCNNumberArray.AsFloat() = %v, expected %v", got, expected)
+		}
+	})
+	t.Run("String array toString", func(t *testing.T) {
+		expected := []string{"a", "b", "c"}
+		arr, ok := ArrayFrom(expected).(StringArray)
+		if !ok {
+			t.Errorf("Expected StringArray, got %T", arr)
+		}
+		if got := arr.AsString(); !reflect.DeepEqual(got, expected) {
+			t.Errorf("DCNStringArray.AsString() = %v, expected %v", got, expected)
+		}
+	})
+	t.Run("Bool array toBool", func(t *testing.T) {
+		expected := []bool{true, false}
+		arr, ok := ArrayFrom(expected).(BoolArray)
+		if !ok {
+			t.Errorf("Expected BoolArray, got %T", arr)
+		}
+		if got := arr.AsBool(); !reflect.DeepEqual(got, expected) {
+			t.Errorf("DCNBoolArray.AsBool() = %v, expected %v", got, expected)
+		}
+	})
 }

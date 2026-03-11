@@ -79,4 +79,16 @@ func TestEdgeCases(t *testing.T) {
 			t.Errorf("Expected %v, got %v", e, got)
 		}
 	})
+
+	t.Run("Marshal invalid expression", func(t *testing.T) {
+		defer func() {
+			r := recover()
+			if r == nil {
+				t.Errorf("Expected panic")
+			}
+		}()
+		e := UnexpectedExpression{}
+		ToDCN(e)
+		t.Errorf("Expected panic")
+	})
 }

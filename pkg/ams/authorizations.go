@@ -25,34 +25,25 @@ const (
 //   - deeply nested map[string] where the keys are the schema names and the values can translated to the schema types
 //   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema
 //     name or the fields name is EXACTLY the same as the schema name
-func (a Authorizations) Inquire(action, resource string, app any) Decision {
-	i := expression.Input{
-		DCL_ACTION:   expression.String(action),
-		DCL_RESOURCE: expression.String(resource),
-	}
-	if action == "" {
-		delete(i, DCL_ACTION)
-	}
-	if resource == "" {
-		delete(i, DCL_RESOURCE)
-	}
+func (a *Authorizations) Inquire(action, resource string, app any) Decision {
+	i := a.schema.CustomInput(action, resource, app, nil)
 	for k, v := range a.envInput {
 		i[k] = v
 	}
-	a.schema.InsertCustomInput(i, reflect.ValueOf(app), []string{"$app"})
+
 	return a.Evaluate(i)
 }
 
-func (a Authorizations) SetEnvInput(env any) {
+func (a *Authorizations) SetEnvInput(env any) {
 	a.envInput = expression.Input{}
 	a.schema.InsertCustomInput(a.envInput, reflect.ValueOf(env), []string{"$env"})
 }
 
-func (a Authorizations) GetResources() []string {
+func (a *Authorizations) GetResources() []string {
 	return a.policies.GetResources()
 }
 
-func (a Authorizations) GetActions(resource string) []string {
+func (a *Authorizations) GetActions(resource string) []string {
 	return a.policies.GetActions(resource)
 }
 
@@ -65,7 +56,7 @@ func (a Authorizations) GetActions(resource string) []string {
 //   - the evaluation will panic if the input is wrongly typed
 //
 // the input can savely created/purged by the Schema.
-func (a Authorizations) Evaluate(input expression.Input) Decision {
+func (a *Authorizations) Evaluate(input expression.Input) Decision {
 	for k, v := range a.envInput {
 		input[k] = v
 	}
@@ -103,7 +94,7 @@ func (a Authorizations) Evaluate(input expression.Input) Decision {
 
 // Restrict an authorizations object by another one
 // a possible scenario would be to restrict a users authorizations by other technical authorizations.
-func (a Authorizations) AndJoin(aa *Authorizations) *Authorizations {
+func (a *Authorizations) AndJoin(aa *Authorizations) *Authorizations {
 	return &Authorizations{
 		policies:  a.policies,
 		andJoined: append(a.andJoined, aa),
