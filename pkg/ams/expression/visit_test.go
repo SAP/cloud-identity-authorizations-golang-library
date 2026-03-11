@@ -8,7 +8,6 @@ import (
 
 func TestVisit(t *testing.T) {
 	t.Run("Example for creating SQL", func(t *testing.T) {
-
 		exp := And(
 			Or(
 				Eq(Ref("x"), String("a")),
@@ -22,37 +21,37 @@ func TestVisit(t *testing.T) {
 		sql := Visit(exp,
 			func(t string, args []string) string {
 				switch t {
-				case "and":
+				case AND:
 					return "(" + strings.Join(args, " AND ") + ")"
-				case "or":
+				case OR:
 					return "(" + strings.Join(args, " OR ") + ")"
-				case "eq":
+				case EQ:
 					return args[0] + " = " + args[1]
-				case "ne":
+				case NE:
 					return args[0] + " != " + args[1]
-				case "gt":
+				case GT:
 					return args[0] + " > " + args[1]
-				case "lt":
+				case LT:
 					return args[0] + " < " + args[1]
-				case "ge":
+				case GE:
 					return args[0] + " >= " + args[1]
-				case "le":
+				case LE:
 					return args[0] + " <= " + args[1]
-				case "between":
+				case BETWEEN:
 					return args[0] + " BETWEEN " + args[1] + " AND " + args[2]
-				case "not_between":
+				case NOT_BETWEEN:
 					return args[0] + " NOT BETWEEN " + args[1] + " AND " + args[2]
-				case "like":
+				case LIKE:
 					return args[0] + " LIKE " + args[1]
-				case "not_like":
+				case NOT_LIKE:
 					return args[0] + " NOT LIKE " + args[1]
-				case "in":
+				case IN:
 					return args[0] + " IN " + args[1]
-				case "not_in":
+				case NOT_IN:
 					return args[0] + " NOT IN " + args[1]
-				case "is_null":
+				case IS_NULL:
 					return args[0] + " IS NULL"
-				case "is_not_null":
+				case IS_NOT_NULL:
 					return args[0] + " IS NOT NULL"
 				case "customFunc":
 					return fmt.Sprintf("CUSTOM_FUNC(%s)", strings.Join(args, ", "))
@@ -114,6 +113,5 @@ func TestVisit(t *testing.T) {
 		if sql != expected {
 			t.Fatalf("expected SQL to be %s, but was %s", expected, sql)
 		}
-
 	})
 }

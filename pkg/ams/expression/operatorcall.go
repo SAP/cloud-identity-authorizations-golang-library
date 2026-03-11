@@ -9,47 +9,69 @@ import (
 type callOperator int
 
 const (
-	AND callOperator = iota
-	OR
-	NOT
-	EQ
-	NE
-	LT
-	LE
-	GT
-	GE
-	BETWEEN
-	LIKE
-	IN
-	IS_NULL
-	IS_NOT_NULL
-	NOT_BETWEEN
-	NOT_LIKE
-	NOT_IN
-	NOT_RESTRICTED
-	RESTRICTED
+	and callOperator = iota
+	or
+	not
+	eq
+	ne
+	lt
+	le
+	gt
+	ge
+	between
+	like
+	in
+	is_null
+	is_not_null
+	not_between
+	not_like
+	not_in
+	not_restricted
+	restricted
+)
+
+const (
+	AND            = "and"
+	OR             = "or"
+	NOT            = "not"
+	EQ             = "eq"
+	NE             = "ne"
+	LT             = "lt"
+	LE             = "le"
+	GT             = "gt"
+	GE             = "ge"
+	BETWEEN        = "between"
+	LIKE           = "like"
+	IN             = "in"
+	IS_NULL        = "is_null"
+	IS_NOT_NULL    = "is_not_null"
+	NOT_BETWEEN    = "not_between"
+	NOT_LIKE       = "not_like"
+	NOT_IN         = "not_in"
+	NOT_RESTRICTED = "not_restricted"
+	RESTRICTED     = "restricted"
 )
 
 var operatorNames = map[callOperator]string{
-	AND:            "and",
-	OR:             "or",
-	NOT:            "not",
-	EQ:             "eq",
-	NE:             "ne",
-	LT:             "lt",
-	LE:             "le",
-	GT:             "gt",
-	GE:             "ge",
-	BETWEEN:        "between",
-	LIKE:           "like",
-	IN:             "in",
-	IS_NULL:        "is_null",
-	IS_NOT_NULL:    "is_not_null",
-	NOT_BETWEEN:    "not_between",
-	NOT_LIKE:       "not_like",
-	NOT_IN:         "not_in",
-	NOT_RESTRICTED: "not_restricted",
-	RESTRICTED:     "restricted",
+	and:            AND,
+	or:             OR,
+	not:            NOT,
+	eq:             EQ,
+	ne:             NE,
+	lt:             LT,
+	le:             LE,
+	gt:             GT,
+	ge:             GE,
+	between:        BETWEEN,
+	like:           LIKE,
+	in:             IN,
+	is_null:        IS_NULL,
+	is_not_null:    IS_NOT_NULL,
+	not_between:    NOT_BETWEEN,
+	not_like:       NOT_LIKE,
+	not_in:         NOT_IN,
+	not_restricted: NOT_RESTRICTED,
+	restricted:     RESTRICTED,
 }
 
 type OperatorCall struct {
@@ -80,35 +102,35 @@ func (o OperatorCall) GetArgs() []Expression {
 
 func (o OperatorCall) Evaluate(input Input) Expression {
 	switch o.operator {
-	case AND:
+	case and:
 		return o.evaluateAnd(input)
-	case OR:
+	case or:
 		return o.evaluateOr(input)
-	case NOT:
+	case not:
 		return o.evaluateNot(input)
-	case LIKE:
+	case like:
 		newArg := o.args[0].Evaluate(input)
 		str, ok := newArg.(String)
 		if !ok {
 			return OperatorCall{
-				operator: LIKE,
+				operator: like,
 				args:     o.args,
 				regex:    o.regex,
 			}
 		}
 		return Bool(o.regex.MatchString(string(str)))
-	case NOT_LIKE:
+	case not_like:
 		newArg := o.args[0].Evaluate(input)
 		str, ok := newArg.(String)
 		if !ok {
 			return OperatorCall{
-				operator: NOT_LIKE,
+				operator: not_like,
 				args:     o.args,
 				regex:    o.regex,
 			}
 		}
 		return Bool(!o.regex.MatchString(string(str)))
-	case IN:
+	case in:
 		left := o.args[0].Evaluate(input)
 		right := o.args[1].Evaluate(input)
 		r, ok := right.(ArrayConstant)
@@ -126,7 +148,7 @@ func (o OperatorCall) Evaluate(input Input) Expression {
 			return TRUE
 		}
 		return FALSE
-	case NOT_IN:
+	case not_in:
 		left := o.args[0].Evaluate(input)
 		right := o.args[1].Evaluate(input)
 		r, ok := right.(ArrayConstant)
@@ -144,72 +166,72 @@ func (o OperatorCall) Evaluate(input Input) Expression {
 			return FALSE
 		}
 		return TRUE
-	case IS_NULL:
+	case is_null:
 		newArg := o.args[0].Evaluate(input)
 		if _, ok := newArg.(Constant); ok {
 			return FALSE
 		}
 		return OperatorCall{
-			operator: IS_NULL,
+			operator: is_null,
 			args:     o.args,
 		}
-	case IS_NOT_NULL:
+	case is_not_null:
 		newArg := o.args[0].Evaluate(input)
 		if _, ok := newArg.(Constant); ok {
 			return TRUE
 		}
 		return OperatorCall{
-			operator: IS_NOT_NULL,
+			operator: is_not_null,
 			args:     o.args,
 		}
-	case RESTRICTED:
+	case restricted:
 		return FALSE
-	case NOT_RESTRICTED:
+	case not_restricted:
 		return TRUE
-	case EQ:
+	case eq:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 2 {
 			return Bool(c[0].equals((c[1])))
 		}
 		return Eq(newArgs...)
 
-	case NE:
+	case ne:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 2 {
 			return Bool(!c[0].equals((c[1])))
 		}
 		return Ne(newArgs...)
-	case LT:
+	case lt:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 2 {
 			return Bool(c[0].LessThan(c[1]))
 		}
 		return Lt(newArgs...)
-	case LE:
+	case le:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 2 {
 			return Bool(!c[1].LessThan(c[0]))
 		}
 		return Le(newArgs...)
-	case GT:
+	case gt:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 2 {
 			return Bool(c[1].LessThan(c[0]))
 		}
 		return Gt(newArgs...)
-	case GE:
+	case ge:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 2 {
 			return Bool(!c[0].LessThan(c[1]))
 		}
 		return Ge(newArgs...)
-	case BETWEEN:
+	case between:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 3 {
 			return Bool(!c[0].LessThan(c[1]) && !c[2].LessThan(c[0]))
 		}
 		return Between(newArgs...)
-	case NOT_BETWEEN:
+	case not_between:
 		c, newArgs := evaluateArgs(input, o.args)
 		if len(c) == 3 {
 			return Bool(c[0].LessThan(c[1]) || c[2].LessThan(c[0]))
@@ -294,7 +316,7 @@ func Or(args ...Expression) Expression {
 		return Bool(false)
 	}
 	return OperatorCall{
-		operator: OR,
+		operator: or,
 		args:     args,
 	}
 }
@@ -307,14 +329,14 @@ func And(args ...Expression) Expression {
 		return Bool(true)
 	}
 	return OperatorCall{
-		operator: AND,
+		operator: and,
 		args:     args,
 	}
 }
 
 func Not(arg Expression) Expression {
 	if op, ok := arg.(OperatorCall); ok {
-		if op.operator == NOT {
+		if op.operator == not {
 			return op.args[0]
 		}
 	}
@@ -327,105 +349,105 @@ func Not(arg Expression) Expression {
 	}
 
 	return OperatorCall{
-		operator: NOT,
+		operator: not,
 		args:     []Expression{arg},
 	}
 }
 
 func In(args ...Expression) OperatorCall {
 	return OperatorCall{
-		operator: IN,
+		operator: in,
 		args:     args,
 	}
 }
 
 func NotIn(args ...Expression) OperatorCall {
 	return OperatorCall{
-		operator: NOT_IN,
+		operator: not_in,
 		args:     args,
 	}
 }
 
 func IsNull(arg Expression) OperatorCall {
 	return OperatorCall{
-		operator: IS_NULL,
+		operator: is_null,
 		args:     []Expression{arg},
 	}
 }
 
 func IsNotNull(arg Expression) OperatorCall {
 	return OperatorCall{
-		operator: IS_NOT_NULL,
+		operator: is_not_null,
 		args:     []Expression{arg},
 	}
 }
 
 func Restricted(arg Expression) OperatorCall {
 	return OperatorCall{
-		operator: RESTRICTED,
+		operator: restricted,
 		args:     []Expression{arg},
 	}
 }
 
 func NotRestricted(arg Expression) OperatorCall {
 	return OperatorCall{
-		operator: NOT_RESTRICTED,
+		operator: not_restricted,
 		args:     []Expression{arg},
 	}
 }
 
 func Eq(args ...Expression) Expression {
 	return OperatorCall{
-		operator: EQ,
+		operator: eq,
 		args:     args,
 	}
 }
 
 func Ne(args ...Expression) OperatorCall {
 	return OperatorCall{
-		operator: NE,
+		operator: ne,
 		args:     args,
 	}
 }
 
 func Lt(args ...Expression) OperatorCall {
 	return OperatorCall{
-		operator: LT,
+		operator: lt,
 		args:     args,
 	}
 }
 
 func Le(args ...Expression) OperatorCall {
 	return OperatorCall{
-		operator: LE,
+		operator: le,
 		args:     args,
 	}
 }
 
 func Gt(args ...Expression) OperatorCall {
 	return OperatorCall{
-		operator: GT,
+		operator: gt,
 		args:     args,
 	}
 }
 
 func Ge(args ...Expression) OperatorCall {
 	return OperatorCall{
-		operator: GE,
+		operator: ge,
 		args:     args,
 	}
 }
 
 func Between(args ...Expression) OperatorCall {
 	return OperatorCall{
-		operator: BETWEEN,
+		operator: between,
 		args:     args,
 	}
 }
 
 func NotBetween(args ...Expression) OperatorCall {
 	return OperatorCall{
-		operator: NOT_BETWEEN,
+		operator: not_between,
 		args:     args,
 	}
 }
@@ -440,7 +462,7 @@ func Like(args ...Expression) OperatorCall {
 
 	regex := createLikeRegex(pattern, escape)
 	return OperatorCall{
-		operator: LIKE,
+		operator: like,
 		args:     args,
 		regex:    regex,
 	}
@@ -448,7 +470,7 @@ func Like(args ...Expression) OperatorCall {
 
 func NotLike(args ...Expression) OperatorCall {
 	r := Like(args...)
-	r.operator = NOT_LIKE
+	r.operator = not_like
 	return r
 }
 
