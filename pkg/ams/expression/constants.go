@@ -8,8 +8,8 @@ type Constant interface {
 
 type ArrayConstant interface {
 	Contains(c Constant) bool
-	IsEmpty() bool
 	Elements() []Constant
+	IsEmpty() bool
 	Constant
 }
 
@@ -147,14 +147,6 @@ func (b BoolArray) Elements() []Constant {
 	return result
 }
 
-func (n NumberArray) AsFloat() []float64 {
-	result := make([]float64, len(n))
-	for i, n := range n {
-		result[i] = float64(n)
-	}
-	return result
-}
-
 func (s StringArray) AsString() []string {
 	result := make([]string, len(s))
 	for i, s := range s {
@@ -167,6 +159,14 @@ func (b BoolArray) AsBool() []bool {
 	result := make([]bool, len(b))
 	for i, b := range b {
 		result[i] = bool(b)
+	}
+	return result
+}
+
+func (n NumberArray) AsFloat() []float64 {
+	result := make([]float64, len(n))
+	for i, n := range n {
+		result[i] = float64(n)
 	}
 	return result
 }
