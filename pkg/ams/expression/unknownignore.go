@@ -34,19 +34,19 @@ func nullifyExcept(e Expression, keepRefs map[string]bool, inv bool) Expression 
 		return null
 	case OperatorCall:
 		switch e.operator { //nolint:exhaustive
-		case IS_NULL:
+		case is_null:
 			arg := nullifyExcept(e.args[0], keepRefs, inv)
 			if arg == null {
 				return TRUE
 			}
 			return IsNull(arg)
-		case IS_NOT_NULL:
+		case is_not_null:
 			arg := nullifyExcept(e.args[0], keepRefs, inv)
 			if arg == null {
 				return FALSE
 			}
 			return IsNotNull(arg)
-		case NOT:
+		case not:
 			arg := nullifyExcept(e.args[0], keepRefs, !inv)
 			if arg == null {
 				return null
@@ -58,7 +58,7 @@ func nullifyExcept(e Expression, keepRefs map[string]bool, inv bool) Expression 
 				return TRUE
 			}
 			return Not(arg)
-		case AND:
+		case and:
 			newArgs := []Expression{}
 			hasNull := false
 			for _, arg := range e.args {
@@ -89,7 +89,7 @@ func nullifyExcept(e Expression, keepRefs map[string]bool, inv bool) Expression 
 				}
 				return TRUE
 			}
-		case OR:
+		case or:
 			newArgs := []Expression{}
 			hasNull := false
 			for _, arg := range e.args {
@@ -167,7 +167,7 @@ func unkownIgnore(e Expression, unknowns, ignores map[string]bool, inv bool) Exp
 		return e
 	case OperatorCall:
 		switch e.operator { //nolint:exhaustive
-		case IS_NULL:
+		case is_null:
 			arg := unkownIgnore(e.args[0], unknowns, ignores, inv)
 			if arg == unset {
 				return TRUE
@@ -176,7 +176,7 @@ func unkownIgnore(e Expression, unknowns, ignores map[string]bool, inv bool) Exp
 				return ignore
 			}
 			return IsNull(arg)
-		case IS_NOT_NULL:
+		case is_not_null:
 			arg := unkownIgnore(e.args[0], unknowns, ignores, inv)
 			if arg == unset {
 				return FALSE
@@ -185,7 +185,7 @@ func unkownIgnore(e Expression, unknowns, ignores map[string]bool, inv bool) Exp
 				return ignore
 			}
 			return IsNotNull(arg)
-		case NOT:
+		case not:
 			arg := unkownIgnore(e.args[0], unknowns, ignores, !inv)
 			if arg == unset {
 				return unset
@@ -200,7 +200,7 @@ func unkownIgnore(e Expression, unknowns, ignores map[string]bool, inv bool) Exp
 				return TRUE
 			}
 			return Not(arg)
-		case AND:
+		case and:
 			newArgs := []Expression{}
 			hasUnset := false
 			hasIgnore := false
@@ -245,7 +245,7 @@ func unkownIgnore(e Expression, unknowns, ignores map[string]bool, inv bool) Exp
 				}
 				return TRUE
 			}
-		case OR:
+		case or:
 			newArgs := []Expression{}
 			hasUnset := false
 			hasIgnore := false

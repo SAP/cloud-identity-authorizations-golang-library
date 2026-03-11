@@ -10,3 +10,13 @@ type Identity interface {
 	Groups() []string
 	Email() string
 }
+
+type UserInfo struct {
+	Email    string   `ams:"email"`
+	Groups   []string `ams:"groups"`
+	UserUUID string   `ams:"user_uuid"`
+}
+
+type DefaultEnvironmentInput struct {
+	UserInfo UserInfo `ams:"$user"`
+}

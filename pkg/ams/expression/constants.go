@@ -8,6 +8,7 @@ type Constant interface {
 
 type ArrayConstant interface {
 	Contains(c Constant) bool
+	Elements() []Constant
 	IsEmpty() bool
 	Constant
 }
@@ -122,11 +123,26 @@ func (s StringArray) IsEmpty() bool {
 func (b BoolArray) IsEmpty() bool {
 	return len(b) == 0
 }
+func (n NumberArray) Elements() []Constant {
+	result := make([]Constant, len(n))
+	for i, v := range n {
+		result[i] = v
+	}
+	return result
+}
 
-func (n NumberArray) AsFloat() []float64 {
-	result := make([]float64, len(n))
-	for i, n := range n {
-		result[i] = float64(n)
+func (s StringArray) Elements() []Constant {
+	result := make([]Constant, len(s))
+	for i, v := range s {
+		result[i] = v
+	}
+	return result
+}
+
+func (b BoolArray) Elements() []Constant {
+	result := make([]Constant, len(b))
+	for i, v := range b {
+		result[i] = v
 	}
 	return result
 }
@@ -143,6 +159,14 @@ func (b BoolArray) AsBool() []bool {
 	result := make([]bool, len(b))
 	for i, b := range b {
 		result[i] = bool(b)
+	}
+	return result
+}
+
+func (n NumberArray) AsFloat() []float64 {
+	result := make([]float64, len(n))
+	for i, n := range n {
+		result[i] = float64(n)
 	}
 	return result
 }
@@ -197,4 +221,28 @@ func (n NumberArray) equals(c Constant) bool {
 
 func (n NumberArray) LessThan(c Constant) bool {
 	return false
+}
+
+func ArrayFrom[T string | float64 | bool](v []T) ArrayConstant {
+	switch vals := any(v).(type) {
+	case []string:
+		result := make(StringArray, len(vals))
+		for i, s := range vals {
+			result[i] = String(s)
+		}
+		return result
+	case []float64:
+		result := make(NumberArray, len(vals))
+		for i, n := range vals {
+			result[i] = Number(n)
+		}
+		return result
+	case []bool:
+		result := make(BoolArray, len(vals))
+		for i, b := range vals {
+			result[i] = Bool(b)
+		}
+		return result
+	}
+	return nil
 }

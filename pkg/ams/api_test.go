@@ -12,6 +12,30 @@ func nop(error) {
 	// no-op error handler
 }
 
+type TestIdentity struct {
+	appTID   string
+	scimID   string
+	userUUID string
+	groups   []string
+	email    string
+}
+
+func (i TestIdentity) AppTID() string {
+	return i.appTID
+}
+func (i TestIdentity) ScimID() string {
+	return i.scimID
+}
+func (i TestIdentity) UserUUID() string {
+	return i.userUUID
+}
+func (i TestIdentity) Groups() []string {
+	return i.groups
+}
+func (i TestIdentity) Email() string {
+	return i.email
+}
+
 func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("has schema", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
@@ -353,18 +377,54 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		if !reflect.DeepEqual(r, expected) {
 			t.Errorf("expected %v, got %v", expected, r)
 		}
+	})
 
-		// a := am.UserAuthorizations("tenant1", "user1")
-		// got := a.Inquire("read", "resource1", nil, nil)
-		// want := expression.TRUE
-		// if !reflect.DeepEqual(got, want) {
-		// 	t.Errorf("expected %v, got %v", want, got)
-		// }
-		// got = a.Inquire("read", "resource2", nil, nil)
-		// want = expression.FALSE
-		// if !reflect.DeepEqual(got, want) {
-		// 	t.Errorf("expected %v, got %v", want, got)
-		// }
+	t.Run("Authorizations for identity with user attribues", func(t *testing.T) {
+		dcnChannel := make(chan dcn.DcnContainer)
+		assignmentsChannel := make(chan dcn.Assignments)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
+
+		dcnChannel <- dcn.DcnContainer{
+			Policies: []dcn.Policy{
+				{
+					QualifiedName: []string{"pkg", "policy1"},
+					Rules: []dcn.Rule{
+						{
+							Resources: []string{"r1"},
+							Condition: &dcn.Expression{
+								Call: []string{"eq"},
+								Args: []dcn.Expression{
+									{Ref: []string{"$env", "$user", "email"}},
+									{Constant: "user1@example.com"},
+								},
+							},
+						},
+					},
+				},
+			},
+			Schemas:   []dcn.Schema{},
+			Functions: []dcn.Function{},
+		}
+		assignmentsChannel <- dcn.Assignments{
+			"tenant1": dcn.UserAssignments{
+				"user1": []string{"pkg.policy1"},
+			},
+		}
+
+		<-am.WhenReady()
+
+		authz := am.AuthorizationsForIdentity(TestIdentity{
+			email:    "user1@example.com",
+			appTID:   "tenant1",
+			scimID:   "user1",
+			userUUID: "user1",
+			groups:   []string{"group1"},
+		})
+
+		r := authz.Inquire("*", "r1", nil)
+		if !r.IsGranted() {
+			t.Errorf("expected true, got %v", r.condition)
+		}
 	})
 
 	t.Run("get default policy names", func(t *testing.T) {
@@ -409,6 +469,41 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		expected = []string{"pkg.policy1", "tenant1.policy2"}
 		if !reflect.DeepEqual(r, expected) {
 			t.Errorf("expected %v, got %v", expected, r)
+		}
+	})
+
+	t.Run("error on load dcn", func(t *testing.T) {
+		dcnChannel := make(chan dcn.DcnContainer)
+		assignmentsChannel := make(chan dcn.Assignments)
+		errors := []error{}
+		done := make(chan struct{})
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
+		am.RegisterErrorHandler(func(err error) {
+			errors = append(errors, err)
+			done <- struct{}{}
+		})
+
+		am.RegisterErrorHandler(nil)
+
+		assignmentsChannel <- dcn.Assignments{}
+		dcnChannel <- dcn.DcnContainer{
+			Policies: []dcn.Policy{
+				{
+					QualifiedName: []string{"pkg", "policy1"},
+					Rules: []dcn.Rule{
+						{
+							Condition: &dcn.Expression{
+								Call: []string{"invalid"},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		<-done
+		if len(errors) != 1 {
+			t.Errorf("expected 1 error, got %d", len(errors))
 		}
 	})
 }

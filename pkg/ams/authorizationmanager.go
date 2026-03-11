@@ -200,7 +200,7 @@ func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizat
 	defer a.m.RUnlock()
 	if i == nil {
 		return &Authorizations{
-			policies: a.policies.GetSubset([]string{}, "", true),
+			policies: a.policies.GetSubset([]string{}, "", false),
 			schema:   a.schema,
 		}
 	}
@@ -215,7 +215,7 @@ func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizat
 		envInput: expression.Input{
 			"$env.$user.email":     expression.String(i.Email()),
 			"$env.$user.user_uuid": expression.String(i.UserUUID()),
-			"$env.$user.groups":    expression.StringArrayFrom(i.Groups()),
+			"$env.$user.groups":    expression.ArrayFrom(i.Groups()),
 		},
 	}
 }

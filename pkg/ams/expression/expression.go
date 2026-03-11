@@ -85,44 +85,43 @@ func FromDCN(e dcn.Expression, f *FunctionRegistry) (ExpressionContainer, error)
 		}
 		if len(e.Call) == 1 {
 			switch e.Call[0] {
-			case "and":
+			case AND:
 				result.Expression = And(args...)
-			case "or":
+			case OR:
 				result.Expression = Or(args...)
-			case "not":
+			case NOT:
 				result.Expression = Not(args[0])
-			case "is_null":
+			case IS_NULL:
 				result.Expression = IsNull(args[0])
-			case "is_not_null":
+			case IS_NOT_NULL:
 				result.Expression = IsNotNull(args[0])
-			case "like":
+			case LIKE:
 				result.Expression = Like(args...)
-			case "not_like":
+			case NOT_LIKE:
 				result.Expression = NotLike(args...)
-			case "between":
+			case BETWEEN:
 				result.Expression = Between(args...)
-			case "not_between":
+			case NOT_BETWEEN:
 				result.Expression = NotBetween(args...)
-			case "in":
+			case IN:
 				result.Expression = In(args...)
-			case "not_in":
+			case NOT_IN:
 				result.Expression = NotIn(args...)
-			case "eq":
+			case EQ:
 				result.Expression = Eq(args...)
-			case "ne":
+			case NE:
 				result.Expression = Ne(args...)
-			case "lt":
+			case LT:
 				result.Expression = Lt(args...)
-			case "le":
+			case LE:
 				result.Expression = Le(args...)
-			case "gt":
+			case GT:
 				result.Expression = Gt(args...)
-			case "ge":
+			case GE:
 				result.Expression = Ge(args...)
-			case "restricted":
-
+			case RESTRICTED:
 				result.Expression = Restricted(args[0])
-			case "not_restricted":
+			case NOT_RESTRICTED:
 				result.Expression = NotRestricted(args[0])
 			default:
 				return result, fmt.Errorf("unknown call: %s", e.Call[0])
@@ -172,7 +171,7 @@ func IsRestrictable(e Expression) bool {
 		return false
 	}
 
-	if oc.operator == RESTRICTED || oc.operator == NOT_RESTRICTED {
+	if oc.operator == restricted || oc.operator == not_restricted {
 		return true
 	}
 
@@ -189,7 +188,7 @@ func ApplyRestriction(e Expression, restriction []ExpressionContainer) Expressio
 	if !ok {
 		return e
 	}
-	if oc.operator == RESTRICTED || oc.operator == NOT_RESTRICTED {
+	if oc.operator == restricted || oc.operator == not_restricted {
 		for _, r := range restriction {
 			ref, ok := oc.args[0].(Reference)
 			if !ok {
@@ -200,7 +199,7 @@ func ApplyRestriction(e Expression, restriction []ExpressionContainer) Expressio
 			}
 		}
 	}
-	if oc.operator == AND || oc.operator == OR || oc.operator == NOT {
+	if oc.operator == and || oc.operator == or || oc.operator == not {
 		newArgs := make([]Expression, len(oc.args))
 		for i, arg := range oc.args {
 			newArgs[i] = ApplyRestriction(arg, restriction)

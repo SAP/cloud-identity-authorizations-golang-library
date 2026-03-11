@@ -1,0 +1,1 @@
+{"version":1,"policies":[{"policy":["_dcltenant_","_tenant1","R1BigSized"],"uses":[{"use":["base","R1SizeBased"],"restrictions":[[{"call":["ge"],"args":[{"ref":["$app","entity1","size"]},100]}]]}]}],"functions":[],"tests":[]}

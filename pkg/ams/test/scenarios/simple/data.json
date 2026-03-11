@@ -1,0 +1,19 @@
+{
+    "principal2policies": {
+        "tenant1": {
+            "user1": [
+                "R1BigSized"
+            ],
+            "user2": [
+                "R1SmallSized"
+            ]
+        },
+        "tenant2": {
+            "user3": [
+            ],
+            "user4": [
+                "R2SubentityBased"
+            ]
+        }
+    }
+}
