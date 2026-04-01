@@ -13,6 +13,10 @@ func (e UnexpectedExpression) Evaluate(input Input) Expression {
 	return FALSE
 }
 
+func (e UnexpectedExpression) String() string {
+	return "unexpected_expression"
+}
+
 func TestEdgeCases(t *testing.T) {
 	t.Run("Visit unexpected expression", func(t *testing.T) {
 		e := UnexpectedExpression{}

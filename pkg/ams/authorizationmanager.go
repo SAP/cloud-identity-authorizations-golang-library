@@ -59,6 +59,18 @@ func NewAuthorizationManager(
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
+func NewAuthorizationManagerForIASConfig(config IASConfig, errorHandler func(error)) (*AuthorizationManager, error) {
+	return NewAuthorizationManagerForIAS(
+		config.GetAuthorizationBundleURL(),
+		config.GetAuthorizationInstanceID(),
+		config.GetCertifcate(),
+		config.GetKey(),
+		errorHandler,
+	)
+}
+
+// Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
+// the provided data should be taken from the identity binding.
 func NewAuthorizationManagerForIAS(
 	bundleUrl,
 	amsInstanceID,

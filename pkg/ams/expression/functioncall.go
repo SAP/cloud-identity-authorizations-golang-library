@@ -1,6 +1,10 @@
 package expression
 
-import "sync"
+import (
+	"fmt"
+	"strings"
+	"sync"
+)
 
 type FunctionCall struct {
 	name string
@@ -19,7 +23,14 @@ func NewFunctionRegistry() *FunctionRegistry {
 		impl: make(map[string]func(Input, ...Constant) Expression),
 	}
 }
+func (o FunctionCall) String() string {
+	args := make([]string, len(o.args))
+	for i, arg := range o.args {
+		args[i] = fmt.Sprintf("%v", arg)
+	}
 
+	return o.name + "(" + strings.Join(args, ", ") + ")"
+}
 func (o FunctionCall) Evaluate(input Input) Expression {
 	c, newArgs := evaluateArgs(input, o.args)
 	if len(c) < len(o.args) || o.fc == nil {

@@ -1,5 +1,7 @@
 package expression
 
+import "fmt"
+
 type Constant interface {
 	Expression
 	equals(c Constant) bool
@@ -69,6 +71,10 @@ func (n Number) LessThan(c Constant) bool {
 	return n < n2    //nolint:forcetypeassert
 }
 
+func (n Number) String() string {
+	return fmt.Sprintf("%v", float64(n))
+}
+
 func (s String) equals(c Constant) bool {
 	return s == c.(String) //nolint:forcetypeassert
 }
@@ -83,6 +89,10 @@ func (b Bool) equals(c Constant) bool {
 
 func (b Bool) LessThan(c Constant) bool {
 	return bool(!b && c.(Bool)) //nolint:forcetypeassert
+}
+
+func (b Bool) String() string {
+	return fmt.Sprintf("%v", bool(b))
 }
 
 func (n NumberArray) Contains(c Constant) bool {
@@ -175,12 +185,24 @@ func (b BoolArray) Evaluate(input Input) Expression {
 	return b
 }
 
+func (b BoolArray) String() string {
+	return fmt.Sprintf("%v", b.AsBool())
+}
+
 func (n NumberArray) Evaluate(input Input) Expression {
 	return n
 }
 
+func (n NumberArray) String() string {
+	return fmt.Sprintf("%v", n.AsFloat())
+}
+
 func (s StringArray) Evaluate(input Input) Expression {
 	return s
+}
+
+func (s StringArray) String() string {
+	return fmt.Sprintf("%v", s.AsString())
 }
 
 func (n Number) Evaluate(input Input) Expression {

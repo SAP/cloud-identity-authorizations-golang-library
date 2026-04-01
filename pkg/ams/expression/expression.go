@@ -29,6 +29,7 @@ type Expression interface {
 	//
 	// this function may panic if the type of the input does not match the schema definition.
 	Evaluate(input Input) Expression
+	String() string
 }
 
 func Ref(name string) Reference {
@@ -155,6 +156,10 @@ func (v Reference) Evaluate(input Input) Expression {
 		return v
 	}
 	return val
+}
+
+func (v Reference) String() string {
+	return fmt.Sprintf("Ref(%s)", v.name)
 }
 
 func (v Reference) GetName() string {

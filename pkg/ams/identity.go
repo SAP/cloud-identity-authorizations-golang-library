@@ -20,3 +20,9 @@ type UserInfo struct {
 type DefaultEnvironmentInput struct {
 	UserInfo UserInfo `ams:"$user"`
 }
+type IASConfig interface {
+	GetAuthorizationBundleURL() string
+	GetAuthorizationInstanceID() string
+	GetCertifcate() string
+	GetKey() string
+}

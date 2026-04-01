@@ -12,6 +12,19 @@ func (w wildcard) Evaluate(input Input) Expression {
 	return nil
 }
 
+func (w wildcard) String() string {
+	switch w {
+	case unset:
+		return "unset"
+	case ignore:
+		return "ignore"
+	case null:
+		return "null"
+	default:
+		return "unknown wildcard"
+	}
+}
+
 // NullifyExcept replaces all references in the expression with null, except for the ones in the unknowns map.
 // And propagates null values in the same way most SQL engines do.
 // If the overall result is null, it returns expression.FALSE.
