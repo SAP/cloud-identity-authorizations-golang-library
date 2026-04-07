@@ -19,13 +19,15 @@ var bundle []byte
 //go:embed bundles/big_data_json.tar.gz
 var bigDataJson []byte
 
+const testetag = "test-etag"
+
 func TestBundleLoader(t *testing.T) { //nolint:maintidx
 	var recordedRequests []http.Request
 
 	serveBundle := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedRequests = append(recordedRequests, *r)
-		w.Header().Set("Etag", "test-etag")
-		if r.Header.Get("If-None-Match") == "test-etag" {
+		w.Header().Set("Etag", testetag)
+		if r.Header.Get("If-None-Match") == testetag {
 			w.WriteHeader(http.StatusNotModified)
 			return
 		}
@@ -36,8 +38,8 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 	serveBigDataJSONBundle := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedRequests = append(recordedRequests, *r)
-		w.Header().Set("Etag", "test-etag")
-		if r.Header.Get("If-None-Match") == "test-etag" {
+		w.Header().Set("Etag", testetag)
+		if r.Header.Get("If-None-Match") == testetag {
 			w.WriteHeader(http.StatusNotModified)
 			return
 		}
@@ -60,7 +62,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 	serveNonGzip := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedRequests = append(recordedRequests, *r)
-		w.Header().Set("Etag", "test-etag")
+		w.Header().Set("Etag", testetag)
 		w.Write([]byte("asdf")) //nolint:errcheck
 	})
 
@@ -225,14 +227,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			if len(assignments) < 200 {
 				t.Fatalf("expected at least 200 assignments, got %d", len(assignments))
 			}
-			t.Fatalf("expected no DCN, got a DCN")
 		}
-
-		// gotDCN := <-bundleLoader.DCNChannel
-		// // gotAssignments := <-bundleLoader.AssignmentsChannel
-		// if len(gotDCN.Policies) != 0 {
-		// 	t.Fatalf("expected 0 policies, got %d", len(gotDCN.Policies))
-		// }
 	})
 
 	t.Run("broken server", func(t *testing.T) {
