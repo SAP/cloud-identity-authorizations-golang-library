@@ -16,6 +16,9 @@ import (
 //go:embed bundles/original_bundle.tar.gz
 var bundle []byte
 
+//go:embed bundles/big_data_json.tar.gz
+var bigDataJson []byte
+
 func TestBundleLoader(t *testing.T) { //nolint:maintidx
 	var recordedRequests []http.Request
 
@@ -29,6 +32,18 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		w.WriteHeader(http.StatusOK)
 		w.Write(bundle) //nolint:errcheck
+	})
+
+	serveBigDataJSONBundle := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		recordedRequests = append(recordedRequests, *r)
+		w.Header().Set("Etag", "test-etag")
+		if r.Header.Get("If-None-Match") == "test-etag" {
+			w.WriteHeader(http.StatusNotModified)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(bigDataJson) //nolint:errcheck
 	})
 
 	serveError := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -185,6 +200,39 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 		if got != want {
 			t.Fatalf("expected User-Agent header to be '%s', got '%s'", want, got)
 		}
+	})
+
+	t.Run("Big data JSON bundle", func(t *testing.T) {
+		errReceived := make(chan bool)
+		ts := httptest.NewServer(serveBigDataJSONBundle)
+		defer ts.Close()
+
+		targetURL, err := url.Parse(ts.URL)
+		if err != nil {
+			t.Fatalf("failed to parse url: %v", err)
+		}
+
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, func(err error) {
+			t.Errorf("unexpected error: %v", err)
+			errReceived <- true
+		})
+
+		select {
+		case <-errReceived:
+			t.Fatalf("expected no error, got an error")
+		case <-bundleLoader.DCNChannel:
+			assignments := <-bundleLoader.AssignmentsChannel
+			if len(assignments) < 200 {
+				t.Fatalf("expected at least 200 assignments, got %d", len(assignments))
+			}
+			t.Fatalf("expected no DCN, got a DCN")
+		}
+
+		// gotDCN := <-bundleLoader.DCNChannel
+		// // gotAssignments := <-bundleLoader.AssignmentsChannel
+		// if len(gotDCN.Policies) != 0 {
+		// 	t.Fatalf("expected 0 policies, got %d", len(gotDCN.Policies))
+		// }
 	})
 
 	t.Run("broken server", func(t *testing.T) {
