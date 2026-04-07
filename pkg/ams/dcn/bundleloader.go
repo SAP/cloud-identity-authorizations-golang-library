@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	_ "embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -138,8 +137,8 @@ func (b *BundleLoader) bundleRequest() {
 		if header.Typeflag == tar.TypeReg {
 			if strings.HasSuffix(header.Name, ".dcn") {
 				content := make([]byte, header.Size)
-				_, err := tarReader.Read(content)
-				if err != nil && !errors.Is(err, io.EOF) {
+				_, err := io.ReadFull(tarReader, content)
+				if err != nil {
 					b.handleError(err)
 					return
 				}
@@ -155,8 +154,8 @@ func (b *BundleLoader) bundleRequest() {
 			}
 			if header.Name == "data.json" {
 				content := make([]byte, header.Size)
-				_, err := tarReader.Read(content)
-				if err != nil && !errors.Is(err, io.EOF) {
+				_, err := io.ReadFull(tarReader, content)
+				if err != nil {
 					b.handleError(err)
 					return
 				}

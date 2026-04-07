@@ -2,17 +2,17 @@
     "principal2policies": {
         "tenant1": {
             "user1": [
-                "R1BigSized"
+                "_dcltenant_._tenant1.R1BigSized"
             ],
             "user2": [
-                "R1SmallSized"
+                "base.R1SmallSized"
             ]
         },
         "tenant2": {
             "user3": [
             ],
             "user4": [
-                "R2SubentityBased"
+                "base.R2SubentityBased"
             ]
         }
     }
