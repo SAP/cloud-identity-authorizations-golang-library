@@ -10,7 +10,6 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
 
@@ -23,7 +22,19 @@ func TestRun(t *testing.T) {
 	}
 	for _, testDir := range testDirs {
 		t.Run(testDir.Name(), func(t *testing.T) {
-			ams := ams.NewAuthorizationManagerForFs(path.Join("scenarios", testDir.Name()), func(err error) {
+			loader := dcn.NewLocalLoader(path.Join("scenarios", testDir.Name()), func(err error) {
+				panic(err)
+			})
+			tests := []dcn.Test{}
+			dcnChannel := make(chan dcn.DcnContainer)
+			go func() {
+				for {
+					dcnContainer := <-loader.DCNChannel
+					tests = dcnContainer.Tests
+					dcnChannel <- dcnContainer
+				}
+			}()
+			ams := ams.NewAuthorizationManager(dcnChannel, loader.AssignmentsChannel, func(err error) {
 				panic(err)
 			})
 
@@ -34,7 +45,7 @@ func TestRun(t *testing.T) {
 
 			<-ams.WhenReady()
 
-			for _, test := range ams.Tests {
+			for _, test := range tests {
 				t.Run(util.StringifyQualifiedName(test.Test), func(t *testing.T) {
 					for _, assertion := range test.Assertions {
 						actions := assertion.Actions
@@ -71,7 +82,7 @@ func TestRun(t *testing.T) {
 								for _, resource := range resources {
 									for _, tInput := range inputs {
 										t.Run(assertionCaption(action, resource, tInput), func(t *testing.T) {
-											input := createInput(ams.GetSchema(), tInput, action, resource)
+											input := createInput(ams, tInput, action, resource)
 
 											result := authz.Evaluate(input).Condition()
 											result = unsetIgnore(result, tInput)
@@ -82,7 +93,6 @@ func TestRun(t *testing.T) {
 												t.Fatalf("error in expected expression: %v", err)
 											}
 											if !reflect.DeepEqual(result, expected) {
-												createInput(ams.GetSchema(), tInput, action, resource)
 												authz.Evaluate(input)
 												t.Errorf("expected %v, got %v", expected, result)
 											}
@@ -114,7 +124,7 @@ func unsetIgnore(e expression.Expression, input dcn.Input) expression.Expression
 	return expression.UnknownIgnore(e, u, i) //nolint:staticcheck
 }
 
-func createInput(schema internal.Schema, input dcn.Input, action, resource string) expression.Input {
+func createInput(am ams.AuthorizationManager, input dcn.Input, action, resource string) expression.Input {
 	app, ok := input.Input["$app"]
 	if !ok {
 		app = nil
@@ -123,7 +133,7 @@ func createInput(schema internal.Schema, input dcn.Input, action, resource strin
 	if !ok {
 		env = nil
 	}
-	result := schema.CustomInput(action, resource, app, env)
+	result := am.CreateInput(action, resource, app, env)
 
 	return result
 }

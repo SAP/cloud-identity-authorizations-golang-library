@@ -1,15 +1,12 @@
 package ams
 
 import (
-	"reflect"
-
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal"
 )
 
 type Decision struct {
-	condition expression.Expression
-	schema    internal.Schema
+	condition      expression.Expression
+	inputConverter func(any) expression.Input
 }
 
 func (d Decision) Condition() expression.Expression {
@@ -25,15 +22,12 @@ func (d Decision) IsDenied() bool {
 }
 
 func (d Decision) Inquire(app any) Decision {
-	i := expression.Input{}
-
-	d.schema.InsertCustomInput(i, reflect.ValueOf(app), []string{"$app"})
-	return d.Evaluate(i)
+	return d.Evaluate(d.inputConverter(app))
 }
 
 func (d Decision) Evaluate(input expression.Input) Decision {
 	return Decision{
-		schema:    d.schema,
-		condition: d.condition.Evaluate(input),
+		condition:      d.condition.Evaluate(input),
+		inputConverter: d.inputConverter,
 	}
 }

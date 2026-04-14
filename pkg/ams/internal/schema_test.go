@@ -49,6 +49,13 @@ type SimpleEnv struct {
 	EnvN expression.Constant
 }
 
+type ReferencedStructure struct {
+	DeeperNested *DeeperNested `ams:"deeper_nested"`
+}
+type InterfaceStruct struct {
+	DeeperNested interface{} `ams:"deeper_nested"`
+}
+
 func TestExampleSchema(t *testing.T) { //nolint:maintidx
 	var schema Schema
 
@@ -100,6 +107,24 @@ func TestExampleSchema(t *testing.T) { //nolint:maintidx
 			t.Errorf("Expected 'invalid' to be removed")
 		}
 	})
+	t.Run("removes invalid fields from http input", func(t *testing.T) {
+		input := map[string]any{
+			"$dcl.action":   expression.String("read"),
+			"$dcl.resource": expression.String("example"),
+			"invalid":       expression.String("invalid"),
+		}
+
+		got := schema.InputFromHTTPRequest(input)
+
+		want := expression.Input{
+			"$dcl.action":   expression.String("read"),
+			"$dcl.resource": expression.String("example"),
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Expected %v, got %v", want, got)
+		}
+	})
 
 	t.Run("removes structure typed input", func(t *testing.T) {
 		input := expression.Input{
@@ -112,6 +137,23 @@ func TestExampleSchema(t *testing.T) { //nolint:maintidx
 		}
 		if !reflect.DeepEqual(input, want) {
 			t.Errorf("Expected %v, got %v", want, input)
+		}
+	})
+
+	t.Run("removed structure typed input from http input", func(t *testing.T) {
+		input := map[string]any{
+			"$dcl.action":        expression.String("read"),
+			"$app.deeper_nested": expression.String("example"),
+		}
+
+		got := schema.InputFromHTTPRequest(input)
+
+		want := expression.Input{
+			"$dcl.action": expression.String("read"),
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Expected %v, got %v", want, got)
 		}
 	})
 
@@ -129,6 +171,25 @@ func TestExampleSchema(t *testing.T) { //nolint:maintidx
 
 		if len(input) != 0 {
 			t.Errorf("Expected 0 field, got %+v", input)
+		}
+	})
+
+	t.Run("removes wrongly typed fields from http input", func(t *testing.T) {
+		input := map[string]any{
+			"$app.string_value":       expression.Number(42),
+			"$app.number_value":       expression.String("42"),
+			"$app.bool_value":         expression.String("true"),
+			"$app.string_array_value": expression.String("42"),
+			"$app.number_array_value": expression.Number(42),
+			"$app.bool_array_value":   expression.Bool(true),
+		}
+
+		got := schema.InputFromHTTPRequest(input)
+
+		want := expression.Input{}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Expected %v, got %v", want, got)
 		}
 	})
 
@@ -285,6 +346,23 @@ func TestExampleSchema(t *testing.T) { //nolint:maintidx
 		want := expression.Input{
 			"$dcl.action":   expression.String("read"),
 			"$dcl.resource": expression.String("data"),
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Expected %v, got %v", want, got)
+		}
+	})
+	t.Run("Generates input if struct is referenced by pointer", func(t *testing.T) {
+		app := &ReferencedStructure{
+			DeeperNested: &DeeperNested{
+				NestedNumberArrayValue: []uint{42},
+			},
+		}
+		got := schema.CustomInput("read", "data", app, nil)
+		want := expression.Input{
+			"$dcl.action":   expression.String("read"),
+			"$dcl.resource": expression.String("data"),
+			"$app.deeper_nested.nested_number_array_value":    expression.NumberArray{42},
+			"$app.deeper_nested.\"dot.in.name\".number_value": expression.Number(0),
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("Expected %v, got %v", want, got)

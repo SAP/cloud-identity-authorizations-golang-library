@@ -159,7 +159,7 @@ func (v Reference) Evaluate(input Input) Expression {
 }
 
 func (v Reference) String() string {
-	return fmt.Sprintf("Ref(%s)", v.name)
+	return fmt.Sprintf("{%s}", v.name)
 }
 
 func (v Reference) GetName() string {

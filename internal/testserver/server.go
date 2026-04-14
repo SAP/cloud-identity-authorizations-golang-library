@@ -13,7 +13,7 @@ import (
 )
 
 type Router struct {
-	am *ams.AuthorizationManager
+	am ams.AuthorizationManager
 }
 
 type DCLInput struct {
@@ -120,7 +120,7 @@ func (s *Router) handleEvaluatePolicies(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	auth := s.am.AuthorizationsForPolicies(rb.Policies)
-	input := s.am.GetSchema().CustomInput(
+	input := s.am.CreateInput(
 		rb.Input.DCL.Action,
 		rb.Input.DCL.Resource,
 		rb.Input.App,
@@ -165,7 +165,7 @@ func (s *Router) handleEvaluatePoliciesScoped(w http.ResponseWriter, r *http.Req
 		auth = auth.AndJoin(s.am.AuthorizationsForPolicies(policies))
 	}
 
-	input := s.am.GetSchema().CustomInput(
+	input := s.am.CreateInput(
 		rb.Input.DCL.Action,
 		rb.Input.DCL.Resource,
 		rb.Input.App,
@@ -202,7 +202,7 @@ func (s *Router) handleEvaluatePoliciesScoped(w http.ResponseWriter, r *http.Req
 // 		return
 // 	}
 // 	auth := s.am.UserAuthorizations(rb.Tenant, rb.User)
-// 	input := s.am.GetSchema().CustomInput(
+// 	input := s.am.CreateInput(
 // 		rb.Input.DCL.Action,
 // 		rb.Input.DCL.Resource,
 // 		rb.Input.App,

@@ -202,7 +202,7 @@ func (s StringArray) Evaluate(input Input) Expression {
 }
 
 func (s StringArray) String() string {
-	return fmt.Sprintf("%v", s.AsString())
+	return fmt.Sprintf("%v", s.Elements())
 }
 
 func (n Number) Evaluate(input Input) Expression {

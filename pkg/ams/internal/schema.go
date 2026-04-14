@@ -289,6 +289,52 @@ func (s Schema) InsertCustomInput(result expression.Input, input reflect.Value, 
 	}
 }
 
+func (s Schema) InputFromHTTPRequest(input map[string]any) expression.Input {
+	result := make(expression.Input)
+	for k, v := range input {
+		t, ok := s.inputTypes[k]
+		if !ok {
+			delete(input, k)
+			continue
+		}
+		switch t {
+		case STRING:
+			v2, ok := v.(expression.String)
+			if ok {
+				result[k] = v2
+			}
+		case BOOLEAN:
+			v2, ok := v.(expression.Bool)
+			if ok {
+				result[k] = v2
+			}
+		case NUMBER:
+			v2, ok := v.(expression.Number)
+			if ok {
+				result[k] = v2
+			}
+		case STRING_ARRAY:
+			v2, ok := v.(expression.StringArray)
+			if ok {
+				result[k] = v2
+			}
+		case NUMBER_ARRAY:
+			v2, ok := v.(expression.NumberArray)
+			if ok {
+				result[k] = v2
+			}
+		case BOOLEAN_ARRAY:
+			v2, ok := v.(expression.BoolArray)
+			if ok {
+				result[k] = v2
+			}
+		case STRUCTURE, UNDEFINED:
+			continue
+		}
+	}
+	return result
+}
+
 // modifies the input by removing all keys that are not defined in the schema or are not of the correct type
 // expression.UNKNOWN, expression.IGNORE and expression.UNSET are valid values for all schema types.
 func (s Schema) PurgeInvalidInput(input expression.Input) {

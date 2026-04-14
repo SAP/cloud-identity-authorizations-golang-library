@@ -37,30 +37,6 @@ func (i TestIdentity) Email() string {
 }
 
 func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
-	t.Run("has schema", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
-
-		dcnChannel <- dcn.DcnContainer{
-			Policies: []dcn.Policy{},
-			Schemas: []dcn.Schema{
-				{
-					QualifiedName: []string{"pkg", "schema1"},
-					Tenant:        "tenant1",
-				},
-			},
-			Functions: []dcn.Function{},
-		}
-		assignmentsChannel <- dcn.Assignments{}
-
-		<-am.WhenReady()
-
-		tenant := am.GetSchema().GetTenantForQualifiedName([]string{"pkg", "p1"})
-		if tenant != "tenant1" {
-			t.Errorf("expected tenant1, got %v", tenant)
-		}
-	})
 	t.Run("is ready after receiving DCN", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)

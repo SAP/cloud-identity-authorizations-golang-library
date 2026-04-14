@@ -2,18 +2,21 @@ package ams
 
 import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal"
 )
 
-func MockDecision(expr expression.Expression, am *AuthorizationManager) Decision {
+func MockDecision(expr expression.Expression, am *authorizationManager) Decision {
 	if am == nil {
 		return Decision{
 			condition: expr,
-			schema:    internal.Schema{},
+			inputConverter: func(_ any) expression.Input {
+				return expression.Input{}
+			},
 		}
 	}
 	return Decision{
 		condition: expr,
-		schema:    am.schema,
+		inputConverter: func(_ any) expression.Input {
+			return expression.Input{}
+		},
 	}
 }
