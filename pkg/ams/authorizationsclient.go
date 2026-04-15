@@ -28,7 +28,7 @@ type authorizationsObj struct {
 	client   *authorizationsClient
 }
 
-func NewAuthorizationManagerClient(url string, client http.Client) *authorizationsClient {
+func NewAuthorizationManagerClient(url string, client http.Client) AuthorizationManager {
 	return &authorizationsClient{
 		c:   client,
 		url: url,
@@ -334,6 +334,10 @@ func (a *authorizationsObj) Inquire(action, resource string, app any) Decision {
 
 func (a *authorizationsObj) SetEnvInput(env any) {
 	a.envInput = env
+}
+
+func (a *authorizationsClient) ValidateInput(input expression.Input) ([]string, []string) {
+	panic("not implemented")
 }
 
 func newToken(claims tokenClaim) string {

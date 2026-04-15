@@ -21,6 +21,7 @@ type AuthorizationManager interface {
 
 	AuthorizationsForPolicies(policyNames []string) Authorizations
 	CreateInput(action, resource string, input any, env any) expression.Input
+	ValidateInput(input expression.Input) ([]string, []string)
 
 	GetDefaultPolicyNames(tenant string) []string
 
@@ -276,4 +277,10 @@ func (a *authorizationManager) CreateInput(action, resource string, input any, e
 	a.m.RLock()
 	defer a.m.RUnlock()
 	return a.schema.CustomInput(action, resource, input, env)
+}
+
+func (a *authorizationManager) ValidateInput(input expression.Input) ([]string, []string) {
+	a.m.RLock()
+	defer a.m.RUnlock()
+	return a.schema.PurgeInvalidInput(input)
 }
