@@ -324,21 +324,33 @@ func (s Schema) PurgeInvalidInput(input expression.Input) ([]string, []string) {
 				continue
 			}
 		case STRING_ARRAY:
-			_, ok := v.(expression.StringArray)
+			_, ok := v.(expression.EmptyArray)
+			if ok {
+				continue
+			}
+			_, ok = v.(expression.StringArray)
 			if !ok {
 				delete(input, k)
 				invalidTypeFields = append(invalidTypeFields, k)
 				continue
 			}
 		case NUMBER_ARRAY:
-			_, ok := v.(expression.NumberArray)
+			_, ok := v.(expression.EmptyArray)
+			if ok {
+				continue
+			}
+			_, ok = v.(expression.NumberArray)
 			if !ok {
 				delete(input, k)
 				invalidTypeFields = append(invalidTypeFields, k)
 				continue
 			}
 		case BOOLEAN_ARRAY:
-			_, ok := v.(expression.BoolArray)
+			_, ok := v.(expression.EmptyArray)
+			if ok {
+				continue
+			}
+			_, ok = v.(expression.BoolArray)
 			if !ok {
 				delete(input, k)
 				invalidTypeFields = append(invalidTypeFields, k)
