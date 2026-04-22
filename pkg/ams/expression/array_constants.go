@@ -177,6 +177,9 @@ func (n EmptyArray) equals(c Constant) bool {
 func (n EmptyArray) LessThan(c Constant) bool {
 	return false
 }
+func (n EmptyArray) MarshalJSON() ([]byte, error) {
+	return []byte("[]"), nil
+}
 
 func ArrayFrom[T string | float64 | bool](v []T) ArrayConstant {
 	switch vals := any(v).(type) {
