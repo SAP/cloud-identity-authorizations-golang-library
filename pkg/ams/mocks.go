@@ -4,7 +4,7 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
-func MockDecision(expr expression.Expression, am *authorizationManager) Decision {
+func MockDecision(expr expression.Expression, am *AuthorizationManager) Decision {
 	if am == nil {
 		return Decision{
 			condition: expr,

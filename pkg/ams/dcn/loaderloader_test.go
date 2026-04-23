@@ -1,6 +1,7 @@
 package dcn
 
 import (
+	"context"
 	"log"
 	"os"
 	"path"
@@ -8,13 +9,30 @@ import (
 	"testing"
 )
 
+type mockLogger struct {
+	errors         []string
+	errorsReceived chan bool
+}
+
+func (l *mockLogger) Debug(ctx context.Context, msg string) {}
+func (l *mockLogger) Info(ctx context.Context, msg string)  {}
+func (l *mockLogger) Warn(ctx context.Context, msg string)  {}
+func (l *mockLogger) Error(ctx context.Context, msg string) {
+	l.errors = append(l.errors, msg)
+	l.errorsReceived <- true
+}
+
+func newMockLogger() *mockLogger {
+	return &mockLogger{
+		errors:         []string{},
+		errorsReceived: make(chan bool),
+	}
+}
+
 func TestLocalLoader(t *testing.T) {
 	t.Run("on testfolder", func(t *testing.T) {
-		errors := []error{}
-		loader := NewLocalLoader("testfolder", nil)
-		loader.RegisterErrorHandler(func(err error) {
-			errors = append(errors, err)
-		})
+		errors := []string{}
+		loader := NewLocalLoader("testfolder", &mockLogger{errors: errors})
 
 		dcn := <-loader.DCNChannel
 		assignments := <-loader.AssignmentsChannel
@@ -38,85 +56,60 @@ func TestLocalLoader(t *testing.T) {
 		}
 	})
 	t.Run("broken data.json", func(t *testing.T) {
-		errReceived := make(chan bool)
-		errors := []error{}
+		ml := newMockLogger()
 
-		loader := NewLocalLoader("edgecases/broken-data-json", nil)
-		loader.RegisterErrorHandler(func(err error) {
-			errors = append(errors, err)
-			errReceived <- true
-		})
+		NewLocalLoader("edgecases/broken-data-json", ml)
 
-		<-errReceived
-		if len(errors) != 1 {
-			t.Fatalf("expected 1 request, got %d", len(errors))
+		<-ml.errorsReceived
+		if len(ml.errors) != 1 {
+			t.Fatalf("expected 1 request, got %d", len(ml.errors))
 		}
 	})
 
 	t.Run("broken DCN file", func(t *testing.T) {
-		errReceived := make(chan bool)
-		errors := []error{}
+		ml := newMockLogger()
 
-		loader := NewLocalLoader("edgecases/broken-dcn", nil)
-		loader.RegisterErrorHandler(func(err error) {
-			errors = append(errors, err)
-			errReceived <- true
-		})
+		NewLocalLoader("edgecases/broken-dcn", ml)
 
-		<-errReceived
-		if len(errors) != 1 {
-			t.Fatalf("expected 1 request, got %d", len(errors))
+		<-ml.errorsReceived
+		if len(ml.errors) != 1 {
+			t.Fatalf("expected 1 request, got %d", len(ml.errors))
 		}
 	})
 
 	t.Run("unreadable data.json", func(t *testing.T) {
-		errReceived := make(chan bool)
-		errors := []error{}
+		ml := newMockLogger()
 		tmp := createTempFolderWithUnreadableFile("data.json")
 		defer os.RemoveAll(tmp) // Clean up
-		loader := NewLocalLoader(tmp, nil)
-		loader.RegisterErrorHandler(func(err error) {
-			errors = append(errors, err)
-			errReceived <- true
-		})
+		NewLocalLoader(tmp, ml)
 
-		<-errReceived
-		if len(errors) != 1 {
-			t.Errorf("expected 1 request, got %d", len(errors))
+		<-ml.errorsReceived
+		if len(ml.errors) != 1 {
+			t.Errorf("expected 1 request, got %d", len(ml.errors))
 		}
 	})
 
 	t.Run("unreadable DCN", func(t *testing.T) {
-		errReceived := make(chan bool)
-		errors := []error{}
+		ml := newMockLogger()
 
 		tmp := createTempFolderWithUnreadableFile("x.dcn")
 		defer os.RemoveAll(tmp) // Clean up
-		loader := NewLocalLoader(tmp, nil)
-		loader.RegisterErrorHandler(func(err error) {
-			errors = append(errors, err)
-			errReceived <- true
-		})
+		NewLocalLoader(tmp, ml)
 
-		<-errReceived
-		if len(errors) != 1 {
-			t.Errorf("expected 1 request, got %d", len(errors))
+		<-ml.errorsReceived
+		if len(ml.errors) != 1 {
+			t.Errorf("expected 1 request, got %d", len(ml.errors))
 		}
 	})
 
 	t.Run("non existent directory", func(t *testing.T) {
-		errReceived := make(chan bool)
-		errors := []error{}
+		ml := newMockLogger()
 
-		loader := NewLocalLoader("edgecases/non-existent-directory", nil)
-		loader.RegisterErrorHandler(func(err error) {
-			errors = append(errors, err)
-			errReceived <- true
-		})
+		NewLocalLoader("edgecases/non-existent-directory", ml)
 
-		<-errReceived
-		if len(errors) != 1 {
-			t.Fatalf("expected 1 request, got %d", len(errors))
+		<-ml.errorsReceived
+		if len(ml.errors) != 1 {
+			t.Fatalf("expected 1 request, got %d", len(ml.errors))
 		}
 	})
 }

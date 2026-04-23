@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -13,6 +14,20 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
 
+type crashLogger struct{}
+
+func (l crashLogger) Debug(ctx context.Context, msg string) {
+
+}
+func (l crashLogger) Info(ctx context.Context, msg string) {
+
+}
+func (l crashLogger) Warn(ctx context.Context, msg string) {
+
+}
+func (l crashLogger) Error(ctx context.Context, msg string) {
+	panic(msg)
+}
 func TestRun(t *testing.T) {
 	// tmp, _ := os.ReadDir("./")
 	// t.Fatalf("tmp: %v", tmp)
@@ -22,9 +37,7 @@ func TestRun(t *testing.T) {
 	}
 	for _, testDir := range testDirs {
 		t.Run(testDir.Name(), func(t *testing.T) {
-			loader := dcn.NewLocalLoader(path.Join("scenarios", testDir.Name()), func(err error) {
-				panic(err)
-			})
+			loader := dcn.NewLocalLoader(path.Join("scenarios", testDir.Name()), crashLogger{})
 			tests := []dcn.Test{}
 			dcnChannel := make(chan dcn.DcnContainer)
 			go func() {
@@ -34,14 +47,7 @@ func TestRun(t *testing.T) {
 					dcnChannel <- dcnContainer
 				}
 			}()
-			ams := ams.NewAuthorizationManager(dcnChannel, loader.AssignmentsChannel, func(err error) {
-				panic(err)
-			})
-
-			ams.RegisterErrorHandler(func(err error) {
-				t.Errorf("error in authorization manager: %v", err)
-				panic(err)
-			})
+			ams := ams.NewAuthorizationManager(dcnChannel, loader.AssignmentsChannel, crashLogger{})
 
 			<-ams.WhenReady()
 
@@ -72,9 +78,9 @@ func TestRun(t *testing.T) {
 						for _, filter := range assertion.ScopeFilter {
 							scopeFilter = append(scopeFilter, util.StringifyQualifiedName(filter))
 						}
-						authz := ams.AuthorizationsForPolicies(policies)
+						authz := ams.AuthorizationsForPolicies(context.Background(), policies)
 						if len(scopeFilter) > 0 {
-							scopeFilter := ams.AuthorizationsForPolicies(scopeFilter)
+							scopeFilter := ams.AuthorizationsForPolicies(context.Background(), scopeFilter)
 							authz = authz.AndJoin(scopeFilter)
 						}
 						t.Run(fmt.Sprintf("policies: %v, scopeFilter: %v", policies, scopeFilter), func(t *testing.T) {
@@ -124,7 +130,7 @@ func unsetIgnore(e expression.Expression, input dcn.Input) expression.Expression
 	return expression.UnknownIgnore(e, u, i) //nolint:staticcheck
 }
 
-func createInput(am ams.AuthorizationManager, input dcn.Input, action, resource string) expression.Input {
+func createInput(am *ams.AuthorizationManager, input dcn.Input, action, resource string) expression.Input {
 	app, ok := input.Input["$app"]
 	if !ok {
 		app = nil

@@ -3,6 +3,7 @@ package dcn
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -11,53 +12,46 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging"
 )
 
 //go:embed VERSION
 var version string
 
+const DCNVERSION = 1
+
 type BundleLoader struct {
 	DCNChannel         chan DcnContainer
 	AssignmentsChannel chan Assignments
-	errHandler         []func(error)
 	lastEtag           string
 	client             *http.Client
 	url                *url.URL
 	ticker             time.Ticker
+	l                  logging.Logger
 }
 
 func NewBundleLoader(targetURL *url.URL,
 	client *http.Client,
 	ticker time.Ticker,
-	errorHandler func(error),
+	log logging.Logger,
 ) *BundleLoader {
 	result := BundleLoader{
 		DCNChannel:         make(chan DcnContainer),
 		AssignmentsChannel: make(chan Assignments),
-		errHandler:         []func(error){},
 		client:             client,
 		url:                targetURL,
 		ticker:             ticker,
-	}
-
-	if errorHandler != nil {
-		result.errHandler = append(result.errHandler, errorHandler)
+		l:                  log,
 	}
 
 	go result.start()
 	return &result
 }
 
-func (b *BundleLoader) RegisterErrorHandler(handler func(error)) {
-	if handler == nil {
-		return
-	}
-	b.errHandler = append(b.errHandler, handler)
-}
-
 func (b *BundleLoader) handleError(err error) {
-	for _, handler := range b.errHandler {
-		handler(err)
+	if b.l != nil {
+		b.l.Error(context.Background(), fmt.Sprintf("%v", err))
 	}
 }
 
@@ -146,6 +140,14 @@ func (b *BundleLoader) bundleRequest() {
 				err = json.Unmarshal(content, &dcnPart)
 				if err != nil {
 					b.handleError(err)
+					return
+				}
+				if dcnPart.Version > DCNVERSION {
+					b.handleError(fmt.Errorf(
+						"incompatible DCN version: bundle has version %d but loader supports up to %d",
+						dcnPart.Version,
+						DCNVERSION,
+					))
 					return
 				}
 				dcn.Policies = append(dcn.Policies, dcnPart.Policies...)
