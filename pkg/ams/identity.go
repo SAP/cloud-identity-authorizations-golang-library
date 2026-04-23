@@ -23,6 +23,6 @@ type DefaultEnvironmentInput struct {
 type IASConfig interface {
 	GetAuthorizationBundleURL() string
 	GetAuthorizationInstanceID() string
-	GetCertifcate() string
+	GetCertificate() string
 	GetKey() string
 }
