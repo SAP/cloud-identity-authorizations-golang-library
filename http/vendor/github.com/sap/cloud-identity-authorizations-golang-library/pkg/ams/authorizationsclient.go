@@ -14,7 +14,7 @@ import (
 )
 
 type tokenClaim map[string]any
-type authorizationsClient struct {
+type AuthorizationsClient struct {
 	c           http.Client
 	url         string
 	errHandlers []func(error)
@@ -23,23 +23,23 @@ type authorizationsClient struct {
 type authorizationsObj struct {
 	identity Identity
 	policies []string
-	andJoin  []Authorizations
+	andJoin  []*authorizationsObj
 	envInput any
-	client   *authorizationsClient
+	client   *AuthorizationsClient
 }
 
-func NewAuthorizationManagerClient(url string, client http.Client) AuthorizationManager {
-	return &authorizationsClient{
+func NewAuthorizationManagerClient(url string, client http.Client) *AuthorizationsClient {
+	return &AuthorizationsClient{
 		c:   client,
 		url: url,
 	}
 }
 
-func (a *authorizationsClient) IsReady() bool {
+func (a *AuthorizationsClient) IsReady() bool {
 	return a.get(httpclient.PATH_HEALTH, nil) == nil
 }
 
-func (a *authorizationsClient) WhenReady() <-chan bool {
+func (a *AuthorizationsClient) WhenReady() <-chan bool {
 	ch := make(chan bool)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	go func() {
@@ -54,23 +54,23 @@ func (a *authorizationsClient) WhenReady() <-chan bool {
 	return ch
 }
 
-func (a *authorizationsClient) AuthorizationsForIdentity(i Identity) Authorizations {
+func (a *AuthorizationsClient) AuthorizationsForIdentity(i Identity) *authorizationsObj {
 	return &authorizationsObj{
 		identity: i,
 		client:   a,
-		andJoin:  []Authorizations{},
+		andJoin:  []*authorizationsObj{},
 	}
 }
 
-func (a *authorizationsClient) AuthorizationsForPolicies(policyNames []string) Authorizations {
+func (a *AuthorizationsClient) AuthorizationsForPolicies(policyNames []string) *authorizationsObj {
 	return &authorizationsObj{
 		policies: policyNames,
 		client:   a,
-		andJoin:  []Authorizations{},
+		andJoin:  []*authorizationsObj{},
 	}
 }
 
-func (a *authorizationsClient) GetDefaultPolicyNames(tenant string) []string {
+func (a *AuthorizationsClient) GetDefaultPolicyNames(tenant string) []string {
 	var response httpclient.DefaultPoliciesResponse
 	err := a.get(httpclient.PATH_DEFAULT_POLICIES+"/"+tenant, &response)
 	if err != nil {
@@ -80,7 +80,7 @@ func (a *authorizationsClient) GetDefaultPolicyNames(tenant string) []string {
 	return response.DefaultPolicies
 }
 
-func (a *authorizationsClient) GetAssignments(tenant, user string) []string {
+func (a *AuthorizationsClient) GetAssignments(tenant, user string) []string {
 	req := httpclient.AssignedPoliciesRequest{
 		Token: newToken(tokenClaim{
 			"scim_id": user,
@@ -96,11 +96,11 @@ func (a *authorizationsClient) GetAssignments(tenant, user string) []string {
 	return response.Policies
 }
 
-func (a *authorizationsClient) RegisterErrorHandler(handler func(error)) {
+func (a *AuthorizationsClient) RegisterErrorHandler(handler func(error)) {
 	a.errHandlers = append(a.errHandlers, handler)
 }
 
-func (a *authorizationsClient) CreateInput(action, resource string, input any, env any) expression.Input {
+func (a *AuthorizationsClient) CreateInput(action, resource string, input any, env any) expression.Input {
 	req := httpclient.CreateInputRequest{
 		Action:   action,
 		Resource: resource,
@@ -116,7 +116,7 @@ func (a *authorizationsClient) CreateInput(action, resource string, input any, e
 	return response.RawInput
 }
 
-func (a *authorizationsClient) get(path string, responseBody any) error {
+func (a *AuthorizationsClient) get(path string, responseBody any) error {
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, a.url+path, nil)
 	if err != nil {
 		return err
@@ -135,7 +135,7 @@ func (a *authorizationsClient) get(path string, responseBody any) error {
 	return json.NewDecoder(resp.Body).Decode(responseBody)
 }
 
-func (a *authorizationsClient) post(path string, requestBody any, responseBody any) error {
+func (a *AuthorizationsClient) post(path string, requestBody any, responseBody any) error {
 	reqBodyBytes, err := json.Marshal(requestBody)
 	if err != nil {
 		return err
@@ -164,7 +164,7 @@ func (a *authorizationsClient) post(path string, requestBody any, responseBody a
 	return json.NewDecoder(resp.Body).Decode(responseBody)
 }
 
-func (a *authorizationsClient) notifyError(err error) {
+func (a *AuthorizationsClient) notifyError(err error) {
 	for _, handler := range a.errHandlers {
 		handler(err)
 	}
@@ -244,7 +244,7 @@ func (a *authorizationsObj) Evaluate(input expression.Input) Decision {
 	return result
 }
 
-func (a *authorizationsObj) AndJoin(other Authorizations) Authorizations {
+func (a *authorizationsObj) AndJoin(other *authorizationsObj) *authorizationsObj {
 	a.andJoin = append(a.andJoin, other)
 	return a
 }
@@ -336,7 +336,7 @@ func (a *authorizationsObj) SetEnvInput(env any) {
 	a.envInput = env
 }
 
-func (a *authorizationsClient) ValidateInput(input expression.Input) ([]string, []string) {
+func (a *AuthorizationsClient) ValidateInput(input expression.Input) ([]string, []string) {
 	panic("not implemented")
 }
 

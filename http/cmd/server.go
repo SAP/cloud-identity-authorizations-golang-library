@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
+	"github.com/sap/cloud-identity-authorizations-golang-library/sidecar/logging"
 	"github.com/sap/cloud-identity-authorizations-golang-library/sidecar/server"
 	"github.com/sap/cloud-security-client-go/env"
 )
@@ -13,8 +14,9 @@ import (
 const envDCNPath = "AMS_DCN_ROOT"
 
 func main() {
-	var am ams.AuthorizationManager
+	var am *ams.AuthorizationManager
 	var err error
+	l := logging.PlainLogger{}
 	if os.Getenv(envDCNPath) != "" {
 		am = ams.NewAuthorizationManagerForFs(os.Getenv(envDCNPath), nil)
 	} else {
@@ -27,13 +29,14 @@ func main() {
 			config.GetAuthorizationInstanceID(),
 			config.GetCertificate(),
 			config.GetKey(),
-			nil,
+			l,
 		)
+
 		if err != nil {
 			panic(err)
 		}
 	}
-	router := server.NewRouter(am)
+	router := server.NewRouter(am, l)
 
 	srv := &http.Server{
 		Addr:         ":8080",

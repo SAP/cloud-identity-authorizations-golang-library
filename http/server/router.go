@@ -1,26 +1,25 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging"
 	"github.com/sap/cloud-security-client-go/auth"
 )
 
 type Router struct {
-	am        ams.AuthorizationManager
+	am        *ams.AuthorizationManager
+	l         logging.Logger
 	lastError error
 }
 
-func NewRouter(am ams.AuthorizationManager) *Router {
-	s := &Router{am: am}
-	am.RegisterErrorHandler(func(err error) {
-		// Store the last error encountered by the AuthorizationManager
-		s.lastError = err
-	})
+func NewRouter(am *ams.AuthorizationManager, l logging.Logger) *Router {
+	s := &Router{am: am, l: l}
 	return s
 }
 
@@ -43,7 +42,7 @@ func (s *Router) handleAuthorize(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	a, err := s.authzForRequest(req.Token, req.Policies)
+	a, err := s.authzForRequest(r.Context(), req.Token, req.Policies)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -85,7 +84,7 @@ func (s *Router) handleResources(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	a, err := s.authzForRequest(req.Token, req.Policies)
+	a, err := s.authzForRequest(r.Context(), req.Token, req.Policies)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -105,7 +104,7 @@ func (s *Router) handleActions(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	a, err := s.authzForRequest(req.Token, req.Policies)
+	a, err := s.authzForRequest(r.Context(), req.Token, req.Policies)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -127,7 +126,7 @@ func (s *Router) handleHealth(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Router) authzForRequest(tokenStr string, policies []string) (ams.Authorizations, error) {
+func (s *Router) authzForRequest(ctx context.Context, tokenStr string, policies []string) (*ams.Authorizations, error) {
 	if tokenStr != "" {
 		if policies != nil {
 			return nil, fmt.Errorf("cannot specify both policies and token")
@@ -136,9 +135,9 @@ func (s *Router) authzForRequest(tokenStr string, policies []string) (ams.Author
 		if err != nil {
 			return nil, fmt.Errorf("error decoding token: %w", err)
 		}
-		return s.am.AuthorizationsForIdentity(token), nil
+		return s.am.AuthorizationsForIdentity(ctx, token), nil
 	} else {
-		return s.am.AuthorizationsForPolicies(policies), nil
+		return s.am.AuthorizationsForPolicies(ctx, policies), nil
 	}
 }
 

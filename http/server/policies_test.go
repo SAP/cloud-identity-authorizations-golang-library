@@ -12,12 +12,9 @@ import (
 )
 
 func TestPolicyEndpoints(t *testing.T) {
-	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", func(err error) {
-		t.Errorf("Error in AuthorizationManager: %v", err)
-		t.Fail()
-	})
+	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
 	<-am.WhenReady()
-	r := NewRouter(am)
+	r := NewRouter(am, nopLogger{})
 	t.Run("Get assigned policies of user1", func(t *testing.T) {
 		req := AssignedPoliciesRequest{
 			Token: newToken(tokenClaim{

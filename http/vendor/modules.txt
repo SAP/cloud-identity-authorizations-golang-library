@@ -64,13 +64,14 @@ github.com/pkg/errors
 ## explicit; go 1.16
 github.com/pquerna/cachecontrol
 github.com/pquerna/cachecontrol/cacheobject
-# github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260422131155-0c7f6e9ade6f
+# github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260423114719-0c7c47a81738
 ## explicit; go 1.23.2
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/httpclient
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal
+github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util
 # github.com/sap/cloud-security-client-go v0.25.1
 ## explicit; go 1.23.0

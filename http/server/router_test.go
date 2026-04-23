@@ -14,13 +14,17 @@ import (
 	e "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
+type nopLogger struct{}
+
+func (n nopLogger) Error(ctx context.Context, msg string) {}
+func (n nopLogger) Warn(ctx context.Context, msg string)  {}
+func (n nopLogger) Info(ctx context.Context, msg string)  {}
+func (n nopLogger) Debug(ctx context.Context, msg string) {}
+
 func TestRouter(t *testing.T) {
-	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", func(err error) {
-		t.Errorf("Error in AuthorizationManager: %v", err)
-		t.Fail()
-	})
+	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
 	<-am.WhenReady()
-	r := NewRouter(am)
+	r := NewRouter(am, nopLogger{})
 
 	t.Run("get resources for token", func(t *testing.T) {
 		rr := httptest.NewRecorder()
@@ -81,12 +85,9 @@ func TestRouter(t *testing.T) {
 }
 
 func TestInputEndpoint(t *testing.T) {
-	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", func(err error) {
-		t.Errorf("Error in AuthorizationManager: %v", err)
-		t.Fail()
-	})
+	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
 	<-am.WhenReady()
-	r := NewRouter(am)
+	r := NewRouter(am, nopLogger{})
 
 	t.Run("removes undefined input fields with warnings", func(t *testing.T) {
 		rr := httptest.NewRecorder()

@@ -40,6 +40,8 @@ github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260415145
 github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260415145955-1b8f04461136/go.mod h1:Q9jDbPUrEyRnCX+lL+5hF+yfuXRuxSYXnz1n5Bd80D8=
 github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260422131155-0c7f6e9ade6f h1:jNfmB1o4GsATJ2Ir7HxdfDGk563wSfsUzuEbr76kEQQ=
 github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260422131155-0c7f6e9ade6f/go.mod h1:Q9jDbPUrEyRnCX+lL+5hF+yfuXRuxSYXnz1n5Bd80D8=
+github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260423114719-0c7c47a81738 h1:6z/5ds9Lt8LHCI9i9th9N7EVUte4eMaZu8bvOq5Lrac=
+github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260423114719-0c7c47a81738/go.mod h1:Q9jDbPUrEyRnCX+lL+5hF+yfuXRuxSYXnz1n5Bd80D8=
 github.com/sap/cloud-security-client-go v0.25.1 h1:kVH3TnwXkUAk5sNZxNY5TOkRR8EQCbbvdnwAZrQZtPQ=
 github.com/sap/cloud-security-client-go v0.25.1/go.mod h1:kIU1Z/KnJxahlyBHnmnigXdyvvSMf9za5oyhHjyajKQ=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

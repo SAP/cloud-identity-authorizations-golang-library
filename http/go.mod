@@ -3,7 +3,7 @@ module github.com/sap/cloud-identity-authorizations-golang-library/sidecar
 go 1.25.5
 
 require (
-	github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260422131155-0c7f6e9ade6f
+	github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260423114719-0c7c47a81738
 	github.com/sap/cloud-security-client-go v0.25.1
 )
 

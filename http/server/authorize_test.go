@@ -35,12 +35,9 @@ func (e *errorWriter) WriteHeader(statusCode int) {
 	e.status = statusCode
 }
 func TestAuthzForPolicies(t *testing.T) {
-	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", func(err error) {
-		t.Errorf("Error in AuthorizationManager: %v", err)
-		t.Fail()
-	})
+	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
 	<-am.WhenReady()
-	r := NewRouter(am)
+	r := NewRouter(am, nopLogger{})
 	var req AuthorizationRequest
 
 	t.Run("Evaluate single policy without input", func(t *testing.T) {
@@ -163,12 +160,9 @@ func TestAuthzForPolicies(t *testing.T) {
 type tokenClaim map[string]any
 
 func TestEvaluateToken(t *testing.T) {
-	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", func(err error) {
-		t.Errorf("Error in AuthorizationManager: %v", err)
-		t.Fail()
-	})
+	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
 	<-am.WhenReady()
-	r := NewRouter(am)
+	r := NewRouter(am, nopLogger{})
 	t.Run("Evaluate valid token", func(t *testing.T) {
 		rr := httptest.NewRecorder()
 		claims := tokenClaim{
@@ -297,7 +291,7 @@ func TestHealth(t *testing.T) {
 		dcnChan := make(chan dcn.DcnContainer)
 		assigmentChan := make(chan dcn.Assignments)
 		am := ams.NewAuthorizationManager(dcnChan, assigmentChan, nil)
-		r := NewRouter(am)
+		r := NewRouter(am, nopLogger{})
 		rr := httptest.NewRecorder()
 		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/v1/health", nil))
 		if rr.Code != http.StatusServiceUnavailable {

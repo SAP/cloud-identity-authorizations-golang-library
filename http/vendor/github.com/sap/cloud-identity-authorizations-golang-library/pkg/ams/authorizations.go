@@ -7,23 +7,9 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal"
 )
 
-type Authorizations interface {
-	Inquire(action, resource string, app any) Decision
-
-	SetEnvInput(env any)
-
-	GetResources() []string
-
-	GetActions(resource string) []string
-
-	Evaluate(input expression.Input) Decision
-
-	AndJoin(aa Authorizations) Authorizations
-}
-
-type authorizations struct {
+type Authorizations struct {
 	policies  internal.PolicySet
-	andJoined []Authorizations
+	andJoined []*Authorizations
 	schema    internal.Schema
 	envInput  expression.Input
 }
@@ -39,7 +25,7 @@ const (
 //   - deeply nested map[string] where the keys are the schema names and the values can translated to the schema types
 //   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema
 //     name or the fields name is EXACTLY the same as the schema name
-func (a *authorizations) Inquire(action, resource string, app any) Decision {
+func (a *Authorizations) Inquire(action, resource string, app any) Decision {
 	i := a.schema.CustomInput(action, resource, app, nil)
 	for k, v := range a.envInput {
 		i[k] = v
@@ -48,16 +34,16 @@ func (a *authorizations) Inquire(action, resource string, app any) Decision {
 	return a.Evaluate(i)
 }
 
-func (a *authorizations) SetEnvInput(env any) {
+func (a *Authorizations) SetEnvInput(env any) {
 	a.envInput = expression.Input{}
 	a.schema.InsertCustomInput(a.envInput, reflect.ValueOf(env), []string{"$env"})
 }
 
-func (a *authorizations) GetResources() []string {
+func (a *Authorizations) GetResources() []string {
 	return a.policies.GetResources()
 }
 
-func (a *authorizations) GetActions(resource string) []string {
+func (a *Authorizations) GetActions(resource string) []string {
 	return a.policies.GetActions(resource)
 }
 
@@ -70,7 +56,7 @@ func (a *authorizations) GetActions(resource string) []string {
 //   - the evaluation will panic if the input is wrongly typed
 //
 // the input can savely created/purged by the Schema.
-func (a *authorizations) Evaluate(input expression.Input) Decision {
+func (a *Authorizations) Evaluate(input expression.Input) Decision {
 	for k, v := range a.envInput {
 		input[k] = v
 	}
@@ -120,8 +106,8 @@ func (a *authorizations) Evaluate(input expression.Input) Decision {
 
 // Restrict an authorizations object by another one
 // a possible scenario would be to restrict a users authorizations by other technical authorizations.
-func (a *authorizations) AndJoin(aa Authorizations) Authorizations {
-	return &authorizations{
+func (a *Authorizations) AndJoin(aa *Authorizations) *Authorizations {
+	return &Authorizations{
 		policies:  a.policies,
 		andJoined: append(a.andJoined, aa),
 	}
