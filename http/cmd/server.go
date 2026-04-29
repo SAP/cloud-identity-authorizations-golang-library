@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/sap/cloud-identity-authorizations-golang-library/http/logging"
+	"github.com/sap/cloud-identity-authorizations-golang-library/http/server"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
-	"github.com/sap/cloud-identity-authorizations-golang-library/sidecar/logging"
-	"github.com/sap/cloud-identity-authorizations-golang-library/sidecar/server"
 	"github.com/sap/cloud-security-client-go/env"
 )
 
@@ -31,6 +31,10 @@ func main() {
 			config.GetKey(),
 			l,
 		)
+		// am, err = ams.NewAuthorizationManagerForIASConfig(
+		// 	config,
+		// 	l,
+		// )
 
 		if err != nil {
 			panic(err)
@@ -39,7 +43,7 @@ func main() {
 	router := server.NewRouter(am, l)
 
 	srv := &http.Server{
-		Addr:         ":8080",
+		Addr:         ":8099",
 		Handler:      router.Mux(),
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,

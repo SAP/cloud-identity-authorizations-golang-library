@@ -37,13 +37,16 @@ func (s *Router) Mux() http.Handler {
 }
 
 func (s *Router) handleAuthorize(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var req AuthorizationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		// s.l.Info(ctx, "Invalid request body: %v", err)
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	a, err := s.authzForRequest(r.Context(), req.Token, req.Policies)
+	a, err := s.authzForRequest(ctx, req.Token, req.Policies)
 	if err != nil {
+		// s.l.Info(ctx, "Error authorizing request: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

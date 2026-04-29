@@ -1,4 +1,4 @@
-module github.com/sap/cloud-identity-authorizations-golang-library/sidecar
+module github.com/sap/cloud-identity-authorizations-golang-library/http
 
 go 1.25.5
 

@@ -16,17 +16,11 @@ import (
 
 type crashLogger struct{}
 
-func (l crashLogger) Debug(ctx context.Context, msg string) {
-
-}
-func (l crashLogger) Info(ctx context.Context, msg string) {
-
-}
-func (l crashLogger) Warn(ctx context.Context, msg string) {
-
-}
-func (l crashLogger) Error(ctx context.Context, msg string) {
-	panic(msg)
+func (l crashLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
+func (l crashLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
+func (l crashLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
+func (l crashLogger) Errorf(ctx context.Context, format string, args ...interface{}) {
+	panic(fmt.Sprintf(format, args...))
 }
 func TestRun(t *testing.T) {
 	// tmp, _ := os.ReadDir("./")

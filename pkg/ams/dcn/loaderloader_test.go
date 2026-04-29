@@ -2,6 +2,7 @@ package dcn
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -14,11 +15,11 @@ type mockLogger struct {
 	errorsReceived chan bool
 }
 
-func (l *mockLogger) Debug(ctx context.Context, msg string) {}
-func (l *mockLogger) Info(ctx context.Context, msg string)  {}
-func (l *mockLogger) Warn(ctx context.Context, msg string)  {}
-func (l *mockLogger) Error(ctx context.Context, msg string) {
-	l.errors = append(l.errors, msg)
+func (l *mockLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
+func (l *mockLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
+func (l *mockLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
+func (l *mockLogger) Errorf(ctx context.Context, format string, args ...interface{}) {
+	l.errors = append(l.errors, fmt.Sprintf(format, args...))
 	l.errorsReceived <- true
 }
 

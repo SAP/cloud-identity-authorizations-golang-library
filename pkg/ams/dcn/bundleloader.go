@@ -51,7 +51,7 @@ func NewBundleLoader(targetURL *url.URL,
 
 func (b *BundleLoader) handleError(err error) {
 	if b.l != nil {
-		b.l.Error(context.Background(), fmt.Sprintf("%v", err))
+		b.l.Errorf(context.Background(), "%v", err)
 	}
 }
 
@@ -107,10 +107,29 @@ func (b *BundleLoader) bundleRequest() {
 	}
 	b.lastEtag = resp.Header.Get("ETag")
 
-	gz, err := gzip.NewReader(resp.Body)
+	dcn, assignments, err = ReadBundleTarGz(resp.Body)
 	if err != nil {
 		b.handleError(err)
 		return
+	}
+
+	b.DCNChannel <- dcn
+	b.AssignmentsChannel <- assignments
+}
+
+func ReadBundleTarGz(reader io.Reader) (DcnContainer, Assignments, error) {
+
+	dcn := DcnContainer{
+		Policies:  []Policy{},
+		Schemas:   []Schema{},
+		Functions: []Function{},
+		Tests:     []Test{},
+	}
+	assignments := Assignments{}
+
+	gz, err := gzip.NewReader(reader)
+	if err != nil {
+		return DcnContainer{}, nil, err
 	}
 
 	defer gz.Close()
@@ -123,8 +142,7 @@ func (b *BundleLoader) bundleRequest() {
 			break // End of archive
 		}
 		if err != nil {
-			b.handleError(err)
-			return
+			return DcnContainer{}, nil, err
 		}
 
 		// If it's a regular file, read the content
@@ -133,22 +151,19 @@ func (b *BundleLoader) bundleRequest() {
 				content := make([]byte, header.Size)
 				_, err := io.ReadFull(tarReader, content)
 				if err != nil {
-					b.handleError(err)
-					return
+					return DcnContainer{}, nil, err
 				}
 				var dcnPart DcnContainer
 				err = json.Unmarshal(content, &dcnPart)
 				if err != nil {
-					b.handleError(err)
-					return
+					return DcnContainer{}, nil, err
 				}
 				if dcnPart.Version > DCNVERSION {
-					b.handleError(fmt.Errorf(
+					return DcnContainer{}, nil, fmt.Errorf(
 						"incompatible DCN version: bundle has version %d but loader supports up to %d",
 						dcnPart.Version,
 						DCNVERSION,
-					))
-					return
+					)
 				}
 				dcn.Policies = append(dcn.Policies, dcnPart.Policies...)
 				dcn.Functions = append(dcn.Functions, dcnPart.Functions...)
@@ -158,20 +173,16 @@ func (b *BundleLoader) bundleRequest() {
 				content := make([]byte, header.Size)
 				_, err := io.ReadFull(tarReader, content)
 				if err != nil {
-					b.handleError(err)
-					return
+					return DcnContainer{}, nil, err
 				}
 				var assignmentsC AssignmentsContainer
 				err = json.Unmarshal(content, &assignmentsC)
 				if err != nil {
-					b.handleError(err)
-					return
+					return DcnContainer{}, nil, err
 				}
 				assignments = assignmentsC.Assignments
 			}
 		}
 	}
-
-	b.DCNChannel <- dcn
-	b.AssignmentsChannel <- assignments
+	return dcn, assignments, nil
 }

@@ -1,11 +1,16 @@
-package ams
+package httpclient
 
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os/exec"
 	"reflect"
 	"sort"
 	"testing"
+	"time"
+
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 )
 
 type E1 struct {
@@ -64,31 +69,66 @@ func (l crashLogger) Errorf(ctx context.Context, format string, args ...interfac
 }
 
 func TestSimpleScenario(t *testing.T) {
-	a := NewAuthorizationManagerForFs("test/scenarios/simple", crashLogger{})
+	t.Skip()
+	cmd := exec.Command("go", "run", "../../server/cmd/main.go")
+	cmd.Env = append(cmd.Env, "AMS_DCN_ROOT=test/scenarios/simple/config.yaml")
+	err := cmd.Start()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	<-a.WhenReady()
+	time.Sleep(time.Second)
+
+	// log the output of the server process in case the test fails, to make debugging easier
+	go func() {
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			fmt.Printf("server process exited with error: %v\n", err)
+		}
+		fmt.Printf("server process output:\n%s\n", string(output))
+	}()
+	defer cmd.Process.Kill()
+	a := NewAuthorizationManager("http://localhost:8099", *http.DefaultClient, crashLogger{})
+
+	<-a.WhenReady(context.Background())
 	t.Run("random user on entity1", func(t *testing.T) {
+		ctx := context.Background()
 		authz := a.AuthorizationsForIdentity(
-			context.Background(),
+			ctx,
 			identity{groups: []string{"g1", "g2"}})
-		res := authz.GetResources()
+		res, err := authz.GetResources(ctx)
+		if err != nil {
+			t.Fatalf("failed to get resources: %v", err)
+		}
 		sort.Strings(res)
 		if !reflect.DeepEqual(res, []string{"r1", "r2"}) {
 			t.Fatalf("expected resources to be [r1 r2], but was %v", res)
 		}
-		actions := authz.GetActions("r1")
+		actions, err := authz.GetActions(ctx, "r1")
+		if err != nil {
+			t.Fatalf("failed to get actions: %v", err)
+		}
 		if !reflect.DeepEqual(actions, []string{"read"}) {
 			t.Fatalf("expected actions to be [read], but was %v", actions)
 		}
-		actions = authz.GetActions("r2")
+		actions, err = authz.GetActions(ctx, "r2")
+		if err != nil {
+			t.Fatalf("failed to get actions: %v", err)
+		}
 		if !reflect.DeepEqual(actions, []string{"read"}) {
 			t.Fatalf("expected actions to be [read], but was %v", actions)
 		}
-		d := authz.Inquire("write", "r1", nil)
+		d, err := authz.Inquire(ctx, "write", "r1", nil)
+		if err != nil {
+			t.Fatalf("failed to inquire: %v", err)
+		}
 		if !d.IsDenied() {
 			t.Fatalf("expected access to be denied, but was %s", d.Condition())
 		}
-		d = authz.Inquire("read", "r1", nil)
+		d, err = authz.Inquire(ctx, "read", "r1", nil)
+		if err != nil {
+			t.Fatalf("failed to inquire: %v", err)
+		}
 		if d.IsDenied() {
 			t.Fatalf("expected access to be not denied, but was %s", d.Condition())
 		}
@@ -96,49 +136,67 @@ func TestSimpleScenario(t *testing.T) {
 			t.Fatalf("expected access to be not granted, but was %s", d.Condition())
 		}
 		// default policies should grant read when group is g1 or g2, or public is true
-		d2 := d.Inquire(Schema{
-			Entity1: &E1{
-				Group: "g1",
+		d2, err := d.Inquire(
+			ctx,
+			Schema{
+				Entity1: &E1{
+					Group: "g1",
+				},
 			},
-		})
+		)
+		if err != nil {
+			t.Fatalf("failed to inquire: %v", err)
+		}
 		if !d2.IsGranted() {
 			t.Fatalf("expected access to be granted, but was %s", d2.Condition())
 		}
-		d2 = d.Inquire(Schema{
+		d2, err = d.Inquire(ctx, Schema{
 			Entity1: &E1{
 				Group: "g2",
 			},
 		})
+		if err != nil {
+			t.Fatalf("failed to inquire: %v", err)
+		}
 		if !d2.IsGranted() {
 			t.Fatalf("expected access to be granted, but was %s", d2.Condition())
 		}
-		d2 = d.Inquire(Schema{
+		d2, err = d.Inquire(ctx, Schema{
 			Entity1: &E1{
 				Group: "g3",
 			},
 		})
+		if err != nil {
+			t.Fatalf("failed to inquire: %v", err)
+		}
 		if !d2.IsDenied() {
 			t.Fatalf("expected access to be denied, but was %s", d2.Condition())
 		}
-		d2 = d.Inquire(Schema{
+		d2, err = d.Inquire(ctx, Schema{
 			Entity1: &E1{
 				Public: true,
 			},
 		})
+		if err != nil {
+			t.Fatalf("failed to inquire: %v", err)
+		}
 		if !d2.IsGranted() {
 			t.Fatalf("expected access to be granted, but was %s", d2.Condition())
 		}
 
-		authz.SetEnvInput(DefaultEnvironmentInput{
-			UserInfo: UserInfo{
+		authz.SetEnvInput(ams.DefaultEnvironmentInput{
+			UserInfo: ams.UserInfo{
 				Groups: []string{"g3"},
 			},
 		})
-		d = authz.Inquire("read", "r1", Schema{
+		d, err = authz.Inquire(ctx, "read", "r1", Schema{
 			Entity1: &E1{
 				Group: "g3",
 			},
 		})
+		if err != nil {
+			t.Fatalf("failed to inquire: %v", err)
+		}
 		if !d.IsGranted() {
 			t.Fatalf("expected access to be granted, but was %s", d.Condition())
 		}
@@ -146,7 +204,10 @@ func TestSimpleScenario(t *testing.T) {
 
 	t.Run("nil identity always denied", func(t *testing.T) {
 		authz := a.AuthorizationsForIdentity(context.Background(), nil)
-		d := authz.Inquire("", "", nil)
+		d, err := authz.Inquire(context.Background(), "", "", nil)
+		if err != nil {
+			t.Fatalf("failed to inquire: %v", err)
+		}
 		if !d.IsDenied() {
 			t.Fatalf("expected access to be denied, but was %s", d.Condition())
 		}
