@@ -1,16 +1,21 @@
-package httpclient
+package httpclient_test
 
 import (
+	// 	"context"
+	// 	"fmt"
+	// 	"testing"
+
 	"context"
 	"fmt"
-	"net/http"
-	"os/exec"
+	"net/http/httptest"
 	"reflect"
 	"sort"
 	"testing"
-	"time"
 
+	"github.com/sap/cloud-identity-authorizations-golang-library/http/server"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
+	. "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/httpclient"
+	// "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 )
 
 type E1 struct {
@@ -54,7 +59,6 @@ func (i identity) UserUUID() string {
 func (i identity) Groups() []string {
 	return i.groups
 }
-
 func (i identity) Email() string {
 	return i.email
 }
@@ -69,27 +73,15 @@ func (l crashLogger) Errorf(ctx context.Context, format string, args ...interfac
 }
 
 func TestSimpleScenario(t *testing.T) {
-	t.Skip()
-	cmd := exec.Command("go", "run", "../../server/cmd/main.go")
-	cmd.Env = append(cmd.Env, "AMS_DCN_ROOT=test/scenarios/simple/config.yaml")
-	err := cmd.Start()
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	time.Sleep(time.Second)
+	aSrv := ams.NewAuthorizationManagerForFs("../test/scenarios/simple", crashLogger{})
 
-	// log the output of the server process in case the test fails, to make debugging easier
-	go func() {
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			fmt.Printf("server process exited with error: %v\n", err)
-		}
-		fmt.Printf("server process output:\n%s\n", string(output))
-	}()
-	defer cmd.Process.Kill()
-	a := NewAuthorizationManager("http://localhost:8099", *http.DefaultClient, crashLogger{})
+	router := server.NewRouter(aSrv, crashLogger{})
 
+	srv := httptest.NewServer(router.Mux())
+	defer srv.Close()
+
+	a := NewAuthorizationManager(srv.URL, srv.Client(), crashLogger{})
 	<-a.WhenReady(context.Background())
 	t.Run("random user on entity1", func(t *testing.T) {
 		ctx := context.Background()
@@ -212,4 +204,5 @@ func TestSimpleScenario(t *testing.T) {
 			t.Fatalf("expected access to be denied, but was %s", d.Condition())
 		}
 	})
+
 }

@@ -58,12 +58,12 @@ func (a *Authorizations) GetActions(resource string) []string {
 // the input can savely created/purged by the Schema.
 func (a *Authorizations) Evaluate(input expression.Input) Decision {
 	for k, v := range a.envInput {
-		input[k] = v
+		if _, ok := input[k]; !ok {
+			input[k] = v
+		}
 	}
 	r := a.policies.Evaluate(input)
-	for k := range a.envInput {
-		delete(input, k)
-	}
+
 	if r == expression.FALSE {
 		return Decision{
 			condition: r,

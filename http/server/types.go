@@ -56,13 +56,15 @@ type AssignedPoliciesResponse struct {
 }
 
 type InputRequest struct {
-	Input Input `json:"input"`
+	Action   string `json:"action"`
+	Resource string `json:"resource"`
+	Input    Input  `json:"input"`
 }
 
 type InputResponse struct {
-	Input    Input    `json:"input"`
-	Errors   []string `json:"errors,omitempty"`
-	Warnings []string `json:"warnings,omitempty"`
+	Input    expression.Input `json:"input"`
+	Errors   []string         `json:"errors,omitempty"`
+	Warnings []string         `json:"warnings,omitempty"`
 }
 
 func (i *Input) UnmarshalJSON(data []byte) error {

@@ -24,6 +24,9 @@ func (d Decision) IsDenied() bool {
 }
 
 func (d Decision) Inquire(ctx context.Context, app any) (Decision, error) {
+	if d.inputConverter == nil {
+		return d, nil
+	}
 	input, err := d.inputConverter(app)
 	if err != nil {
 		return Decision{}, err

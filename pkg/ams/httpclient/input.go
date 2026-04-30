@@ -2,76 +2,62 @@ package httpclient
 
 import (
 	"reflect"
+
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
 
-func ConvertInput(input any) map[string]any {
-	v := reflect.ValueOf(input)
+func insertCustomInput(result reqInput, input reflect.Value, path []string) {
+	v := input
 	kind := v.Kind()
+	currentPath := util.StringifyQualifiedName(path)
+
+	if kind == reflect.Invalid {
+		return
+	}
+
+	// first we resolve pointers and interfaces
 	if kind == reflect.Interface || kind == reflect.Pointer {
 		if v.IsNil() {
-			return nil
+			return
 		}
-		return ConvertInput(v.Elem())
+		c, ok := v.Interface().(expression.Constant)
+		if ok {
+			result[currentPath] = c
+			return
+		}
+		insertCustomInput(result, v.Elem(), path)
+		return
 	}
-	result := make(map[string]any)
-	if kind == reflect.Struct {
+	switch kind { //nolint:exhaustive
+	case reflect.Struct:
 		for i := range v.NumField() {
+			fieldValue := v.Field(i)
 			field := v.Type().Field(i)
+			if !field.IsExported() {
+				continue
+			}
 			name := field.Tag.Get("ams")
 			if name == "" {
 				name = field.Name
 			}
-			result[name] = convertInput(v.Field(i).Interface())
+			insertCustomInput(result, fieldValue, append(path, name))
 		}
-		return result
-	}
-	if kind == reflect.Map {
-		iter := v.MapRange()
-		for iter.Next() {
-			key := iter.Key()
-			value := iter.Value()
-			if key.Kind() == reflect.String {
-				result[key.String()] = convertInput(value.Interface())
-			}
-		}
-		return result
-	}
-
-	return nil
-}
-
-func convertInput(input any) any {
-	v := reflect.ValueOf(input)
-	kind := v.Kind()
-	if kind == reflect.Interface || kind == reflect.Pointer {
+	case reflect.Map:
 		if v.IsNil() {
-			return nil
+			return
 		}
-		return ConvertInput(v.Elem())
-	}
-	if kind == reflect.Struct {
-		result := make(map[string]any)
-		for i := range v.NumField() {
-			field := v.Type().Field(i)
-			name := field.Tag.Get("ams")
-			if name == "" {
-				name = field.Name
-			}
-			result[name] = convertInput(v.Field(i).Interface())
+		for _, k := range v.MapKeys() {
+			fieldValue := v.MapIndex(k)
+			insertCustomInput(result, fieldValue, append(path, k.String()))
 		}
-		return result
-	}
-	if kind == reflect.Map {
-		result := make(map[string]any)
-		iter := v.MapRange()
-		for iter.Next() {
-			key := iter.Key()
-			value := iter.Value()
-			if key.Kind() == reflect.String {
-				result[key.String()] = convertInput(value.Interface())
-			}
+	case reflect.Slice, reflect.Array:
+		if input.IsNil() {
+			return
 		}
-		return result
+		result[currentPath] = v.Interface()
+	default:
+		result[currentPath] = v.Interface()
 	}
-	return input
+
 }
