@@ -58,7 +58,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("is ready after receiving DCN", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 		assignmentsChannel <- dcn.Assignments{}
 
 		if am.IsReady() {
@@ -98,7 +98,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("with functions", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 		assignmentsChannel <- dcn.Assignments{}
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -139,7 +139,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		assignmentsChannel := make(chan dcn.Assignments)
 		ml := newMockLogger()
 
-		NewAuthorizationManager(dcnChannel, assignmentsChannel, ml)
+		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml)
 		assignmentsChannel <- dcn.Assignments{}
 
 		if len(ml.errors) != 0 {
@@ -167,7 +167,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
 		ml := newMockLogger()
-		NewAuthorizationManager(dcnChannel, assignmentsChannel, ml)
+		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml)
 		assignmentsChannel <- dcn.Assignments{}
 
 		if len(ml.errors) != 0 {
@@ -199,7 +199,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("get Authorizations", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 		assignmentsChannel <- dcn.Assignments{}
 
 		dcnChannel <- dcn.DcnContainer{
@@ -320,7 +320,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("get assignments", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -369,7 +369,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("Authorizations for identity with user attribues", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -417,7 +417,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("get default policy names", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -463,7 +463,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
 		ml := newMockLogger()
-		NewAuthorizationManager(dcnChannel, assignmentsChannel, ml)
+		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml)
 
 		assignmentsChannel <- dcn.Assignments{}
 		dcnChannel <- dcn.DcnContainer{

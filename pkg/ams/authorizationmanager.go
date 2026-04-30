@@ -28,16 +28,22 @@ type AuthorizationManager struct {
 	hasAssignments    bool
 	functionContainer *expression.FunctionRegistry
 	l                 logging.Logger
+	ctx               context.Context
+	cancel            context.CancelFunc
+	closed            chan bool
+	closeBundleLoader func(context.Context) error
 }
 
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
 // to update its policies and assignments during runtime.
 // the instance must receive (possibly empty) data on both channels to be ready.
 func NewAuthorizationManager(
+	ctx context.Context,
 	dcnC chan dcn.DcnContainer,
 	assignmentsC chan dcn.Assignments,
 	log logging.Logger,
 ) *AuthorizationManager {
+	ctx, cancel := context.WithCancel(ctx)
 	result := AuthorizationManager{
 		ready:              make(chan bool),
 		policies:           internal.PolicySet{},
@@ -48,6 +54,9 @@ func NewAuthorizationManager(
 		hasAssignments:     false,
 		functionContainer:  expression.NewFunctionRegistry(),
 		l:                  log,
+		ctx:                ctx,
+		cancel:             cancel,
+		closed:             make(chan bool),
 	}
 
 	go result.start()
@@ -57,8 +66,9 @@ func NewAuthorizationManager(
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
-func NewAuthorizationManagerForIASConfig(config IASConfig, log logging.Logger) (*AuthorizationManager, error) {
+func NewAuthorizationManagerForIASConfig(ctx context.Context, config IASConfig, log logging.Logger) (*AuthorizationManager, error) {
 	return NewAuthorizationManagerForIAS(
+		ctx,
 		config.GetAuthorizationBundleURL(),
 		config.GetAuthorizationInstanceID(),
 		config.GetCertificate(),
@@ -70,6 +80,7 @@ func NewAuthorizationManagerForIASConfig(config IASConfig, log logging.Logger) (
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
 func NewAuthorizationManagerForIAS(
+	ctx context.Context,
 	bundleUrl,
 	amsInstanceID,
 	cert,
@@ -102,13 +113,15 @@ func NewAuthorizationManagerForIAS(
 	}
 
 	loader := dcn.NewBundleLoader(
+		ctx,
 		parsedURL,
 		client,
 		*time.NewTicker(time.Second * 20),
 		log,
 	)
 
-	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, log)
+	result := NewAuthorizationManager(ctx, loader.DCNChannel, loader.AssignmentsChannel, log)
+	result.closeBundleLoader = loader.Close
 	return result, nil
 }
 
@@ -118,7 +131,7 @@ func NewAuthorizationManagerForIAS(
 // and could be omitted.
 func NewAuthorizationManagerForFs(path string, log logging.Logger) *AuthorizationManager {
 	loader := dcn.NewLocalLoader(path, log)
-	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, log)
+	result := NewAuthorizationManager(context.Background(), loader.DCNChannel, loader.AssignmentsChannel, log)
 
 	return result
 }
@@ -126,6 +139,9 @@ func NewAuthorizationManagerForFs(path string, log logging.Logger) *Authorizatio
 func (a *AuthorizationManager) start() {
 	for {
 		select {
+		case <-a.ctx.Done():
+			close(a.closed)
+			return
 		case assignments := <-a.assignmentsChannel:
 			a.m.Lock()
 			a.Assignments = assignments
@@ -178,6 +194,20 @@ func (a *AuthorizationManager) IsReady() bool {
 		return true
 	default:
 		return false
+	}
+}
+
+func (a *AuthorizationManager) Close(ctx context.Context) error {
+	a.cancel()
+	err := a.closeBundleLoader(ctx)
+	if err != nil {
+		return err
+	}
+	select {
+	case <-a.closed:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }
 
@@ -254,6 +284,6 @@ func (a *AuthorizationManager) ValidateInput(input expression.Input) ([]string, 
 
 func (a *AuthorizationManager) notifyError(err error) {
 	if a.l != nil {
-		a.l.Errorf(context.Background(), err.Error())
+		a.l.Errorf(a.ctx, err.Error())
 	}
 }

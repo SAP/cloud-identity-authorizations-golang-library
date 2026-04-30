@@ -41,7 +41,7 @@ func TestRun(t *testing.T) {
 					dcnChannel <- dcnContainer
 				}
 			}()
-			ams := ams.NewAuthorizationManager(dcnChannel, loader.AssignmentsChannel, crashLogger{})
+			ams := ams.NewAuthorizationManager(context.Background(), dcnChannel, loader.AssignmentsChannel, crashLogger{})
 
 			<-ams.WhenReady()
 

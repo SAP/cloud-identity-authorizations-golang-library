@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
+	"context"
 	_ "embed"
 	"fmt"
 	"net/http"
@@ -160,7 +161,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
+		bundleLoader := NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, nil)
 
 		gotDCN := <-bundleLoader.DCNChannel
 		gotAssignments := <-bundleLoader.AssignmentsChannel
@@ -215,7 +216,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newMockLogger()
 
-		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, ml)
+		bundleLoader := NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
 
 		select {
 		case <-ml.errorsReceived:
@@ -238,7 +239,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		NewBundleLoader(targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -262,7 +263,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newMockLogger()
 
-		NewBundleLoader(targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -280,7 +281,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newMockLogger()
 
-		NewBundleLoader(targetURL, &http.Client{}, ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, &http.Client{}, ticker, ml)
 
 		time.Sleep(2 * time.Millisecond)
 		if len(ml.errors) != 1 {
@@ -299,7 +300,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newMockLogger()
 
-		NewBundleLoader(targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -323,7 +324,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newMockLogger()
 
-		NewBundleLoader(targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -347,7 +348,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newMockLogger()
 
-		NewBundleLoader(targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -371,7 +372,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newMockLogger()
 
-		NewBundleLoader(targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -394,7 +395,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		NewBundleLoader(targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -417,7 +418,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		NewBundleLoader(targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {

@@ -22,6 +22,7 @@ var version string
 const DCNVERSION = 1
 
 type BundleLoader struct {
+	ctx                context.Context
 	DCNChannel         chan DcnContainer
 	AssignmentsChannel chan Assignments
 	lastEtag           string
@@ -29,20 +30,28 @@ type BundleLoader struct {
 	url                *url.URL
 	ticker             time.Ticker
 	l                  logging.Logger
+	closed             chan bool
+	cancel             context.CancelFunc
 }
 
-func NewBundleLoader(targetURL *url.URL,
+func NewBundleLoader(
+	ctx context.Context,
+	targetURL *url.URL,
 	client *http.Client,
 	ticker time.Ticker,
 	log logging.Logger,
 ) *BundleLoader {
+	ctx, cancel := context.WithCancel(ctx)
 	result := BundleLoader{
+		ctx:                ctx,
+		cancel:             cancel,
 		DCNChannel:         make(chan DcnContainer),
 		AssignmentsChannel: make(chan Assignments),
 		client:             client,
 		url:                targetURL,
 		ticker:             ticker,
 		l:                  log,
+		closed:             make(chan bool),
 	}
 
 	go result.start()
@@ -59,11 +68,27 @@ func (b *BundleLoader) start() {
 	b.bundleRequest()
 
 	for {
-		<-b.ticker.C
-		b.bundleRequest()
+		select {
+		case <-b.closed:
+			b.closed <- true
+			return
+		case <-b.ticker.C:
+			b.bundleRequest()
+		}
 	}
 }
 
+func (b *BundleLoader) Close(ctx context.Context) error {
+	b.ticker.Stop()
+	b.cancel()
+
+	select {
+	case b.closed <- true:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
 func (b *BundleLoader) bundleRequest() {
 	dcn := DcnContainer{
 		Policies:  []Policy{},
