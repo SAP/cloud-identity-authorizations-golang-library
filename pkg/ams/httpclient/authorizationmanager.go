@@ -124,51 +124,82 @@ func (a *AuthorizationManager) CreateInput(ctx context.Context, action, resource
 }
 
 func (a *AuthorizationManager) get(ctx context.Context, path string, responseBody any) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, a.url+path, nil)
-	if err != nil {
+	result := make(chan error, 1)
+	go func() {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, a.url+path, nil)
+		if err != nil {
+			result <- err
+			return
+		}
+		resp, err := a.c.Do(req)
+		if err != nil {
+			result <- err
+			return
+		}
+
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			result <- fmt.Errorf("unexpected on GET %s status code: %d", a.url+path, resp.StatusCode)
+			return
+		}
+		if responseBody == nil {
+			result <- nil
+			return
+		}
+		result <- json.NewDecoder(resp.Body).Decode(responseBody)
+	}()
+
+	select {
+	case err := <-result:
 		return err
+	case <-ctx.Done():
+		return ctx.Err()
 	}
-	resp, err := a.c.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected on GET %s status code: %d", a.url+path, resp.StatusCode)
-	}
-	if responseBody == nil {
-		return nil
-	}
-	return json.NewDecoder(resp.Body).Decode(responseBody)
 }
 
 func (a *AuthorizationManager) post(ctx context.Context, path string, requestBody any, responseBody any) error {
-	reqBodyBytes, err := json.Marshal(requestBody)
-	if err != nil {
+
+	result := make(chan error, 1)
+	go func() {
+		reqBodyBytes, err := json.Marshal(requestBody)
+		if err != nil {
+			result <- err
+			return
+		}
+		req, err := http.NewRequestWithContext(
+			ctx,
+			http.MethodPost,
+			a.url+path,
+			bytes.NewReader(reqBodyBytes),
+		)
+		if err != nil {
+			result <- err
+			return
+		}
+		req.Header.Set("Content-Type", "application/json")
+		resp, err := a.c.Do(req)
+		if err != nil {
+			result <- err
+			return
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			result <- fmt.Errorf("unexpected on POST %s status code: %d", a.url+path, resp.StatusCode)
+			return
+		}
+		if responseBody == nil {
+			result <- nil
+			return
+		}
+		result <- json.NewDecoder(resp.Body).Decode(responseBody)
+	}()
+
+	select {
+	case err := <-result:
 		return err
+	case <-ctx.Done():
+		return ctx.Err()
 	}
-	req, err := http.NewRequestWithContext(
-		ctx,
-		http.MethodPost,
-		a.url+path,
-		bytes.NewReader(reqBodyBytes),
-	)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := a.c.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected on POST %s status code: %d", a.url+path, resp.StatusCode)
-	}
-	if responseBody == nil {
-		return nil
-	}
-	return json.NewDecoder(resp.Body).Decode(responseBody)
 }
 
 func (a *AuthorizationManager) ValidateInput(input expression.Input) ([]string, []string) {
