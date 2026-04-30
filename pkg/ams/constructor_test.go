@@ -15,7 +15,14 @@ import (
 
 func TestAuthorizationManagerforIAS(t *testing.T) {
 	t.Run("with broken cert", func(t *testing.T) {
-		_, err := NewAuthorizationManagerForIAS(context.Background(), "https://example.com", "brokencert", "test", "test", nil)
+		_, err := NewAuthorizationManagerForIAS(
+			context.Background(),
+			"https://example.com",
+			"brokencert",
+			"test",
+			"test",
+			nil,
+		)
 
 		if err == nil {
 			t.Errorf("Expected error, got nil")
@@ -25,7 +32,14 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 	t.Run("with broken url", func(t *testing.T) {
 		// create simple valid cert
 		cert, key := generateTestCert(t)
-		_, err := NewAuthorizationManagerForIAS(context.Background(), "nilrot://example.com ", "dummy-id", string(cert), string(key), nil)
+		_, err := NewAuthorizationManagerForIAS(
+			context.Background(),
+			"nilrot://example.com ",
+			"dummy-id",
+			string(cert),
+			string(key),
+			nil,
+		)
 		if err == nil {
 			t.Errorf("Expected error, got nil")
 		}
@@ -34,7 +48,14 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 	t.Run("with valid cert", func(t *testing.T) {
 		// create simple valid cert
 		cert, key := generateTestCert(t)
-		_, err := NewAuthorizationManagerForIAS(context.Background(), "https://example.com/v1/bundles", "dummy-id", string(cert), string(key), nil)
+		_, err := NewAuthorizationManagerForIAS(
+			context.Background(),
+			"https://example.com/v1/bundles",
+			"dummy-id",
+			string(cert),
+			string(key),
+			nil,
+		)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}

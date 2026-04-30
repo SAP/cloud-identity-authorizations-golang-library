@@ -15,7 +15,7 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/http/server"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 	. "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/httpclient"
-	// "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
+	// "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams".
 )
 
 type E1 struct {
@@ -73,7 +73,6 @@ func (l crashLogger) Errorf(ctx context.Context, format string, args ...interfac
 }
 
 func TestSimpleScenario(t *testing.T) {
-
 	aSrv := ams.NewAuthorizationManagerForFs("../test/scenarios/simple", crashLogger{})
 
 	router := server.NewRouter(aSrv, crashLogger{})
@@ -204,5 +203,4 @@ func TestSimpleScenario(t *testing.T) {
 			t.Fatalf("expected access to be denied, but was %s", d.Condition())
 		}
 	})
-
 }

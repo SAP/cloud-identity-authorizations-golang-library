@@ -90,13 +90,6 @@ func (b *BundleLoader) Close(ctx context.Context) error {
 	}
 }
 func (b *BundleLoader) bundleRequest() {
-	dcn := DcnContainer{
-		Policies:  []Policy{},
-		Schemas:   []Schema{},
-		Functions: []Function{},
-		Tests:     []Test{},
-	}
-	assignments := Assignments{}
 	req := &http.Request{
 		Method: http.MethodGet,
 		URL:    b.url,
@@ -132,7 +125,7 @@ func (b *BundleLoader) bundleRequest() {
 	}
 	b.lastEtag = resp.Header.Get("ETag")
 
-	dcn, assignments, err = ReadBundleTarGz(resp.Body)
+	dcn, assignments, err := ReadBundleTarGz(resp.Body)
 	if err != nil {
 		b.handleError(err)
 		return
@@ -143,7 +136,6 @@ func (b *BundleLoader) bundleRequest() {
 }
 
 func ReadBundleTarGz(reader io.Reader) (DcnContainer, Assignments, error) {
-
 	dcn := DcnContainer{
 		Policies:  []Policy{},
 		Schemas:   []Schema{},

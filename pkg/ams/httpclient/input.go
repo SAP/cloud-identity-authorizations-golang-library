@@ -59,5 +59,4 @@ func insertCustomInput(result reqInput, input reflect.Value, path []string) {
 	default:
 		result[currentPath] = v.Interface()
 	}
-
 }

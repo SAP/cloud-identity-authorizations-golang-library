@@ -7,6 +7,7 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging"
 )
 
 type Authorizations struct {
@@ -16,6 +17,7 @@ type Authorizations struct {
 	andJoin  []*Authorizations
 	envInput reqInput
 	client   *AuthorizationManager
+	l        logging.Logger
 }
 
 func (a *Authorizations) Evaluate(ctx context.Context, input expression.Input) (Decision, error) {
@@ -60,9 +62,14 @@ func (a *Authorizations) evaluate(ctx context.Context, action, resource string, 
 	res := AuthorizationResponse{}
 	err := a.client.post(ctx, PATH_AUTHORIZE, req, &res)
 	if err != nil {
+		a.l.Errorf(ctx, "Error making authorization request for action %s and resource %s: %v", action, resource, err)
 		return Decision{condition: expression.FALSE}, err
 	}
 	result, err := a.decisionForDCN(ctx, res.Result)
+	if err != nil {
+		a.l.Errorf(ctx, "Error processing DCN result for action %s and resource %s: %v", action, resource, err)
+		return Decision{condition: expression.FALSE}, err
+	}
 	for _, aa := range a.andJoin {
 		r, err := aa.evaluate(ctx, action, resource, input)
 		if err != nil {

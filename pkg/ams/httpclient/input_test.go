@@ -6,7 +6,6 @@ import (
 )
 
 func TestInsertCustomInput(t *testing.T) {
-
 	t.Run("map[string]string", func(t *testing.T) {
 		input := map[string]string{
 			"key1": "value1",
@@ -22,5 +21,4 @@ func TestInsertCustomInput(t *testing.T) {
 			t.Fatalf("expected %v, got %v", expected, result)
 		}
 	})
-
 }
