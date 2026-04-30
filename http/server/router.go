@@ -182,7 +182,7 @@ func (s *Router) handleInput(w http.ResponseWriter, r *http.Request) {
 	input := expression.Input(req.Input)
 
 	undefinedFields, wrongTypedFields := s.am.ValidateInput(input)
-	resp := InputResponse{Input: input}
+	resp := InputResponse{Input: Input(input)}
 	for _, field := range undefinedFields {
 		resp.Warnings = append(resp.Warnings, fmt.Sprintf("Input field '%s' is not defined in schema", field))
 	}

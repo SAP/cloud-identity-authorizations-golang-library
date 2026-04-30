@@ -61,7 +61,7 @@ func NewAuthorizationManagerForIASConfig(config IASConfig, log logging.Logger) (
 	return NewAuthorizationManagerForIAS(
 		config.GetAuthorizationBundleURL(),
 		config.GetAuthorizationInstanceID(),
-		config.GetCertifcate(),
+		config.GetCertificate(),
 		config.GetKey(),
 		log,
 	)
@@ -254,6 +254,6 @@ func (a *AuthorizationManager) ValidateInput(input expression.Input) ([]string, 
 
 func (a *AuthorizationManager) notifyError(err error) {
 	if a.l != nil {
-		a.l.Error(context.Background(), err.Error())
+		a.l.Errorf(context.Background(), err.Error())
 	}
 }

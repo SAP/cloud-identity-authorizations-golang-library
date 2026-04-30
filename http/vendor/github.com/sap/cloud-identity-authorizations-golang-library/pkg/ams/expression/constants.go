@@ -1,6 +1,9 @@
 package expression
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 type Constant interface {
 	Expression
@@ -25,26 +28,42 @@ func ConstantFrom(v any) Constant {
 		return String(v)
 	case float64:
 		return Number(v)
+	case int:
+		return Number(v)
+	case int64:
+		return Number(v)
+	case uint:
+		return Number(v)
+	case uint64:
+		return Number(v)
+	case int8:
+		return Number(v)
+	case int16:
+		return Number(v)
+	case int32:
+		return Number(v)
+	case uint8:
+		return Number(v)
+	case uint16:
+		return Number(v)
+	case uint32:
+		return Number(v)
 	case bool:
 		return Bool(v)
 	case []string:
-		result := make(StringArray, len(v))
-		for i, s := range v {
-			result[i] = String(s)
-		}
-		return result
+		return ArrayFrom(v)
 	case []float64:
-		result := make(NumberArray, len(v))
-		for i, n := range v {
-			result[i] = Number(n)
-		}
-		return result
+		return ArrayFrom(v)
 	case []bool:
-		result := make(BoolArray, len(v))
-		for i, b := range v {
-			result[i] = Bool(b)
+		return ArrayFrom(v)
+	}
+	reflectV := reflect.ValueOf(v)
+	switch reflectV.Kind() {
+	case reflect.Interface, reflect.Pointer:
+		if reflectV.IsNil() {
+			return nil
 		}
-		return result
+		return ConstantFrom(reflectV.Elem().Interface())
 	}
 	return nil
 }

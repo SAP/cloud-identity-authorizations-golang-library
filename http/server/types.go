@@ -62,9 +62,9 @@ type InputRequest struct {
 }
 
 type InputResponse struct {
-	Input    expression.Input `json:"input"`
-	Errors   []string         `json:"errors,omitempty"`
-	Warnings []string         `json:"warnings,omitempty"`
+	Input    Input    `json:"input"`
+	Errors   []string `json:"errors,omitempty"`
+	Warnings []string `json:"warnings,omitempty"`
 }
 
 func (i *Input) UnmarshalJSON(data []byte) error {

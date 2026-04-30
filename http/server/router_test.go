@@ -16,10 +16,10 @@ import (
 
 type nopLogger struct{}
 
-func (n nopLogger) Error(ctx context.Context, msg string) {}
-func (n nopLogger) Warn(ctx context.Context, msg string)  {}
-func (n nopLogger) Info(ctx context.Context, msg string)  {}
-func (n nopLogger) Debug(ctx context.Context, msg string) {}
+func (n nopLogger) Errorf(ctx context.Context, msg string, args ...interface{}) {}
+func (n nopLogger) Warnf(ctx context.Context, msg string, args ...interface{})  {}
+func (n nopLogger) Infof(ctx context.Context, msg string, args ...interface{})  {}
+func (n nopLogger) Debugf(ctx context.Context, msg string, args ...interface{}) {}
 
 func TestRouter(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)

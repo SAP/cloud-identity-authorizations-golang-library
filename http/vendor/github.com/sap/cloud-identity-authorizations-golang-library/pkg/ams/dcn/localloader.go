@@ -3,7 +3,6 @@ package dcn
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -37,7 +36,7 @@ func NewLocalLoader(dir string, log logging.Logger) *Loader {
 func (l *Loader) start() {
 	dcn, assignments, err := readDirectory(l.dir)
 	if err != nil {
-		l.l.Error(context.Background(), fmt.Sprintf("Error reading directory: %v", err))
+		l.l.Errorf(context.Background(), "Error reading directory: %v", err)
 		return
 	}
 	l.DCNChannel <- dcn

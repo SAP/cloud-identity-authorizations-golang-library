@@ -5,10 +5,10 @@ import "context"
 type LogLevel int
 
 type Logger interface {
-	Debug(ctx context.Context, msg string)
-	Info(ctx context.Context, msg string)
-	Warn(ctx context.Context, msg string)
-	Error(ctx context.Context, msg string)
+	Debugf(ctx context.Context, format string, args ...interface{})
+	Infof(ctx context.Context, format string, args ...interface{})
+	Warnf(ctx context.Context, format string, args ...interface{})
+	Errorf(ctx context.Context, format string, args ...interface{})
 }
 
 func Default() Logger {
@@ -17,7 +17,7 @@ func Default() Logger {
 
 type NopLogger struct{}
 
-func (l NopLogger) Debug(ctx context.Context, msg string) {}
-func (l NopLogger) Info(ctx context.Context, msg string)  {}
-func (l NopLogger) Warn(ctx context.Context, msg string)  {}
-func (l NopLogger) Error(ctx context.Context, msg string) {}
+func (l NopLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
+func (l NopLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
+func (l NopLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
+func (l NopLogger) Errorf(ctx context.Context, format string, args ...interface{}) {}
