@@ -60,7 +60,7 @@ func NewBundleLoader(
 
 func (b *BundleLoader) handleError(err error) {
 	if b.l != nil {
-		b.l.Errorf(context.Background(), "%v", err)
+		b.l.Errorf(b.ctx, "%v", err)
 	}
 }
 
