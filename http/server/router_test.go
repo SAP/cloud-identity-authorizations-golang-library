@@ -38,7 +38,7 @@ func TestRouter(t *testing.T) {
 			Token: newToken(claims),
 		}
 
-		r.handleResources(rr, newResourcesRequest(req))
+		r.HandleResources(rr, newResourcesRequest(req))
 
 		if rr.Code != http.StatusOK {
 			t.Errorf("Expected status code 200, got %d", rr.Code)
@@ -69,7 +69,7 @@ func TestRouter(t *testing.T) {
 			Resource: "r2",
 		}
 
-		r.handleActions(rr, newActionRequest(req))
+		r.HandleActions(rr, newActionRequest(req))
 		if rr.Code != http.StatusOK {
 			t.Errorf("Expected status code 200, got %d", rr.Code)
 		}
@@ -98,7 +98,7 @@ func TestInputEndpoint(t *testing.T) {
 				"undefined_field_2":  e.String("value"),
 			},
 		}
-		r.handleInput(rr, newInputRequest(req))
+		r.HandleInput(rr, newInputRequest(req))
 		if rr.Code != http.StatusOK {
 			t.Errorf("Expected status code 200, got %d", rr.Code)
 		}
@@ -130,7 +130,7 @@ func TestInputEndpoint(t *testing.T) {
 				"$app.entity1.name":   e.Bool(true),
 			},
 		}
-		r.handleInput(rr, newInputRequest(req))
+		r.HandleInput(rr, newInputRequest(req))
 		if rr.Code != http.StatusOK {
 			t.Errorf("Expected status code 200, got %d", rr.Code)
 		}

@@ -25,18 +25,18 @@ func NewRouter(am *ams.AuthorizationManager, l logging.Logger) *Router {
 
 func (s *Router) Mux() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /v1/authorize", s.handleAuthorize)
-	mux.HandleFunc("POST /v1/resources", s.handleResources)
-	mux.HandleFunc("POST /v1/actions", s.handleActions)
-	mux.HandleFunc("GET /v1/health", s.handleHealth)
-	mux.HandleFunc("GET /v1/policies/default", s.handleDefaultPolicies)
-	mux.HandleFunc("GET /v1/policies/default/{tenant_id}", s.handleDefaultPolicies)
-	mux.HandleFunc("POST /v1/policies/assigned", s.handleAssignedPolicies)
-	mux.HandleFunc("POST /v1/input", s.handleInput)
+	mux.HandleFunc("POST /v1/authorize", s.HandleAuthorize)
+	mux.HandleFunc("POST /v1/resources", s.HandleResources)
+	mux.HandleFunc("POST /v1/actions", s.HandleActions)
+	mux.HandleFunc("GET /v1/health", s.HandleHealth)
+	mux.HandleFunc("GET /v1/policies/default", s.HandleDefaultPolicies)
+	mux.HandleFunc("GET /v1/policies/default/{tenant_id}", s.HandleDefaultPolicies)
+	mux.HandleFunc("POST /v1/policies/assigned", s.HandleAssignedPolicies)
+	mux.HandleFunc("POST /v1/input", s.HandleInput)
 	return mux
 }
 
-func (s *Router) handleAuthorize(w http.ResponseWriter, r *http.Request) {
+func (s *Router) HandleAuthorize(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req AuthorizationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -81,7 +81,7 @@ func (s *Router) handleAuthorize(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Router) handleResources(w http.ResponseWriter, r *http.Request) {
+func (s *Router) HandleResources(w http.ResponseWriter, r *http.Request) {
 	var req ResourcesRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -101,7 +101,7 @@ func (s *Router) handleResources(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Router) handleActions(w http.ResponseWriter, r *http.Request) {
+func (s *Router) HandleActions(w http.ResponseWriter, r *http.Request) {
 	var req ActionsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -121,7 +121,7 @@ func (s *Router) handleActions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Router) handleHealth(w http.ResponseWriter, r *http.Request) {
+func (s *Router) HandleHealth(w http.ResponseWriter, r *http.Request) {
 	if s.am.IsReady() {
 		w.WriteHeader(http.StatusOK)
 	} else {
@@ -144,7 +144,7 @@ func (s *Router) authzForRequest(ctx context.Context, tokenStr string, policies 
 	}
 }
 
-func (s *Router) handleDefaultPolicies(w http.ResponseWriter, r *http.Request) {
+func (s *Router) HandleDefaultPolicies(w http.ResponseWriter, r *http.Request) {
 	tenant := r.PathValue("tenant_id")
 	defaultPolicies := s.am.GetDefaultPolicyNames(tenant)
 	resp := DefaultPoliciesResponse{DefaultPolicies: defaultPolicies}
@@ -154,7 +154,7 @@ func (s *Router) handleDefaultPolicies(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Router) handleAssignedPolicies(w http.ResponseWriter, r *http.Request) {
+func (s *Router) HandleAssignedPolicies(w http.ResponseWriter, r *http.Request) {
 	req := AssignedPoliciesRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -173,7 +173,7 @@ func (s *Router) handleAssignedPolicies(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (s *Router) handleInput(w http.ResponseWriter, r *http.Request) {
+func (s *Router) HandleInput(w http.ResponseWriter, r *http.Request) {
 	req := InputRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
