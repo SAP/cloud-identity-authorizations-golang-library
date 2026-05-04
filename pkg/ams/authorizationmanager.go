@@ -58,6 +58,9 @@ func NewAuthorizationManager(
 		cancel:             cancel,
 		closed:             make(chan bool),
 	}
+	if result.l == nil {
+		result.l = logging.Default()
+	}
 
 	go result.start()
 

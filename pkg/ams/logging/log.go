@@ -12,12 +12,12 @@ type Logger interface {
 }
 
 func Default() Logger {
-	return NopLogger{}
+	return NoopLogger{}
 }
 
-type NopLogger struct{}
+type NoopLogger struct{}
 
-func (l NopLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
-func (l NopLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
-func (l NopLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
-func (l NopLogger) Errorf(ctx context.Context, format string, args ...interface{}) {}
+func (l NoopLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
+func (l NoopLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
+func (l NoopLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
+func (l NoopLogger) Errorf(ctx context.Context, format string, args ...interface{}) {}
