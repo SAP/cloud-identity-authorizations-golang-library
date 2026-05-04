@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime/debug"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
@@ -33,7 +34,19 @@ func (s *Router) Mux() http.Handler {
 	mux.HandleFunc("GET /v1/policies/default/{tenant_id}", s.HandleDefaultPolicies)
 	mux.HandleFunc("POST /v1/policies/assigned", s.HandleAssignedPolicies)
 	mux.HandleFunc("POST /v1/input", s.HandleInput)
-	return mux
+	return s.withRecovery(mux)
+}
+
+func (s *Router) withRecovery(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rec := recover(); rec != nil {
+				s.l.Errorf(r.Context(), "panic recovered while handling %s %s: %v\n%s", r.Method, r.URL.Path, rec, string(debug.Stack()))
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *Router) HandleAuthorize(w http.ResponseWriter, r *http.Request) {

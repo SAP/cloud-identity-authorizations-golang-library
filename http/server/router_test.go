@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
@@ -151,6 +152,27 @@ func TestInputEndpoint(t *testing.T) {
 			t.Errorf("Expected 3 errors, got %d", len(res.Errors))
 		}
 	})
+}
+
+func TestMuxRecoversPanic(t *testing.T) {
+	r := &Router{l: nopLogger{}}
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /panic", func(http.ResponseWriter, *http.Request) {
+		panic("boom")
+	})
+
+	handler := r.withRecovery(mux)
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/panic", nil)
+
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status code %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Internal server error") {
+		t.Fatalf("expected body to contain internal server error message, got %q", rr.Body.String())
+	}
 }
 
 func newInputRequest(body InputRequest) *http.Request {

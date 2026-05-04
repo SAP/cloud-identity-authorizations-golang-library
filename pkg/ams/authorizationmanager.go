@@ -58,6 +58,9 @@ func NewAuthorizationManager(
 		cancel:             cancel,
 		closed:             make(chan bool),
 	}
+	if result.l == nil {
+		result.l = logging.Default()
+	}
 
 	go result.start()
 
@@ -222,17 +225,27 @@ func (a *AuthorizationManager) AuthorizationsForIdentity(ctx context.Context, i 
 	if i == nil {
 		return &Authorizations{
 			policies: a.policies.GetSubset([]string{}, "", false),
-			schema:   a.schema,
+			a:        a,
 		}
 	}
 
-	policyNames := a.policies.GetDefaultPolicyNames(i.AppTID())
+	defaultPolicyNames := a.policies.GetDefaultPolicyNames(i.AppTID())
 
-	policyNames = append(policyNames, a.GetAssignments(i.AppTID(), i.ScimID())...)
+	assignmentPolicyNames := a.GetAssignments(i.AppTID(), i.ScimID())
+	policyNames := make([]string, 0, len(defaultPolicyNames)+len(assignmentPolicyNames))
+	policyNames = append(policyNames, defaultPolicyNames...)
+	policyNames = append(policyNames, assignmentPolicyNames...)
+	a.l.Infof(ctx,
+		"AuthorizationsForIdentity: for user %s in tenant %s, default policies: %v, assignment policies: %v",
+		i.ScimID(),
+		i.AppTID(),
+		len(defaultPolicyNames),
+		len(assignmentPolicyNames),
+	)
 
 	return &Authorizations{
 		policies: a.policies.GetSubset(policyNames, i.AppTID(), true),
-		schema:   a.schema,
+		a:        a,
 		envInput: expression.Input{
 			"$env.$user.email":     expression.String(i.Email()),
 			"$env.$user.user_uuid": expression.String(i.UserUUID()),
@@ -249,7 +262,7 @@ func (a *AuthorizationManager) AuthorizationsForPolicies(ctx context.Context, po
 	defer a.m.RUnlock()
 	return &Authorizations{
 		policies: a.policies.GetSubset(policyNames, "-", false),
-		schema:   a.schema,
+		a:        a,
 	}
 }
 
