@@ -154,7 +154,6 @@ func (a *AuthorizationManager) get(ctx context.Context, path string, responseBod
 
 		defer resp.Body.Close()
 		if resp.StatusCode != http.StatusOK {
-			a.l.Errorf(ctx, "Unexpected status code for GET request to path %s: %d", path, resp.StatusCode)
 			result <- fmt.Errorf("unexpected on GET %s status code: %d", a.url+path, resp.StatusCode)
 			return
 		}
@@ -189,7 +188,6 @@ func (a *AuthorizationManager) post(ctx context.Context, path string, requestBod
 			bytes.NewReader(reqBodyBytes),
 		)
 		if err != nil {
-			a.l.Errorf(ctx, "Error creating POST request for path %s: %v", path, err)
 			result <- err
 			return
 		}
