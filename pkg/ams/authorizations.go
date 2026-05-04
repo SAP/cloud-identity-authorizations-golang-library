@@ -101,7 +101,6 @@ func (a *Authorizations) AndJoin(aa *Authorizations) *Authorizations {
 }
 
 func (a *Authorizations) decision(condition expression.Expression) Decision {
-
 	return Decision{
 		condition: condition,
 		inputConverter: func(app any) expression.Input {

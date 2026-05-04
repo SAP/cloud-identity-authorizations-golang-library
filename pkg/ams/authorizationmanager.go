@@ -232,8 +232,16 @@ func (a *AuthorizationManager) AuthorizationsForIdentity(ctx context.Context, i 
 	defaultPolicyNames := a.policies.GetDefaultPolicyNames(i.AppTID())
 
 	assignmentPolicyNames := a.GetAssignments(i.AppTID(), i.ScimID())
-	policyNames := append(defaultPolicyNames, assignmentPolicyNames...)
-	a.l.Infof(ctx, "AuthorizationsForIdentity: for user %s in tenant %s, default policies: %v, assignment policies: %v", i.ScimID(), i.AppTID(), len(defaultPolicyNames), len(assignmentPolicyNames))
+	policyNames := make([]string, 0, len(defaultPolicyNames)+len(assignmentPolicyNames))
+	policyNames = append(policyNames, defaultPolicyNames...)
+	policyNames = append(policyNames, assignmentPolicyNames...)
+	a.l.Infof(ctx,
+		"AuthorizationsForIdentity: for user %s in tenant %s, default policies: %v, assignment policies: %v",
+		i.ScimID(),
+		i.AppTID(),
+		len(defaultPolicyNames),
+		len(assignmentPolicyNames),
+	)
 
 	return &Authorizations{
 		policies: a.policies.GetSubset(policyNames, i.AppTID(), true),
