@@ -10,8 +10,8 @@ import (
 type Authorizations struct {
 	policies  internal.PolicySet
 	andJoined []*Authorizations
-	schema    internal.Schema
 	envInput  expression.Input
+	a         *AuthorizationManager
 }
 
 const (
@@ -26,7 +26,7 @@ const (
 //   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema
 //     name or the fields name is EXACTLY the same as the schema name
 func (a *Authorizations) Inquire(action, resource string, app any) Decision {
-	i := a.schema.CustomInput(action, resource, app, nil)
+	i := a.a.schema.CustomInput(action, resource, app, nil)
 	for k, v := range a.envInput {
 		i[k] = v
 	}
@@ -36,7 +36,8 @@ func (a *Authorizations) Inquire(action, resource string, app any) Decision {
 
 func (a *Authorizations) SetEnvInput(env any) {
 	a.envInput = expression.Input{}
-	a.schema.InsertCustomInput(a.envInput, reflect.ValueOf(env), []string{"$env"})
+	a.a.l.Infof(a.a.ctx, "overwriting env input")
+	a.a.schema.InsertCustomInput(a.envInput, reflect.ValueOf(env), []string{"$env"})
 }
 
 func (a *Authorizations) GetResources() []string {
@@ -63,45 +64,30 @@ func (a *Authorizations) Evaluate(input expression.Input) Decision {
 		}
 	}
 	r := a.policies.Evaluate(input)
-
 	if r == expression.FALSE {
-		return Decision{
-			condition: r,
-			inputConverter: func(app any) expression.Input {
-				result := expression.Input{}
-				a.schema.InsertCustomInput(result, reflect.ValueOf(app), []string{"$app"})
-				return result
-			},
-		}
+		a.a.l.Infof(a.a.ctx, "evaluated to false, denying access")
+		return a.decision(r)
 	}
-	results := []expression.Expression{
-		r,
+	results := []expression.Expression{}
+	if r != expression.TRUE {
+		results = append(results, r)
 	}
-
 	for _, aa := range a.andJoined {
 		r := aa.Evaluate(input).Condition()
 		if r == expression.Bool(false) {
-			return Decision{
-				condition: r,
-				inputConverter: func(app any) expression.Input {
-					result := expression.Input{}
-					a.schema.InsertCustomInput(result, reflect.ValueOf(app), []string{"$app"})
-					return result
-				},
-			}
+			a.a.l.Infof(a.a.ctx, "evaluated to false in and-joined authorizations, denying access")
+			return a.decision(r)
 		}
 		if r != expression.Bool(true) {
 			results = append(results, r)
 		}
 	}
-	return Decision{
-		condition: expression.And(results...),
-		inputConverter: func(app any) expression.Input {
-			result := expression.Input{}
-			a.schema.InsertCustomInput(result, reflect.ValueOf(app), []string{"$app"})
-			return result
-		},
+	if len(results) == 0 {
+		a.a.l.Infof(a.a.ctx, "evaluated to true, granting access")
+		return a.decision(expression.TRUE)
 	}
+	a.a.l.Infof(a.a.ctx, "evaluated to expression, granting access with condition")
+	return a.decision(expression.And(results...))
 }
 
 // Restrict an authorizations object by another one
@@ -110,5 +96,18 @@ func (a *Authorizations) AndJoin(aa *Authorizations) *Authorizations {
 	return &Authorizations{
 		policies:  a.policies,
 		andJoined: append(a.andJoined, aa),
+		a:         a.a,
+	}
+}
+
+func (a *Authorizations) decision(condition expression.Expression) Decision {
+
+	return Decision{
+		condition: condition,
+		inputConverter: func(app any) expression.Input {
+			result := expression.Input{}
+			a.a.schema.InsertCustomInput(result, reflect.ValueOf(app), []string{"$app"})
+			return result
+		},
 	}
 }
