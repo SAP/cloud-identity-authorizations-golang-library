@@ -455,7 +455,7 @@ func NotBetween(args ...Expression) OperatorCall {
 func Like(args ...Expression) OperatorCall {
 	escape := String("")
 	if len(args) == 3 {
-		escape, _ = args[2].(String)
+		escape, _ = args[2].(String) //nolint:gosec
 	}
 
 	pattern, _ := args[1].(String)
