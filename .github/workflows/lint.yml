@@ -35,9 +35,10 @@ jobs:
       
       - name: Check formatting
         run: |
-          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          UNFORMATTED="$(find . -type f -name '*.go' -not -path '*/vendor/*' -print0 | xargs -0r gofmt -s -l)"
+          if [ -n "$UNFORMATTED" ]; then
             echo "The following files are not properly formatted:"
-            gofmt -s -l .
+            echo "$UNFORMATTED"
             exit 1
           fi
       
