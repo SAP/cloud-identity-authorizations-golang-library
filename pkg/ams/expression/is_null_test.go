@@ -5,6 +5,17 @@ import (
 	"testing"
 )
 
+type testInput map[string]Constant
+
+func TestInputConversion(t *testing.T) {
+	x := testInput{"a": String("a"), "b": Number(42), "c": Bool(true)}
+	got := Input(x)
+	want := Input{"a": String("a"), "b": Number(42), "c": Bool(true)}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Expected %v, got %v", want, got)
+	}
+}
+
 func TestIsNull(t *testing.T) { //nolint:dupl
 	t.Run("variable is null", func(t *testing.T) {
 		isNull := IsNull(Ref("x"))

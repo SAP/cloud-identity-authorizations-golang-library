@@ -1,6 +1,8 @@
 package ams
 
 import (
+	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -8,8 +10,24 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
-func nop(error) {
-	// no-op error handler
+type mockLogger struct {
+	errors         []string
+	errorsReceived chan bool
+}
+
+func (l *mockLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
+func (l *mockLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
+func (l *mockLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
+func (l *mockLogger) Errorf(ctx context.Context, format string, args ...interface{}) {
+	l.errors = append(l.errors, fmt.Sprintf(format, args...))
+	l.errorsReceived <- true
+}
+
+func newMockLogger() *mockLogger {
+	return &mockLogger{
+		errors:         []string{},
+		errorsReceived: make(chan bool),
+	}
 }
 
 type TestIdentity struct {
@@ -37,34 +55,10 @@ func (i TestIdentity) Email() string {
 }
 
 func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
-	t.Run("has schema", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
-
-		dcnChannel <- dcn.DcnContainer{
-			Policies: []dcn.Policy{},
-			Schemas: []dcn.Schema{
-				{
-					QualifiedName: []string{"pkg", "schema1"},
-					Tenant:        "tenant1",
-				},
-			},
-			Functions: []dcn.Function{},
-		}
-		assignmentsChannel <- dcn.Assignments{}
-
-		<-am.WhenReady()
-
-		tenant := am.GetSchema().GetTenantForQualifiedName([]string{"pkg", "p1"})
-		if tenant != "tenant1" {
-			t.Errorf("expected tenant1, got %v", tenant)
-		}
-	})
 	t.Run("is ready after receiving DCN", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 		assignmentsChannel <- dcn.Assignments{}
 
 		if am.IsReady() {
@@ -104,7 +98,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("with functions", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 		assignmentsChannel <- dcn.Assignments{}
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -132,7 +126,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		}
 		<-am.WhenReady()
 
-		a := am.AuthorizationsForPolicies([]string{"pkg.policy1"})
+		a := am.AuthorizationsForPolicies(context.Background(), []string{"pkg.policy1"})
 		got := a.Evaluate(expression.Input{}).Condition()
 		want := expression.Ref("x")
 		if !reflect.DeepEqual(got, want) {
@@ -143,15 +137,12 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("error in functions", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		errors := []error{}
-		done := make(chan struct{})
-		NewAuthorizationManager(dcnChannel, assignmentsChannel, func(err error) {
-			errors = append(errors, err)
-			done <- struct{}{}
-		})
+		ml := newMockLogger()
+
+		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml)
 		assignmentsChannel <- dcn.Assignments{}
 
-		if len(errors) != 0 {
+		if len(ml.errors) != 0 {
 			t.Error("errors before receiving DCN")
 		}
 		dcnChannel <- dcn.DcnContainer{
@@ -166,24 +157,20 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 				},
 			},
 		}
-		<-done
-		if len(errors) != 1 {
-			t.Errorf("expected 1 error, got %v", errors)
+		<-ml.errorsReceived
+		if len(ml.errors) != 1 {
+			t.Errorf("expected 1 error, got %v", ml.errors)
 		}
 	})
 
 	t.Run("error in policies", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		errors := []error{}
-		done := make(chan struct{})
-		NewAuthorizationManager(dcnChannel, assignmentsChannel, func(err error) {
-			errors = append(errors, err)
-			done <- struct{}{}
-		})
+		ml := newMockLogger()
+		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml)
 		assignmentsChannel <- dcn.Assignments{}
 
-		if len(errors) != 0 {
+		if len(ml.errors) != 0 {
 			t.Error("errors before receiving DCN")
 		}
 		dcnChannel <- dcn.DcnContainer{
@@ -203,16 +190,16 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			Functions: []dcn.Function{},
 		}
 
-		<-done
-		if len(errors) != 1 {
-			t.Errorf("expected 1 error, got %v", errors)
+		<-ml.errorsReceived
+		if len(ml.errors) != 1 {
+			t.Errorf("expected 1 error, got %v", ml.errors)
 		}
 	})
 
 	t.Run("get Authorizations", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 		assignmentsChannel <- dcn.Assignments{}
 
 		dcnChannel <- dcn.DcnContainer{
@@ -256,7 +243,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 
 		<-am.WhenReady()
 
-		auths := am.AuthorizationsForPolicies([]string{"pkg.policy1"})
+		auths := am.AuthorizationsForPolicies(context.Background(), []string{"pkg.policy1"})
 
 		r := auths.Evaluate(expression.Input{
 			DCL_RESOURCE: expression.String("resource1"),
@@ -273,7 +260,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			t.Errorf("expected false, got %v", r)
 		}
 
-		auth2 := am.AuthorizationsForPolicies([]string{"pkg.policy2"})
+		auth2 := am.AuthorizationsForPolicies(context.Background(), []string{"pkg.policy2"})
 
 		r = auth2.Evaluate(expression.Input{
 			DCL_RESOURCE: expression.String("resource1"),
@@ -314,7 +301,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			t.Errorf("expected false, got %v", r)
 		}
 
-		auth3 := am.AuthorizationsForPolicies([]string{"pkg.policy3"})
+		auth3 := am.AuthorizationsForPolicies(context.Background(), []string{"pkg.policy3"})
 
 		andJoined = auth2.AndJoin(auth3)
 		r = andJoined.Evaluate(expression.Input{
@@ -333,7 +320,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("get assignments", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -382,7 +369,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("Authorizations for identity with user attribues", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -413,7 +400,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 
 		<-am.WhenReady()
 
-		authz := am.AuthorizationsForIdentity(TestIdentity{
+		authz := am.AuthorizationsForIdentity(context.Background(), TestIdentity{
 			email:    "user1@example.com",
 			appTID:   "tenant1",
 			scimID:   "user1",
@@ -430,7 +417,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("get default policy names", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nop)
+		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -475,15 +462,8 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("error on load dcn", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		errors := []error{}
-		done := make(chan struct{})
-		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
-		am.RegisterErrorHandler(func(err error) {
-			errors = append(errors, err)
-			done <- struct{}{}
-		})
-
-		am.RegisterErrorHandler(nil)
+		ml := newMockLogger()
+		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml)
 
 		assignmentsChannel <- dcn.Assignments{}
 		dcnChannel <- dcn.DcnContainer{
@@ -501,9 +481,9 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			},
 		}
 
-		<-done
-		if len(errors) != 1 {
-			t.Errorf("expected 1 error, got %d", len(errors))
+		<-ml.errorsReceived
+		if len(ml.errors) != 1 {
+			t.Errorf("expected 1 error, got %d", len(ml.errors))
 		}
 	})
 }

@@ -1,0 +1,92 @@
+# github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0
+## explicit; go 1.17
+github.com/decred/dcrd/dcrec/secp256k1/v4
+# github.com/goccy/go-json v0.10.5
+## explicit; go 1.19
+github.com/goccy/go-json
+github.com/goccy/go-json/internal/decoder
+github.com/goccy/go-json/internal/encoder
+github.com/goccy/go-json/internal/encoder/vm
+github.com/goccy/go-json/internal/encoder/vm_color
+github.com/goccy/go-json/internal/encoder/vm_color_indent
+github.com/goccy/go-json/internal/encoder/vm_indent
+github.com/goccy/go-json/internal/errors
+github.com/goccy/go-json/internal/runtime
+# github.com/google/uuid v1.6.0
+## explicit
+github.com/google/uuid
+# github.com/lestrrat-go/backoff/v2 v2.0.8
+## explicit; go 1.16
+github.com/lestrrat-go/backoff/v2
+# github.com/lestrrat-go/blackmagic v1.0.2
+## explicit; go 1.16
+github.com/lestrrat-go/blackmagic
+# github.com/lestrrat-go/httpcc v1.0.1
+## explicit; go 1.16
+github.com/lestrrat-go/httpcc
+# github.com/lestrrat-go/iter v1.0.2
+## explicit; go 1.13
+github.com/lestrrat-go/iter/arrayiter
+github.com/lestrrat-go/iter/mapiter
+# github.com/lestrrat-go/jwx v1.2.31
+## explicit; go 1.20
+github.com/lestrrat-go/jwx
+github.com/lestrrat-go/jwx/internal/base64
+github.com/lestrrat-go/jwx/internal/ecutil
+github.com/lestrrat-go/jwx/internal/iter
+github.com/lestrrat-go/jwx/internal/json
+github.com/lestrrat-go/jwx/internal/keyconv
+github.com/lestrrat-go/jwx/internal/pool
+github.com/lestrrat-go/jwx/jwa
+github.com/lestrrat-go/jwx/jwe
+github.com/lestrrat-go/jwx/jwe/internal/aescbc
+github.com/lestrrat-go/jwx/jwe/internal/cipher
+github.com/lestrrat-go/jwx/jwe/internal/concatkdf
+github.com/lestrrat-go/jwx/jwe/internal/content_crypt
+github.com/lestrrat-go/jwx/jwe/internal/keyenc
+github.com/lestrrat-go/jwx/jwe/internal/keygen
+github.com/lestrrat-go/jwx/jwk
+github.com/lestrrat-go/jwx/jws
+github.com/lestrrat-go/jwx/jwt
+github.com/lestrrat-go/jwx/jwt/internal/types
+github.com/lestrrat-go/jwx/jwt/openid
+github.com/lestrrat-go/jwx/x25519
+# github.com/lestrrat-go/option v1.0.1
+## explicit; go 1.16
+github.com/lestrrat-go/option
+# github.com/patrickmn/go-cache v2.1.0+incompatible
+## explicit
+github.com/patrickmn/go-cache
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
+# github.com/pquerna/cachecontrol v0.2.0
+## explicit; go 1.16
+github.com/pquerna/cachecontrol
+github.com/pquerna/cachecontrol/cacheobject
+# github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260430113842-2d77e2fdd66d
+## explicit; go 1.25.5
+github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams
+github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn
+github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression
+github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal
+github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging
+github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util
+# github.com/sap/cloud-security-client-go v0.25.1
+## explicit; go 1.23.0
+github.com/sap/cloud-security-client-go/auth
+github.com/sap/cloud-security-client-go/env
+github.com/sap/cloud-security-client-go/httpclient
+github.com/sap/cloud-security-client-go/oidcclient
+github.com/sap/cloud-security-client-go/tokenclient
+# golang.org/x/crypto v0.35.0
+## explicit; go 1.23.0
+golang.org/x/crypto/curve25519
+golang.org/x/crypto/ed25519
+golang.org/x/crypto/pbkdf2
+# golang.org/x/sync v0.14.0
+## explicit; go 1.23.0
+golang.org/x/sync/singleflight
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
+gopkg.in/yaml.v3

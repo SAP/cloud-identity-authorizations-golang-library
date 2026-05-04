@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -10,10 +11,17 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
 
+type crashLogger struct{}
+
+func (l crashLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
+func (l crashLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
+func (l crashLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
+func (l crashLogger) Errorf(ctx context.Context, format string, args ...interface{}) {
+	panic(fmt.Sprintf(format, args...))
+}
 func TestRun(t *testing.T) {
 	// tmp, _ := os.ReadDir("./")
 	// t.Fatalf("tmp: %v", tmp)
@@ -23,18 +31,21 @@ func TestRun(t *testing.T) {
 	}
 	for _, testDir := range testDirs {
 		t.Run(testDir.Name(), func(t *testing.T) {
-			ams := ams.NewAuthorizationManagerForFs(path.Join("scenarios", testDir.Name()), func(err error) {
-				panic(err)
-			})
-
-			ams.RegisterErrorHandler(func(err error) {
-				t.Errorf("error in authorization manager: %v", err)
-				panic(err)
-			})
+			loader := dcn.NewLocalLoader(path.Join("scenarios", testDir.Name()), crashLogger{})
+			tests := []dcn.Test{}
+			dcnChannel := make(chan dcn.DcnContainer)
+			go func() {
+				for {
+					dcnContainer := <-loader.DCNChannel
+					tests = dcnContainer.Tests
+					dcnChannel <- dcnContainer
+				}
+			}()
+			ams := ams.NewAuthorizationManager(context.Background(), dcnChannel, loader.AssignmentsChannel, crashLogger{})
 
 			<-ams.WhenReady()
 
-			for _, test := range ams.Tests {
+			for _, test := range tests {
 				t.Run(util.StringifyQualifiedName(test.Test), func(t *testing.T) {
 					for _, assertion := range test.Assertions {
 						actions := assertion.Actions
@@ -61,9 +72,9 @@ func TestRun(t *testing.T) {
 						for _, filter := range assertion.ScopeFilter {
 							scopeFilter = append(scopeFilter, util.StringifyQualifiedName(filter))
 						}
-						authz := ams.AuthorizationsForPolicies(policies)
+						authz := ams.AuthorizationsForPolicies(context.Background(), policies)
 						if len(scopeFilter) > 0 {
-							scopeFilter := ams.AuthorizationsForPolicies(scopeFilter)
+							scopeFilter := ams.AuthorizationsForPolicies(context.Background(), scopeFilter)
 							authz = authz.AndJoin(scopeFilter)
 						}
 						t.Run(fmt.Sprintf("policies: %v, scopeFilter: %v", policies, scopeFilter), func(t *testing.T) {
@@ -71,7 +82,7 @@ func TestRun(t *testing.T) {
 								for _, resource := range resources {
 									for _, tInput := range inputs {
 										t.Run(assertionCaption(action, resource, tInput), func(t *testing.T) {
-											input := createInput(ams.GetSchema(), tInput, action, resource)
+											input := createInput(ams, tInput, action, resource)
 
 											result := authz.Evaluate(input).Condition()
 											result = unsetIgnore(result, tInput)
@@ -82,7 +93,6 @@ func TestRun(t *testing.T) {
 												t.Fatalf("error in expected expression: %v", err)
 											}
 											if !reflect.DeepEqual(result, expected) {
-												createInput(ams.GetSchema(), tInput, action, resource)
 												authz.Evaluate(input)
 												t.Errorf("expected %v, got %v", expected, result)
 											}
@@ -114,7 +124,7 @@ func unsetIgnore(e expression.Expression, input dcn.Input) expression.Expression
 	return expression.UnknownIgnore(e, u, i) //nolint:staticcheck
 }
 
-func createInput(schema internal.Schema, input dcn.Input, action, resource string) expression.Input {
+func createInput(am *ams.AuthorizationManager, input dcn.Input, action, resource string) expression.Input {
 	app, ok := input.Input["$app"]
 	if !ok {
 		app = nil
@@ -123,7 +133,7 @@ func createInput(schema internal.Schema, input dcn.Input, action, resource strin
 	if !ok {
 		env = nil
 	}
-	result := schema.CustomInput(action, resource, app, env)
+	result := am.CreateInput(action, resource, app, env)
 
 	return result
 }

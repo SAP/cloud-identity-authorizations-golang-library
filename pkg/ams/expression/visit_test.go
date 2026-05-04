@@ -88,7 +88,7 @@ func TestVisit(t *testing.T) {
 						if i > 0 {
 							builder.WriteString(", ")
 						}
-						builder.WriteString(fmt.Sprintf("%v", n))
+						fmt.Fprintf(&builder, "%v", n)
 					}
 					builder.WriteString(")")
 					return builder.String()
@@ -99,7 +99,7 @@ func TestVisit(t *testing.T) {
 						if i > 0 {
 							builder.WriteString(", ")
 						}
-						builder.WriteString(fmt.Sprintf("%v", b))
+						fmt.Fprintf(&builder, "%v", b)
 					}
 					builder.WriteString(")")
 					return builder.String()

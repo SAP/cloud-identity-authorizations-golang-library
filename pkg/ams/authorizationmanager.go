@@ -1,6 +1,7 @@
 package ams
 
 import (
+	"context"
 	"crypto/tls"
 	"net/http"
 	"net/url"
@@ -10,6 +11,7 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal"
+	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
 
@@ -21,21 +23,27 @@ type AuthorizationManager struct {
 	schema             internal.Schema
 	dcnChannel         chan dcn.DcnContainer
 	assignmentsChannel chan dcn.Assignments
-	Tests              []dcn.Test
-	hasDCN             bool
-	hasAssignments     bool
-	functionContainer  *expression.FunctionRegistry
-	errHandlers        []func(error)
+	// Tests              []dcn.Test
+	hasDCN            bool
+	hasAssignments    bool
+	functionContainer *expression.FunctionRegistry
+	l                 logging.Logger
+	ctx               context.Context
+	cancel            context.CancelFunc
+	closed            chan bool
+	closeBundleLoader func(context.Context) error
 }
 
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
 // to update its policies and assignments during runtime.
 // the instance must receive (possibly empty) data on both channels to be ready.
 func NewAuthorizationManager(
+	ctx context.Context,
 	dcnC chan dcn.DcnContainer,
 	assignmentsC chan dcn.Assignments,
-	errorHandler func(error),
+	log logging.Logger,
 ) *AuthorizationManager {
+	ctx, cancel := context.WithCancel(ctx)
 	result := AuthorizationManager{
 		ready:              make(chan bool),
 		policies:           internal.PolicySet{},
@@ -45,11 +53,10 @@ func NewAuthorizationManager(
 		hasDCN:             false,
 		hasAssignments:     false,
 		functionContainer:  expression.NewFunctionRegistry(),
-		errHandlers:        []func(error){},
-	}
-
-	if errorHandler != nil {
-		result.errHandlers = append(result.errHandlers, errorHandler)
+		l:                  log,
+		ctx:                ctx,
+		cancel:             cancel,
+		closed:             make(chan bool),
 	}
 
 	go result.start()
@@ -59,12 +66,30 @@ func NewAuthorizationManager(
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
+func NewAuthorizationManagerForIASConfig(
+	ctx context.Context,
+	config IASConfig,
+	log logging.Logger,
+) (*AuthorizationManager, error) {
+	return NewAuthorizationManagerForIAS(
+		ctx,
+		config.GetAuthorizationBundleURL(),
+		config.GetAuthorizationInstanceID(),
+		config.GetCertificate(),
+		config.GetKey(),
+		log,
+	)
+}
+
+// Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
+// the provided data should be taken from the identity binding.
 func NewAuthorizationManagerForIAS(
+	ctx context.Context,
 	bundleUrl,
 	amsInstanceID,
 	cert,
 	key string,
-	errorHandler func(error),
+	log logging.Logger,
 ) (*AuthorizationManager, error) {
 	// parse the cert and key
 	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
@@ -92,13 +117,15 @@ func NewAuthorizationManagerForIAS(
 	}
 
 	loader := dcn.NewBundleLoader(
+		ctx,
 		parsedURL,
 		client,
 		*time.NewTicker(time.Second * 20),
-		errorHandler,
+		log,
 	)
 
-	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, errorHandler)
+	result := NewAuthorizationManager(ctx, loader.DCNChannel, loader.AssignmentsChannel, log)
+	result.closeBundleLoader = loader.Close
 	return result, nil
 }
 
@@ -106,32 +133,19 @@ func NewAuthorizationManagerForIAS(
 // the provided path should contain the schema.dcn and the data.json files and subdirectories
 // containing the other dcn files// the data.json file should contain the assignments, if needed
 // and could be omitted.
-func NewAuthorizationManagerForFs(path string, errorHandler func(error)) *AuthorizationManager {
-	loader := dcn.NewLocalLoader(path, nil)
-	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, errorHandler)
-	loader.RegisterErrorHandler(result.notifyError)
+func NewAuthorizationManagerForFs(path string, log logging.Logger) *AuthorizationManager {
+	loader := dcn.NewLocalLoader(path, log)
+	result := NewAuthorizationManager(context.Background(), loader.DCNChannel, loader.AssignmentsChannel, log)
+
 	return result
-}
-
-// Register a new error handler that will be called when an error occurs in the background update process.
-func (a *AuthorizationManager) RegisterErrorHandler(handler func(error)) {
-	if handler == nil {
-		return
-	}
-	a.m.Lock()
-	defer a.m.Unlock()
-	a.errHandlers = append(a.errHandlers, handler)
-}
-
-func (a *AuthorizationManager) notifyError(err error) {
-	for _, handler := range a.errHandlers {
-		handler(err)
-	}
 }
 
 func (a *AuthorizationManager) start() {
 	for {
 		select {
+		case <-a.ctx.Done():
+			close(a.closed)
+			return
 		case assignments := <-a.assignmentsChannel:
 			a.m.Lock()
 			a.Assignments = assignments
@@ -160,7 +174,7 @@ func (a *AuthorizationManager) start() {
 			} else {
 				a.hasDCN = true
 			}
-			a.Tests = dcn.Tests
+
 			a.m.Unlock()
 			if !a.IsReady() {
 				if a.hasDCN && a.hasAssignments {
@@ -187,15 +201,22 @@ func (a *AuthorizationManager) IsReady() bool {
 	}
 }
 
-// Returns Schema that can be used for input creation/validation based on the DCL schema.
-func (a *AuthorizationManager) GetSchema() internal.Schema {
-	a.m.RLock()
-	defer a.m.RUnlock()
-	return a.schema
+func (a *AuthorizationManager) Close(ctx context.Context) error {
+	a.cancel()
+	err := a.closeBundleLoader(ctx)
+	if err != nil {
+		return err
+	}
+	select {
+	case <-a.closed:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 // Returns Authorizations, based on the provided identity and the default policies.
-func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizations {
+func (a *AuthorizationManager) AuthorizationsForIdentity(ctx context.Context, i Identity) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()
 	if i == nil {
@@ -223,7 +244,7 @@ func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizat
 // Returns Authorizations, based on the provided policy names and optionally the default policies
 // and filtered filtering out admin policies from tenants other than the provided tenant.
 // for tenant-independent queries, use "" as tenant.
-func (a *AuthorizationManager) AuthorizationsForPolicies(policyNames []string) *Authorizations {
+func (a *AuthorizationManager) AuthorizationsForPolicies(ctx context.Context, policyNames []string) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()
 	return &Authorizations{
@@ -251,4 +272,22 @@ func (a *AuthorizationManager) GetAssignments(tenant, user string) []string {
 		return []string{}
 	}
 	return assignment
+}
+
+func (a *AuthorizationManager) CreateInput(action, resource string, input any, env any) expression.Input {
+	a.m.RLock()
+	defer a.m.RUnlock()
+	return a.schema.CustomInput(action, resource, input, env)
+}
+
+func (a *AuthorizationManager) ValidateInput(input expression.Input) ([]string, []string) {
+	a.m.RLock()
+	defer a.m.RUnlock()
+	return a.schema.PurgeInvalidInput(input)
+}
+
+func (a *AuthorizationManager) notifyError(err error) {
+	if a.l != nil {
+		a.l.Errorf(a.ctx, err.Error())
+	}
 }

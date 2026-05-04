@@ -1,6 +1,7 @@
 package ams
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -14,7 +15,14 @@ import (
 
 func TestAuthorizationManagerforIAS(t *testing.T) {
 	t.Run("with broken cert", func(t *testing.T) {
-		_, err := NewAuthorizationManagerForIAS("https://example.com", "brokencert", "test", "test", nop)
+		_, err := NewAuthorizationManagerForIAS(
+			context.Background(),
+			"https://example.com",
+			"brokencert",
+			"test",
+			"test",
+			nil,
+		)
 
 		if err == nil {
 			t.Errorf("Expected error, got nil")
@@ -24,7 +32,14 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 	t.Run("with broken url", func(t *testing.T) {
 		// create simple valid cert
 		cert, key := generateTestCert(t)
-		_, err := NewAuthorizationManagerForIAS("noprot://example.com ", "dummy-id", string(cert), string(key), nop)
+		_, err := NewAuthorizationManagerForIAS(
+			context.Background(),
+			"nilrot://example.com ",
+			"dummy-id",
+			string(cert),
+			string(key),
+			nil,
+		)
 		if err == nil {
 			t.Errorf("Expected error, got nil")
 		}
@@ -33,7 +48,14 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 	t.Run("with valid cert", func(t *testing.T) {
 		// create simple valid cert
 		cert, key := generateTestCert(t)
-		_, err := NewAuthorizationManagerForIAS("https://example.com/v1/bundles", "dummy-id", string(cert), string(key), nop)
+		_, err := NewAuthorizationManagerForIAS(
+			context.Background(),
+			"https://example.com/v1/bundles",
+			"dummy-id",
+			string(cert),
+			string(key),
+			nil,
+		)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
@@ -42,7 +64,7 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 
 func TestAuthorizationManagerforLocal(t *testing.T) {
 	t.Run("with broken cert", func(t *testing.T) {
-		a := NewAuthorizationManagerForFs("/tmp", nop)
+		a := NewAuthorizationManagerForFs("/tmp", nil)
 
 		if a == nil {
 			t.Errorf("Expected non-nil, got nil")

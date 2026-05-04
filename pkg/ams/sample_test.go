@@ -1,6 +1,8 @@
 package ams
 
 import (
+	"context"
+	"fmt"
 	"reflect"
 	"sort"
 	"testing"
@@ -52,16 +54,23 @@ func (i identity) Email() string {
 	return i.email
 }
 
+type crashLogger struct{}
+
+func (l crashLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
+func (l crashLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
+func (l crashLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
+func (l crashLogger) Errorf(ctx context.Context, format string, args ...interface{}) {
+	panic(fmt.Sprintf(format, args...))
+}
+
 func TestSimpleScenario(t *testing.T) {
-	a := NewAuthorizationManagerForFs("test/scenarios/simple", func(err error) {
-		t.Fatalf("unexpected error: %v", err)
-	})
+	a := NewAuthorizationManagerForFs("test/scenarios/simple", crashLogger{})
 
 	<-a.WhenReady()
 	t.Run("random user on entity1", func(t *testing.T) {
-		authz := a.AuthorizationsForIdentity(identity{
-			groups: []string{"g1", "g2"},
-		})
+		authz := a.AuthorizationsForIdentity(
+			context.Background(),
+			identity{groups: []string{"g1", "g2"}})
 		res := authz.GetResources()
 		sort.Strings(res)
 		if !reflect.DeepEqual(res, []string{"r1", "r2"}) {
@@ -136,7 +145,7 @@ func TestSimpleScenario(t *testing.T) {
 	})
 
 	t.Run("nil identity always denied", func(t *testing.T) {
-		authz := a.AuthorizationsForIdentity(nil)
+		authz := a.AuthorizationsForIdentity(context.Background(), nil)
 		d := authz.Inquire("", "", nil)
 		if !d.IsDenied() {
 			t.Fatalf("expected access to be denied, but was %s", d.Condition())

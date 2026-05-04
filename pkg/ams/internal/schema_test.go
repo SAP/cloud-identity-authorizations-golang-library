@@ -49,6 +49,13 @@ type SimpleEnv struct {
 	EnvN expression.Constant
 }
 
+type ReferencedStructure struct {
+	DeeperNested *DeeperNested `ams:"deeper_nested"`
+}
+type InterfaceStruct struct {
+	DeeperNested interface{} `ams:"deeper_nested"`
+}
+
 func TestExampleSchema(t *testing.T) { //nolint:maintidx
 	var schema Schema
 
@@ -285,6 +292,23 @@ func TestExampleSchema(t *testing.T) { //nolint:maintidx
 		want := expression.Input{
 			"$dcl.action":   expression.String("read"),
 			"$dcl.resource": expression.String("data"),
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Expected %v, got %v", want, got)
+		}
+	})
+	t.Run("Generates input if struct is referenced by pointer", func(t *testing.T) {
+		app := &ReferencedStructure{
+			DeeperNested: &DeeperNested{
+				NestedNumberArrayValue: []uint{42},
+			},
+		}
+		got := schema.CustomInput("read", "data", app, nil)
+		want := expression.Input{
+			"$dcl.action":   expression.String("read"),
+			"$dcl.resource": expression.String("data"),
+			"$app.deeper_nested.nested_number_array_value":    expression.NumberArray{42},
+			"$app.deeper_nested.\"dot.in.name\".number_value": expression.Number(0),
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("Expected %v, got %v", want, got)
