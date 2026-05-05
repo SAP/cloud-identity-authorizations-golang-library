@@ -3,7 +3,7 @@ module github.com/sap/cloud-identity-authorizations-golang-library/http
 go 1.25.5
 
 require (
-	github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260430113842-2d77e2fdd66d
+	github.com/sap/cloud-identity-authorizations-golang-library v0.2.1-0.20260505133437-6630510f88d7
 	github.com/sap/cloud-security-client-go v0.25.1
 )
 

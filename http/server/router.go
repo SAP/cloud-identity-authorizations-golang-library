@@ -152,9 +152,9 @@ func (s *Router) authzForRequest(ctx context.Context, tokenStr string, policies 
 		if err != nil {
 			return nil, fmt.Errorf("error decoding token: %w", err)
 		}
-		return s.am.AuthorizationsForIdentity(ctx, token), nil
+		return s.am.AuthorizationsForIdentity(token), nil
 	} else {
-		return s.am.AuthorizationsForPolicies(ctx, policies), nil
+		return s.am.AuthorizationsForPolicies(policies), nil
 	}
 }
 

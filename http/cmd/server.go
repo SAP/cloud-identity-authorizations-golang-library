@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"time"
@@ -17,19 +18,24 @@ func main() {
 	var am *ams.AuthorizationManager
 	var err error
 	l := logging.PlainLogger{}
+
+	errHandler := func(err error) {
+		l.Errorf(context.Background(), "Error in Authorization Manager: %v", err)
+	}
 	if os.Getenv(envDCNPath) != "" {
-		am = ams.NewAuthorizationManagerForFs(os.Getenv(envDCNPath), nil)
+		am = ams.NewAuthorizationManagerForFs(os.Getenv(envDCNPath), errHandler)
 	} else {
 		config, err := env.ParseIdentityConfig()
 		if err != nil {
 			panic(err)
 		}
 		am, err = ams.NewAuthorizationManagerForIAS(
+			context.Background(),
 			config.GetAuthorizationBundleURL(),
 			config.GetAuthorizationInstanceID(),
 			config.GetCertificate(),
 			config.GetKey(),
-			l,
+			errHandler,
 		)
 		// am, err = ams.NewAuthorizationManagerForIASConfig(
 		// 	config,

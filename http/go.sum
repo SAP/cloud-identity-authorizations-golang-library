@@ -32,6 +32,8 @@ github.com/pquerna/cachecontrol v0.2.0 h1:vBXSNuE5MYP9IJ5kjsdo8uq+w41jSPgvba2DEn
 github.com/pquerna/cachecontrol v0.2.0/go.mod h1:NrUG3Z7Rdu85UNR3vm7SOsl1nFIeSiQnrHV5K9mBcUI=
 github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260430113842-2d77e2fdd66d h1:cld9HA/+1j2tS0hbu1DtSXnMGXj0Us2Gr3z8LIEeYAE=
 github.com/sap/cloud-identity-authorizations-golang-library v0.1.2-0.20260430113842-2d77e2fdd66d/go.mod h1:hds9cJ6ndr334uIyi+RuCKnrcvN08vyz4SrFm1fzWJ8=
+github.com/sap/cloud-identity-authorizations-golang-library v0.2.1-0.20260505133437-6630510f88d7 h1:GkNODzMOpC9X4YXpXfekqx6uPq5gPdncfzNua+YJ210=
+github.com/sap/cloud-identity-authorizations-golang-library v0.2.1-0.20260505133437-6630510f88d7/go.mod h1:bNYsTnIYFM7mz6fHYl0v2lT2488HTtv0C4pmR522l40=
 github.com/sap/cloud-security-client-go v0.25.1 h1:kVH3TnwXkUAk5sNZxNY5TOkRR8EQCbbvdnwAZrQZtPQ=
 github.com/sap/cloud-security-client-go v0.25.1/go.mod h1:kIU1Z/KnJxahlyBHnmnigXdyvvSMf9za5oyhHjyajKQ=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

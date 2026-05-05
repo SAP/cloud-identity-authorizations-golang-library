@@ -290,7 +290,7 @@ func TestHealth(t *testing.T) {
 	t.Run("Health check ready when Authorization Manager is initialized", func(t *testing.T) {
 		dcnChan := make(chan dcn.DcnContainer)
 		assigmentChan := make(chan dcn.Assignments)
-		am := ams.NewAuthorizationManager(dcnChan, assigmentChan, nil)
+		am := ams.NewAuthorizationManager(context.Background(), dcnChan, assigmentChan, nil)
 		r := NewRouter(am, nopLogger{})
 		rr := httptest.NewRecorder()
 		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/v1/health", nil))
