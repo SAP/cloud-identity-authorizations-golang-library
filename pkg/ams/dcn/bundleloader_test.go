@@ -296,7 +296,6 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 		if len(ml.errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
 		}
-
 	})
 
 	t.Run("server not tar", func(t *testing.T) {

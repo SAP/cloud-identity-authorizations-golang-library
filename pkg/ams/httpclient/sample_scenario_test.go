@@ -63,7 +63,6 @@ func (i identity) Email() string {
 }
 
 func TestSimpleScenario(t *testing.T) {
-
 	errHandler := func(err error) {
 		t.Fatal(err)
 	}
