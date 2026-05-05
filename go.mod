@@ -2,7 +2,7 @@ module github.com/sap/cloud-identity-authorizations-golang-library
 
 go 1.25.5
 
-require github.com/sap/cloud-identity-authorizations-golang-library/http v0.0.0-20260430121428-eef1dc365b7b
+require github.com/sap/cloud-identity-authorizations-golang-library/http v0.0.0-20260505134910-e22ef2ea7ad8
 
 require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
