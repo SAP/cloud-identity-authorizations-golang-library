@@ -1,32 +1,28 @@
 package dcn
 
 import (
-	"context"
 	"encoding/json"
 	"os"
 	"path"
 	"strings"
-
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging"
 )
 
 type Loader struct {
 	dir                string
 	DCNChannel         chan DcnContainer
 	AssignmentsChannel chan Assignments
-	l                  logging.Logger
+	errorHandler       []func(error)
 }
 
-func NewLocalLoader(dir string, log logging.Logger) *Loader {
+func NewLocalLoader(dir string, errorCallback func(error)) *Loader {
 	loader := &Loader{
 		dir:                dir,
 		DCNChannel:         make(chan DcnContainer),
 		AssignmentsChannel: make(chan Assignments),
-
-		l: log,
+		errorHandler:       []func(error){},
 	}
-	if loader.l == nil {
-		loader.l = logging.Default()
+	if errorCallback != nil {
+		loader.errorHandler = append(loader.errorHandler, errorCallback)
 	}
 
 	go loader.start()
@@ -36,11 +32,17 @@ func NewLocalLoader(dir string, log logging.Logger) *Loader {
 func (l *Loader) start() {
 	dcn, assignments, err := readDirectory(l.dir)
 	if err != nil {
-		l.l.Errorf(context.Background(), "Error reading directory: %v", err)
+		l.handleError(err)
 		return
 	}
 	l.DCNChannel <- dcn
 	l.AssignmentsChannel <- assignments.Assignments
+}
+
+func (l *Loader) handleError(err error) {
+	for _, handler := range l.errorHandler {
+		handler(err)
+	}
 }
 
 func readDirectory(dir string) (DcnContainer, AssignmentsContainer, error) {

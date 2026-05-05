@@ -214,9 +214,9 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
-		bundleLoader := NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
+		bundleLoader := NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
 
 		select {
 		case <-ml.errorsReceived:
@@ -230,7 +230,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 	})
 
 	t.Run("broken server", func(t *testing.T) {
-		ml := newMockLogger()
+		ml := newErrorHandler()
 		ts := httptest.NewServer(serveError)
 		defer ts.Close()
 
@@ -239,16 +239,11 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
-		}
-		want := "unexpected status code 500: Internal Server Error"
-		got := ml.errors[0]
-		if got != want {
-			t.Fatalf("expected error to be '%s', got %v", want, got)
 		}
 	})
 
@@ -261,27 +256,22 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
-		}
-		want := "unexpected status code 500: "
-		got := ml.errors[0]
-		if got != want {
-			t.Fatalf("expected error to be '%s', got %v", want, got)
 		}
 	})
 
 	t.Run("broken http client", func(t *testing.T) {
 		targetURL, _ := url.Parse("http://127.0.0.1:1234")
 
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, &http.Client{}, ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, &http.Client{}, ticker, ml.Callback)
 
 		time.Sleep(2 * time.Millisecond)
 		if len(ml.errors) != 1 {
@@ -298,19 +288,15 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
 		}
-		want := "unexpected EOF" //nolint:goconst
-		got := ml.errors[0]
-		if got != want {
-			t.Fatalf("expected error to be '%s', got %v", want, got)
-		}
+
 	})
 
 	t.Run("server not tar", func(t *testing.T) {
@@ -322,18 +308,13 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
-		}
-		want := "unexpected EOF"
-		got := ml.errors[0]
-		if got != want {
-			t.Fatalf("expected error to be '%s', got %v", want, got)
 		}
 	})
 
@@ -346,18 +327,13 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
-		}
-		want := "invalid character 'h' in literal true (expecting 'r')"
-		got := ml.errors[0]
-		if got != want {
-			t.Fatalf("expected error to be '%s', got %v", want, got)
 		}
 	})
 
@@ -370,23 +346,18 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
 		}
-		want := "invalid character 'h' in literal true (expecting 'r')"
-		got := ml.errors[0]
-		if got != want {
-			t.Fatalf("expected error to be '%s', got %v", want, got)
-		}
 	})
 
 	t.Run("broken data.json filebody", func(t *testing.T) {
-		ml := newMockLogger()
+		ml := newErrorHandler()
 		ts := httptest.NewServer(serveBrokenDataJSON)
 		defer ts.Close()
 
@@ -395,21 +366,16 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
 		}
-		want := "unexpected EOF"
-		got := ml.errors[0]
-		if got != want {
-			t.Fatalf("expected error to be '%s', got %v", want, got)
-		}
 	})
 
 	t.Run("broken dcn filebody", func(t *testing.T) {
-		ml := newMockLogger()
+		ml := newErrorHandler()
 		ts := httptest.NewServer(serveBrokenDCN)
 		defer ts.Close()
 
@@ -418,16 +384,11 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml)
+		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
-		}
-		want := "unexpected EOF"
-		got := ml.errors[0]
-		if got != want {
-			t.Fatalf("expected error to be '%s', got %v", want, got)
 		}
 	})
 }

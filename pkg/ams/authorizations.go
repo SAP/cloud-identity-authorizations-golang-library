@@ -36,7 +36,6 @@ func (a *Authorizations) Inquire(action, resource string, app any) Decision {
 
 func (a *Authorizations) SetEnvInput(env any) {
 	a.envInput = expression.Input{}
-	a.a.l.Infof(a.a.ctx, "overwriting env input")
 	a.a.schema.InsertCustomInput(a.envInput, reflect.ValueOf(env), []string{"$env"})
 }
 
@@ -65,7 +64,6 @@ func (a *Authorizations) Evaluate(input expression.Input) Decision {
 	}
 	r := a.policies.Evaluate(input)
 	if r == expression.FALSE {
-		a.a.l.Infof(a.a.ctx, "evaluated to false, denying access")
 		return a.decision(r)
 	}
 	results := []expression.Expression{}
@@ -75,18 +73,12 @@ func (a *Authorizations) Evaluate(input expression.Input) Decision {
 	for _, aa := range a.andJoined {
 		r := aa.Evaluate(input).Condition()
 		if r == expression.Bool(false) {
-			a.a.l.Infof(a.a.ctx, "evaluated to false in and-joined authorizations, denying access")
 			return a.decision(r)
 		}
 		if r != expression.Bool(true) {
 			results = append(results, r)
 		}
 	}
-	if len(results) == 0 {
-		a.a.l.Infof(a.a.ctx, "evaluated to true, granting access")
-		return a.decision(expression.TRUE)
-	}
-	a.a.l.Infof(a.a.ctx, "evaluated to expression, granting access with condition")
 	return a.decision(expression.And(results...))
 }
 

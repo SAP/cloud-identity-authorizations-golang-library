@@ -14,15 +14,10 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
 
-type crashLogger struct{}
-
-func (l crashLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
-func (l crashLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
-func (l crashLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
-func (l crashLogger) Errorf(ctx context.Context, format string, args ...interface{}) {
-	panic(fmt.Sprintf(format, args...))
-}
 func TestRun(t *testing.T) {
+	errCB := func(err error) {
+		t.Fatalf("unexpected error %v", err)
+	}
 	// tmp, _ := os.ReadDir("./")
 	// t.Fatalf("tmp: %v", tmp)
 	testDirs, err := os.ReadDir("scenarios")
@@ -31,7 +26,7 @@ func TestRun(t *testing.T) {
 	}
 	for _, testDir := range testDirs {
 		t.Run(testDir.Name(), func(t *testing.T) {
-			loader := dcn.NewLocalLoader(path.Join("scenarios", testDir.Name()), crashLogger{})
+			loader := dcn.NewLocalLoader(path.Join("scenarios", testDir.Name()), errCB)
 			tests := []dcn.Test{}
 			dcnChannel := make(chan dcn.DcnContainer)
 			go func() {
@@ -41,7 +36,7 @@ func TestRun(t *testing.T) {
 					dcnChannel <- dcnContainer
 				}
 			}()
-			ams := ams.NewAuthorizationManager(context.Background(), dcnChannel, loader.AssignmentsChannel, crashLogger{})
+			ams := ams.NewAuthorizationManager(context.Background(), dcnChannel, loader.AssignmentsChannel, errCB)
 
 			<-ams.WhenReady()
 
@@ -72,9 +67,9 @@ func TestRun(t *testing.T) {
 						for _, filter := range assertion.ScopeFilter {
 							scopeFilter = append(scopeFilter, util.StringifyQualifiedName(filter))
 						}
-						authz := ams.AuthorizationsForPolicies(context.Background(), policies)
+						authz := ams.AuthorizationsForPolicies(policies)
 						if len(scopeFilter) > 0 {
-							scopeFilter := ams.AuthorizationsForPolicies(context.Background(), scopeFilter)
+							scopeFilter := ams.AuthorizationsForPolicies(scopeFilter)
 							authz = authz.AndJoin(scopeFilter)
 						}
 						t.Run(fmt.Sprintf("policies: %v, scopeFilter: %v", policies, scopeFilter), func(t *testing.T) {

@@ -1,8 +1,6 @@
 package dcn
 
 import (
-	"context"
-	"fmt"
 	"log"
 	"os"
 	"path"
@@ -10,35 +8,32 @@ import (
 	"testing"
 )
 
-type mockLogger struct {
-	errors         []string
+type errorHandler struct {
+	errors         []error
 	errorsReceived chan bool
 }
 
-func (l *mockLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
-func (l *mockLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
-func (l *mockLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
-func (l *mockLogger) Errorf(ctx context.Context, format string, args ...interface{}) {
-	l.errors = append(l.errors, fmt.Sprintf(format, args...))
+func (l *errorHandler) Callback(err error) {
+	l.errors = append(l.errors, err)
 	l.errorsReceived <- true
 }
 
-func newMockLogger() *mockLogger {
-	return &mockLogger{
-		errors:         []string{},
+func newErrorHandler() *errorHandler {
+	return &errorHandler{
+		errors:         []error{},
 		errorsReceived: make(chan bool),
 	}
 }
 
 func TestLocalLoader(t *testing.T) {
 	t.Run("on testfolder", func(t *testing.T) {
-		errors := []string{}
-		loader := NewLocalLoader("testfolder", &mockLogger{errors: errors})
+		eh := newErrorHandler()
+		loader := NewLocalLoader("testfolder", eh.Callback)
 
 		dcn := <-loader.DCNChannel
 		assignments := <-loader.AssignmentsChannel
-		if len(errors) != 0 {
-			t.Fatalf("expected 0 errors, got %d", len(errors))
+		if len(eh.errors) != 0 {
+			t.Fatalf("expected 0 errors, got %d", len(eh.errors))
 		}
 		if len(dcn.Policies) != 1 {
 			t.Fatalf("expected 1 policy, got %d", len(dcn.Policies))
@@ -57,9 +52,9 @@ func TestLocalLoader(t *testing.T) {
 		}
 	})
 	t.Run("broken data.json", func(t *testing.T) {
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
-		NewLocalLoader("edgecases/broken-data-json", ml)
+		NewLocalLoader("edgecases/broken-data-json", ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -68,9 +63,9 @@ func TestLocalLoader(t *testing.T) {
 	})
 
 	t.Run("broken DCN file", func(t *testing.T) {
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
-		NewLocalLoader("edgecases/broken-dcn", ml)
+		NewLocalLoader("edgecases/broken-dcn", ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -79,10 +74,10 @@ func TestLocalLoader(t *testing.T) {
 	})
 
 	t.Run("unreadable data.json", func(t *testing.T) {
-		ml := newMockLogger()
+		ml := newErrorHandler()
 		tmp := createTempFolderWithUnreadableFile("data.json")
 		defer os.RemoveAll(tmp) // Clean up
-		NewLocalLoader(tmp, ml)
+		NewLocalLoader(tmp, ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -91,11 +86,11 @@ func TestLocalLoader(t *testing.T) {
 	})
 
 	t.Run("unreadable DCN", func(t *testing.T) {
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
 		tmp := createTempFolderWithUnreadableFile("x.dcn")
 		defer os.RemoveAll(tmp) // Clean up
-		NewLocalLoader(tmp, ml)
+		NewLocalLoader(tmp, ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -104,9 +99,9 @@ func TestLocalLoader(t *testing.T) {
 	})
 
 	t.Run("non existent directory", func(t *testing.T) {
-		ml := newMockLogger()
+		ml := newErrorHandler()
 
-		NewLocalLoader("edgecases/non-existent-directory", ml)
+		NewLocalLoader("edgecases/non-existent-directory", ml.Callback)
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
