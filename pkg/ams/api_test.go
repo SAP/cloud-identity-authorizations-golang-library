@@ -19,7 +19,7 @@ func (l *errorHandler) Callback(err error) {
 	l.errorsReceived <- true
 }
 
-func newMockLogger() *errorHandler {
+func createErrorHandler() *errorHandler {
 	return &errorHandler{
 		errors:         []error{},
 		errorsReceived: make(chan bool),
@@ -133,7 +133,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("error in functions", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		ml := newMockLogger()
+		ml := createErrorHandler()
 
 		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml.Callback)
 		assignmentsChannel <- dcn.Assignments{}
@@ -162,7 +162,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("error in policies", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		ml := newMockLogger()
+		ml := createErrorHandler()
 		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml.Callback)
 		assignmentsChannel <- dcn.Assignments{}
 
@@ -458,7 +458,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("error on load dcn", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		ml := newMockLogger()
+		ml := createErrorHandler()
 		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml.Callback)
 
 		assignmentsChannel <- dcn.Assignments{}
