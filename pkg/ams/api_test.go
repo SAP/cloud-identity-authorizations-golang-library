@@ -2,7 +2,6 @@ package ams
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -10,22 +9,19 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
-type mockLogger struct {
-	errors         []string
+type errorHandler struct {
+	errors         []error
 	errorsReceived chan bool
 }
 
-func (l *mockLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
-func (l *mockLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
-func (l *mockLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
-func (l *mockLogger) Errorf(ctx context.Context, format string, args ...interface{}) {
-	l.errors = append(l.errors, fmt.Sprintf(format, args...))
+func (l *errorHandler) Callback(err error) {
+	l.errors = append(l.errors, err)
 	l.errorsReceived <- true
 }
 
-func newMockLogger() *mockLogger {
-	return &mockLogger{
-		errors:         []string{},
+func createErrorHandler() *errorHandler {
+	return &errorHandler{
+		errors:         []error{},
 		errorsReceived: make(chan bool),
 	}
 }
@@ -126,7 +122,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		}
 		<-am.WhenReady()
 
-		a := am.AuthorizationsForPolicies(context.Background(), []string{"pkg.policy1"})
+		a := am.AuthorizationsForPolicies([]string{"pkg.policy1"})
 		got := a.Evaluate(expression.Input{}).Condition()
 		want := expression.Ref("x")
 		if !reflect.DeepEqual(got, want) {
@@ -137,9 +133,9 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("error in functions", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		ml := newMockLogger()
+		ml := createErrorHandler()
 
-		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml)
+		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml.Callback)
 		assignmentsChannel <- dcn.Assignments{}
 
 		if len(ml.errors) != 0 {
@@ -166,8 +162,8 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("error in policies", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		ml := newMockLogger()
-		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml)
+		ml := createErrorHandler()
+		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml.Callback)
 		assignmentsChannel <- dcn.Assignments{}
 
 		if len(ml.errors) != 0 {
@@ -243,7 +239,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 
 		<-am.WhenReady()
 
-		auths := am.AuthorizationsForPolicies(context.Background(), []string{"pkg.policy1"})
+		auths := am.AuthorizationsForPolicies([]string{"pkg.policy1"})
 
 		r := auths.Evaluate(expression.Input{
 			DCL_RESOURCE: expression.String("resource1"),
@@ -260,7 +256,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			t.Errorf("expected false, got %v", r)
 		}
 
-		auth2 := am.AuthorizationsForPolicies(context.Background(), []string{"pkg.policy2"})
+		auth2 := am.AuthorizationsForPolicies([]string{"pkg.policy2"})
 
 		r = auth2.Evaluate(expression.Input{
 			DCL_RESOURCE: expression.String("resource1"),
@@ -301,7 +297,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			t.Errorf("expected false, got %v", r)
 		}
 
-		auth3 := am.AuthorizationsForPolicies(context.Background(), []string{"pkg.policy3"})
+		auth3 := am.AuthorizationsForPolicies([]string{"pkg.policy3"})
 
 		andJoined = auth2.AndJoin(auth3)
 		r = andJoined.Evaluate(expression.Input{
@@ -400,7 +396,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 
 		<-am.WhenReady()
 
-		authz := am.AuthorizationsForIdentity(context.Background(), TestIdentity{
+		authz := am.AuthorizationsForIdentity(TestIdentity{
 			email:    "user1@example.com",
 			appTID:   "tenant1",
 			scimID:   "user1",
@@ -462,8 +458,8 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("error on load dcn", func(t *testing.T) {
 		dcnChannel := make(chan dcn.DcnContainer)
 		assignmentsChannel := make(chan dcn.Assignments)
-		ml := newMockLogger()
-		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml)
+		ml := createErrorHandler()
+		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml.Callback)
 
 		assignmentsChannel <- dcn.Assignments{}
 		dcnChannel <- dcn.DcnContainer{

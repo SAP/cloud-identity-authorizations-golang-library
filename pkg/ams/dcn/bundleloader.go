@@ -12,8 +12,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging"
 )
 
 //go:embed VERSION
@@ -29,9 +27,9 @@ type BundleLoader struct {
 	client             *http.Client
 	url                *url.URL
 	ticker             time.Ticker
-	l                  logging.Logger
 	closed             chan bool
 	cancel             context.CancelFunc
+	errorHandler       []func(error)
 }
 
 func NewBundleLoader(
@@ -39,7 +37,7 @@ func NewBundleLoader(
 	targetURL *url.URL,
 	client *http.Client,
 	ticker time.Ticker,
-	log logging.Logger,
+	errorCallback func(error),
 ) *BundleLoader {
 	ctx, cancel := context.WithCancel(ctx)
 	result := BundleLoader{
@@ -50,8 +48,11 @@ func NewBundleLoader(
 		client:             client,
 		url:                targetURL,
 		ticker:             ticker,
-		l:                  log,
 		closed:             make(chan bool),
+		errorHandler:       []func(error){},
+	}
+	if errorCallback != nil {
+		result.errorHandler = append(result.errorHandler, errorCallback)
 	}
 
 	go result.start()
@@ -59,8 +60,8 @@ func NewBundleLoader(
 }
 
 func (b *BundleLoader) handleError(err error) {
-	if b.l != nil {
-		b.l.Errorf(b.ctx, "%v", err)
+	for _, handler := range b.errorHandler {
+		handler(err)
 	}
 }
 

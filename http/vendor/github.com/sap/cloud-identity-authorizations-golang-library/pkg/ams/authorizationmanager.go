@@ -11,7 +11,6 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal"
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
 
@@ -27,17 +26,23 @@ type AuthorizationManager struct {
 	hasDCN            bool
 	hasAssignments    bool
 	functionContainer *expression.FunctionRegistry
-	l                 logging.Logger
+	ctx               context.Context
+	cancel            context.CancelFunc
+	closed            chan bool
+	closeBundleLoader func(context.Context) error
+	errHandlers       []func(error)
 }
 
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
 // to update its policies and assignments during runtime.
 // the instance must receive (possibly empty) data on both channels to be ready.
 func NewAuthorizationManager(
+	ctx context.Context,
 	dcnC chan dcn.DcnContainer,
 	assignmentsC chan dcn.Assignments,
-	log logging.Logger,
+	errorCallback func(error),
 ) *AuthorizationManager {
+	ctx, cancel := context.WithCancel(ctx)
 	result := AuthorizationManager{
 		ready:              make(chan bool),
 		policies:           internal.PolicySet{},
@@ -47,7 +52,13 @@ func NewAuthorizationManager(
 		hasDCN:             false,
 		hasAssignments:     false,
 		functionContainer:  expression.NewFunctionRegistry(),
-		l:                  log,
+		ctx:                ctx,
+		cancel:             cancel,
+		closed:             make(chan bool),
+		errHandlers:        []func(error){},
+	}
+	if errorCallback != nil {
+		result.errHandlers = append(result.errHandlers, errorCallback)
 	}
 
 	go result.start()
@@ -57,24 +68,30 @@ func NewAuthorizationManager(
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
-func NewAuthorizationManagerForIASConfig(config IASConfig, log logging.Logger) (*AuthorizationManager, error) {
+func NewAuthorizationManagerForIASConfig(
+	ctx context.Context,
+	config IASConfig,
+	errorCallback func(error),
+) (*AuthorizationManager, error) {
 	return NewAuthorizationManagerForIAS(
+		ctx,
 		config.GetAuthorizationBundleURL(),
 		config.GetAuthorizationInstanceID(),
 		config.GetCertificate(),
 		config.GetKey(),
-		log,
+		errorCallback,
 	)
 }
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
 func NewAuthorizationManagerForIAS(
+	ctx context.Context,
 	bundleUrl,
 	amsInstanceID,
 	cert,
 	key string,
-	log logging.Logger,
+	errorCallback func(error),
 ) (*AuthorizationManager, error) {
 	// parse the cert and key
 	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
@@ -102,13 +119,15 @@ func NewAuthorizationManagerForIAS(
 	}
 
 	loader := dcn.NewBundleLoader(
+		ctx,
 		parsedURL,
 		client,
 		*time.NewTicker(time.Second * 20),
-		log,
+		errorCallback,
 	)
 
-	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, log)
+	result := NewAuthorizationManager(ctx, loader.DCNChannel, loader.AssignmentsChannel, errorCallback)
+	result.closeBundleLoader = loader.Close
 	return result, nil
 }
 
@@ -116,16 +135,18 @@ func NewAuthorizationManagerForIAS(
 // the provided path should contain the schema.dcn and the data.json files and subdirectories
 // containing the other dcn files// the data.json file should contain the assignments, if needed
 // and could be omitted.
-func NewAuthorizationManagerForFs(path string, log logging.Logger) *AuthorizationManager {
-	loader := dcn.NewLocalLoader(path, log)
-	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, log)
-
+func NewAuthorizationManagerForFs(path string, errorCallback func(error)) *AuthorizationManager {
+	loader := dcn.NewLocalLoader(path, errorCallback)
+	result := NewAuthorizationManager(context.Background(), loader.DCNChannel, loader.AssignmentsChannel, errorCallback)
 	return result
 }
 
 func (a *AuthorizationManager) start() {
 	for {
 		select {
+		case <-a.ctx.Done():
+			close(a.closed)
+			return
 		case assignments := <-a.assignmentsChannel:
 			a.m.Lock()
 			a.Assignments = assignments
@@ -165,6 +186,15 @@ func (a *AuthorizationManager) start() {
 	}
 }
 
+func (a *AuthorizationManager) RegisterErrorHandler(handler func(error)) {
+	if handler == nil {
+		return
+	}
+	a.m.Lock()
+	defer a.m.Unlock()
+	a.errHandlers = append(a.errHandlers, handler)
+}
+
 // Returns a channel that will be closed when the AuthorizationManager is ready to be used.
 func (a *AuthorizationManager) WhenReady() <-chan bool {
 	return a.ready
@@ -181,24 +211,43 @@ func (a *AuthorizationManager) IsReady() bool {
 	}
 }
 
+func (a *AuthorizationManager) Close(ctx context.Context) error {
+	a.cancel()
+	if a.closeBundleLoader != nil {
+		err := a.closeBundleLoader(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	select {
+	case <-a.closed:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
 // Returns Authorizations, based on the provided identity and the default policies.
-func (a *AuthorizationManager) AuthorizationsForIdentity(ctx context.Context, i Identity) *Authorizations {
+func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()
 	if i == nil {
 		return &Authorizations{
 			policies: a.policies.GetSubset([]string{}, "", false),
-			schema:   a.schema,
+			a:        a,
 		}
 	}
 
-	policyNames := a.policies.GetDefaultPolicyNames(i.AppTID())
+	defaultPolicyNames := a.policies.GetDefaultPolicyNames(i.AppTID())
 
-	policyNames = append(policyNames, a.GetAssignments(i.AppTID(), i.ScimID())...)
+	assignmentPolicyNames := a.GetAssignments(i.AppTID(), i.ScimID())
+	policyNames := make([]string, 0, len(defaultPolicyNames)+len(assignmentPolicyNames))
+	policyNames = append(policyNames, defaultPolicyNames...)
+	policyNames = append(policyNames, assignmentPolicyNames...)
 
 	return &Authorizations{
 		policies: a.policies.GetSubset(policyNames, i.AppTID(), true),
-		schema:   a.schema,
+		a:        a,
 		envInput: expression.Input{
 			"$env.$user.email":     expression.String(i.Email()),
 			"$env.$user.user_uuid": expression.String(i.UserUUID()),
@@ -210,12 +259,12 @@ func (a *AuthorizationManager) AuthorizationsForIdentity(ctx context.Context, i 
 // Returns Authorizations, based on the provided policy names and optionally the default policies
 // and filtered filtering out admin policies from tenants other than the provided tenant.
 // for tenant-independent queries, use "" as tenant.
-func (a *AuthorizationManager) AuthorizationsForPolicies(ctx context.Context, policyNames []string) *Authorizations {
+func (a *AuthorizationManager) AuthorizationsForPolicies(policyNames []string) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()
 	return &Authorizations{
 		policies: a.policies.GetSubset(policyNames, "-", false),
-		schema:   a.schema,
+		a:        a,
 	}
 }
 
@@ -253,7 +302,7 @@ func (a *AuthorizationManager) ValidateInput(input expression.Input) ([]string, 
 }
 
 func (a *AuthorizationManager) notifyError(err error) {
-	if a.l != nil {
-		a.l.Errorf(context.Background(), err.Error())
+	for _, handler := range a.errHandlers {
+		handler(err)
 	}
 }

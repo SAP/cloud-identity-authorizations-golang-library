@@ -6,16 +6,15 @@ import (
 	// 	"testing"
 
 	"context"
-	"fmt"
 	"net/http/httptest"
 	"reflect"
 	"sort"
 	"testing"
 
+	"github.com/sap/cloud-identity-authorizations-golang-library/http/logging"
 	"github.com/sap/cloud-identity-authorizations-golang-library/http/server"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 	. "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/httpclient"
-	// "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams".
 )
 
 type E1 struct {
@@ -63,24 +62,18 @@ func (i identity) Email() string {
 	return i.email
 }
 
-type crashLogger struct{}
-
-func (l crashLogger) Debugf(ctx context.Context, format string, args ...interface{}) {}
-func (l crashLogger) Infof(ctx context.Context, format string, args ...interface{})  {}
-func (l crashLogger) Warnf(ctx context.Context, format string, args ...interface{})  {}
-func (l crashLogger) Errorf(ctx context.Context, format string, args ...interface{}) {
-	panic(fmt.Sprintf(format, args...))
-}
-
 func TestSimpleScenario(t *testing.T) {
-	aSrv := ams.NewAuthorizationManagerForFs("../test/scenarios/simple", crashLogger{})
+	errHandler := func(err error) {
+		t.Fatal(err)
+	}
+	aSrv := ams.NewAuthorizationManagerForFs("../test/scenarios/simple", errHandler)
 
-	router := server.NewRouter(aSrv, crashLogger{})
+	router := server.NewRouter(aSrv, logging.PlainLogger{})
 
 	srv := httptest.NewServer(router.Mux())
 	defer srv.Close()
 
-	a := NewAuthorizationManager(srv.URL, srv.Client(), crashLogger{})
+	a := NewAuthorizationManager(srv.URL, srv.Client())
 	<-a.WhenReady(context.Background())
 	t.Run("random user on entity1", func(t *testing.T) {
 		ctx := context.Background()

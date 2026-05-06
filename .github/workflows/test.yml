@@ -21,4 +21,9 @@ jobs:
     
     - name: Run tests
       run: go test -coverprofile=coverage.out ./...
+
+    - name: Run tests of http submodule
+      run: |
+        cd http
+        go test -coverprofile=coverage.out ./...
     

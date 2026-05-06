@@ -7,9 +7,10 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/sap/cloud-identity-authorizations-golang-library/http/logging"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging"
+
 	"github.com/sap/cloud-security-client-go/auth"
 )
 
@@ -53,13 +54,13 @@ func (s *Router) HandleAuthorize(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req AuthorizationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		// s.l.Info(ctx, "Invalid request body: %v", err)
+		s.l.Infof(ctx, "Invalid request body: %v", err)
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 	a, err := s.authzForRequest(ctx, req.Token, req.Policies)
 	if err != nil {
-		// s.l.Info(ctx, "Error authorizing request: %v", err)
+		s.l.Infof(ctx, "Error authorizing request: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -151,9 +152,9 @@ func (s *Router) authzForRequest(ctx context.Context, tokenStr string, policies 
 		if err != nil {
 			return nil, fmt.Errorf("error decoding token: %w", err)
 		}
-		return s.am.AuthorizationsForIdentity(ctx, token), nil
+		return s.am.AuthorizationsForIdentity(token), nil
 	} else {
-		return s.am.AuthorizationsForPolicies(ctx, policies), nil
+		return s.am.AuthorizationsForPolicies(policies), nil
 	}
 }
 

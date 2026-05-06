@@ -58,7 +58,7 @@ func ConstantFrom(v any) Constant {
 		return ArrayFrom(v)
 	}
 	reflectV := reflect.ValueOf(v)
-	switch reflectV.Kind() {
+	switch reflectV.Kind() { //nolint:exhaustive
 	case reflect.Interface, reflect.Pointer:
 		if reflectV.IsNil() {
 			return nil

@@ -12,8 +12,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/logging"
 )
 
 //go:embed VERSION
@@ -22,27 +20,39 @@ var version string
 const DCNVERSION = 1
 
 type BundleLoader struct {
+	ctx                context.Context
 	DCNChannel         chan DcnContainer
 	AssignmentsChannel chan Assignments
 	lastEtag           string
 	client             *http.Client
 	url                *url.URL
 	ticker             time.Ticker
-	l                  logging.Logger
+	closed             chan bool
+	cancel             context.CancelFunc
+	errorHandler       []func(error)
 }
 
-func NewBundleLoader(targetURL *url.URL,
+func NewBundleLoader(
+	ctx context.Context,
+	targetURL *url.URL,
 	client *http.Client,
 	ticker time.Ticker,
-	log logging.Logger,
+	errorCallback func(error),
 ) *BundleLoader {
+	ctx, cancel := context.WithCancel(ctx)
 	result := BundleLoader{
+		ctx:                ctx,
+		cancel:             cancel,
 		DCNChannel:         make(chan DcnContainer),
 		AssignmentsChannel: make(chan Assignments),
 		client:             client,
 		url:                targetURL,
 		ticker:             ticker,
-		l:                  log,
+		closed:             make(chan bool),
+		errorHandler:       []func(error){},
+	}
+	if errorCallback != nil {
+		result.errorHandler = append(result.errorHandler, errorCallback)
 	}
 
 	go result.start()
@@ -50,8 +60,8 @@ func NewBundleLoader(targetURL *url.URL,
 }
 
 func (b *BundleLoader) handleError(err error) {
-	if b.l != nil {
-		b.l.Errorf(context.Background(), "%v", err)
+	for _, handler := range b.errorHandler {
+		handler(err)
 	}
 }
 
@@ -59,19 +69,28 @@ func (b *BundleLoader) start() {
 	b.bundleRequest()
 
 	for {
-		<-b.ticker.C
-		b.bundleRequest()
+		select {
+		case <-b.closed:
+			b.closed <- true
+			return
+		case <-b.ticker.C:
+			b.bundleRequest()
+		}
 	}
 }
 
-func (b *BundleLoader) bundleRequest() {
-	dcn := DcnContainer{
-		Policies:  []Policy{},
-		Schemas:   []Schema{},
-		Functions: []Function{},
-		Tests:     []Test{},
+func (b *BundleLoader) Close(ctx context.Context) error {
+	b.ticker.Stop()
+	b.cancel()
+
+	select {
+	case b.closed <- true:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
-	assignments := Assignments{}
+}
+func (b *BundleLoader) bundleRequest() {
 	req := &http.Request{
 		Method: http.MethodGet,
 		URL:    b.url,
@@ -107,7 +126,7 @@ func (b *BundleLoader) bundleRequest() {
 	}
 	b.lastEtag = resp.Header.Get("ETag")
 
-	dcn, assignments, err = ReadBundleTarGz(resp.Body)
+	dcn, assignments, err := ReadBundleTarGz(resp.Body)
 	if err != nil {
 		b.handleError(err)
 		return
@@ -118,7 +137,6 @@ func (b *BundleLoader) bundleRequest() {
 }
 
 func ReadBundleTarGz(reader io.Reader) (DcnContainer, Assignments, error) {
-
 	dcn := DcnContainer{
 		Policies:  []Policy{},
 		Schemas:   []Schema{},
