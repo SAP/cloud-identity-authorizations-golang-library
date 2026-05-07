@@ -15,7 +15,7 @@
                 ],
                 "condition": {
                     "call": [
-                        "and"
+                        "or"
                     ],
                     "args": [
                         {
