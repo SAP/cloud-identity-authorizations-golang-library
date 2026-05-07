@@ -5,6 +5,17 @@ import (
 	"reflect"
 )
 
+type Type byte
+
+const (
+	TypeString Type = iota
+	TypeNumber
+	TypeBool
+	TypeStringArray
+	TypeNumberArray
+	TypeBoolArray
+)
+
 type Constant interface {
 	Expression
 	equals(c Constant) bool
