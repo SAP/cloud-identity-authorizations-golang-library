@@ -7,6 +7,9 @@ on:
     # Run weekly on Sundays at 00:00 UTC
     - cron: '0 0 * * 0'
 
+permissions:
+  contents: read
+
 jobs:
   vulnerability-check:
     runs-on: ubuntu-latest
