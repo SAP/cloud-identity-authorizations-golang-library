@@ -26,6 +26,9 @@ func main() {
 		am = ams.NewAuthorizationManagerForFs(os.Getenv(envDCNPath), errHandler)
 	} else {
 		creds, err := env.ParseIdentityConfig()
+		if err != nil {
+			panic(err)
+		}
 		am, err = ams.NewAuthorizationManagerForIASConfig(context.Background(), creds, errHandler)
 		if err != nil {
 			panic(err)
