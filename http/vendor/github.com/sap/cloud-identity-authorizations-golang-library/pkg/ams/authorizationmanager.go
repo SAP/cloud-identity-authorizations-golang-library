@@ -291,8 +291,9 @@ func (a *AuthorizationManager) GetUserFields() map[string]expression.Type {
 			result[k] = expression.TypeBoolArray
 		case internal.NUMBER_ARRAY:
 			result[k] = expression.TypeNumberArray
-		default:
-			// ignore structures and undefined types, as they cannot be set directly by the user and are not relevant for the user input validation
+		case internal.STRUCTURE, internal.UNDEFINED:
+			// ignore structures and undefined types,
+			// as they cannot be set directly by the user and are not relevant for the user input validation
 			continue
 		}
 	}
