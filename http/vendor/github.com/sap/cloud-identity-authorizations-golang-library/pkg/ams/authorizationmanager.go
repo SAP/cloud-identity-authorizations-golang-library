@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -266,6 +267,36 @@ func (a *AuthorizationManager) AuthorizationsForPolicies(policyNames []string) *
 		policies: a.policies.GetSubset(policyNames, "-", false),
 		a:        a,
 	}
+}
+
+func (a *AuthorizationManager) GetUserFields() map[string]expression.Type {
+	a.m.RLock()
+	defer a.m.RUnlock()
+	allFields := a.schema.GetAllInputFields()
+	result := make(map[string]expression.Type)
+	for k, t := range allFields {
+		if !strings.HasPrefix(k, "$env.$user") {
+			continue
+		}
+		switch t {
+		case internal.STRING:
+			result[k] = expression.TypeString
+		case internal.BOOLEAN:
+			result[k] = expression.TypeBool
+		case internal.NUMBER:
+			result[k] = expression.TypeNumber
+		case internal.STRING_ARRAY:
+			result[k] = expression.TypeStringArray
+		case internal.BOOLEAN_ARRAY:
+			result[k] = expression.TypeBoolArray
+		case internal.NUMBER_ARRAY:
+			result[k] = expression.TypeNumberArray
+		default:
+			// ignore structures and undefined types, as they cannot be set directly by the user and are not relevant for the user input validation
+			continue
+		}
+	}
+	return result
 }
 
 func (a *AuthorizationManager) GetDefaultPolicyNames(tenant string) []string {

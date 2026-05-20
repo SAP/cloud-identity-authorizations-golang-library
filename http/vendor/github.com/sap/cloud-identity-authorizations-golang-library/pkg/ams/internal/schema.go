@@ -82,6 +82,10 @@ func (s *Schema) buildSchemaAttributes(a dcn.SchemaAttribute, path []string) {
 	}
 }
 
+func (s Schema) GetAllInputFields() map[string]InputType {
+	return s.inputTypes
+}
+
 // // Modifies the privided input by setting the value of the given key to the provided value
 // // if the value is a structure, all nested values are set to the provided value.
 // func (s Schema) Set(input expression.Input, val string, value expression.Wildcard) {

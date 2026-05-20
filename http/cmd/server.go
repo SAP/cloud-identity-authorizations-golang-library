@@ -25,23 +25,8 @@ func main() {
 	if os.Getenv(envDCNPath) != "" {
 		am = ams.NewAuthorizationManagerForFs(os.Getenv(envDCNPath), errHandler)
 	} else {
-		config, err := env.ParseIdentityConfig()
-		if err != nil {
-			panic(err)
-		}
-		am, err = ams.NewAuthorizationManagerForIAS(
-			context.Background(),
-			config.GetAuthorizationBundleURL(),
-			config.GetAuthorizationInstanceID(),
-			config.GetCertificate(),
-			config.GetKey(),
-			errHandler,
-		)
-		// am, err = ams.NewAuthorizationManagerForIASConfig(
-		// 	config,
-		// 	l,
-		// )
-
+		creds, err := env.ParseIdentityConfig()
+		am, err = ams.NewAuthorizationManagerForIASConfig(context.Background(), creds, errHandler)
 		if err != nil {
 			panic(err)
 		}
