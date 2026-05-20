@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -58,7 +57,7 @@ func (s *Router) HandleAuthorize(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	a, err := s.authzForRequest(ctx, req.Token, req.Policies)
+	a, err := s.authzForRequest(req.Token, req.Policies)
 	if err != nil {
 		s.l.Infof(ctx, "Error authorizing request: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -101,7 +100,7 @@ func (s *Router) HandleResources(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	a, err := s.authzForRequest(r.Context(), req.Token, req.Policies)
+	a, err := s.authzForRequest(req.Token, req.Policies)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -121,7 +120,7 @@ func (s *Router) HandleActions(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	a, err := s.authzForRequest(r.Context(), req.Token, req.Policies)
+	a, err := s.authzForRequest(req.Token, req.Policies)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -143,7 +142,7 @@ func (s *Router) HandleHealth(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Router) authzForRequest(ctx context.Context, tokenStr string, policies []string) (*ams.Authorizations, error) {
+func (s *Router) authzForRequest(tokenStr string, policies []string) (*ams.Authorizations, error) {
 	if tokenStr != "" {
 		if policies != nil {
 			return nil, fmt.Errorf("cannot specify both policies and token")

@@ -6,13 +6,11 @@ import (
 	// 	"testing"
 
 	"context"
-	"net/http/httptest"
+	"net/http"
 	"reflect"
 	"sort"
 	"testing"
 
-	"github.com/sap/cloud-identity-authorizations-golang-library/http/logging"
-	"github.com/sap/cloud-identity-authorizations-golang-library/http/server"
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
 	. "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/httpclient"
 )
@@ -63,17 +61,11 @@ func (i identity) Email() string {
 }
 
 func TestSimpleScenario(t *testing.T) {
-	errHandler := func(err error) {
-		t.Fatal(err)
-	}
-	aSrv := ams.NewAuthorizationManagerForFs("../test/scenarios/simple", errHandler)
+	startTestServerContainer("simple")
 
-	router := server.NewRouter(aSrv, logging.PlainLogger{})
+	defer stopTestServerContainer()
 
-	srv := httptest.NewServer(router.Mux())
-	defer srv.Close()
-
-	a := NewAuthorizationManager(srv.URL, srv.Client())
+	a := NewAuthorizationManager("http://localhost:8099", http.DefaultClient)
 	<-a.WhenReady(context.Background())
 	t.Run("random user on entity1", func(t *testing.T) {
 		ctx := context.Background()

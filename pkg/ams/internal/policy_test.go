@@ -173,6 +173,14 @@ func TestPolicy(t *testing.T) { //nolint:maintidx
 		if len(policy.rules) != 3 {
 			t.Errorf("Expected 3 rules, got %d", len(policy.rules))
 		}
+		got := policy.Evaluate(expression.Input{
+			"$dcl.action":   expression.String("read"),
+			"$dcl.resource": expression.String("data"),
+		})
+		want := "or(and(eq({x}, \"foo\"), eq({y}, \"bar\")), and(eq({x}, {y}), eq({x}, {y})))"
+		if got.String() != want {
+			t.Errorf("Expected %s, got %s", want, got)
+		}
 	})
 
 	t.Run("use non existent policy from DCN", func(t *testing.T) {
@@ -219,6 +227,14 @@ func TestPolicy(t *testing.T) { //nolint:maintidx
 		}
 		if len(policy.rules) != 2 {
 			t.Errorf("Expected 2 rules, got %d", len(policy.rules))
+		}
+		got := policy.Evaluate(expression.Input{
+			"$dcl.action":   expression.String("read"),
+			"$dcl.resource": expression.String("data"),
+		})
+		want := expression.TRUE
+		if got != want {
+			t.Errorf("Expected %s, got %s", want, got)
 		}
 	})
 

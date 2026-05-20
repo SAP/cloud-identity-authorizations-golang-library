@@ -176,7 +176,7 @@ func ReadBundleTarGz(reader io.Reader) (DcnContainer, Assignments, error) {
 				if err != nil {
 					return DcnContainer{}, nil, err
 				}
-				if dcnPart.Version > DCNVERSION {
+				if dcnPart.Version > DCNVERSION || dcnPart.Version == 0 {
 					return DcnContainer{}, nil, fmt.Errorf(
 						"incompatible DCN version: bundle has version %d but loader supports up to %d",
 						dcnPart.Version,

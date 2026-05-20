@@ -64,7 +64,7 @@ github.com/pkg/errors
 ## explicit; go 1.16
 github.com/pquerna/cachecontrol
 github.com/pquerna/cachecontrol/cacheobject
-# github.com/sap/cloud-identity-authorizations-golang-library v0.2.1-0.20260505133437-6630510f88d7
+# github.com/sap/cloud-identity-authorizations-golang-library v0.0.0 => ../
 ## explicit; go 1.25.5
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn
@@ -89,3 +89,4 @@ golang.org/x/sync/singleflight
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
+# github.com/sap/cloud-identity-authorizations-golang-library => ../
