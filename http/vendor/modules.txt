@@ -14,7 +14,6 @@ github.com/goccy/go-json/internal/errors
 github.com/goccy/go-json/internal/runtime
 # github.com/google/uuid v1.6.0
 ## explicit
-github.com/google/uuid
 # github.com/lestrrat-go/backoff/v2 v2.0.8
 ## explicit; go 1.16
 github.com/lestrrat-go/backoff/v2
@@ -71,8 +70,8 @@ github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/internal
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util
-# github.com/sap/cloud-security-client-go v0.25.1
-## explicit; go 1.23.0
+# github.com/sap/cloud-security-client-go v0.25.2-0.20260526141350-ec9659a7fc7f
+## explicit; go 1.25.0
 github.com/sap/cloud-security-client-go/auth
 github.com/sap/cloud-security-client-go/env
 github.com/sap/cloud-security-client-go/httpclient
@@ -83,10 +82,9 @@ github.com/sap/cloud-security-client-go/tokenclient
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/pbkdf2
-# golang.org/x/sync v0.14.0
-## explicit; go 1.23.0
+# golang.org/x/sync v0.20.0
+## explicit; go 1.25.0
 golang.org/x/sync/singleflight
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
-gopkg.in/yaml.v3
 # github.com/sap/cloud-identity-authorizations-golang-library => ../
