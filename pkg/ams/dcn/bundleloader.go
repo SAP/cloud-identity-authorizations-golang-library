@@ -70,7 +70,7 @@ func (b *BundleLoader) start() {
 
 	for {
 		select {
-		case <-b.closed:
+		case <-b.ctx.Done():
 			b.closed <- true
 			return
 		case <-b.ticker.C:
