@@ -30,8 +30,6 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pquerna/cachecontrol v0.2.0 h1:vBXSNuE5MYP9IJ5kjsdo8uq+w41jSPgvba2DEnkRx9k=
 github.com/pquerna/cachecontrol v0.2.0/go.mod h1:NrUG3Z7Rdu85UNR3vm7SOsl1nFIeSiQnrHV5K9mBcUI=
-github.com/sap/cloud-security-client-go v0.25.2-0.20260526141350-ec9659a7fc7f h1:9B7jIWGu8wFeYDyuQJs+Vj7hRrhe3MKCZb5IX9yoX0M=
-github.com/sap/cloud-security-client-go v0.25.2-0.20260526141350-ec9659a7fc7f/go.mod h1:QSqGU9MiYkW7TDHbLmFhDBkypu+O0WUvcUZkAdHRDGw=
 github.com/sap/cloud-security-client-go v0.25.2 h1:o2CHekdDAI81m0hClpQEUMt/bDMQpENcpkSrXQ03aUQ=
 github.com/sap/cloud-security-client-go v0.25.2/go.mod h1:QSqGU9MiYkW7TDHbLmFhDBkypu+O0WUvcUZkAdHRDGw=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
