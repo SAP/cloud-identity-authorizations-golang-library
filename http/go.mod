@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	github.com/sap/cloud-identity-authorizations-golang-library v0.0.0
-	github.com/sap/cloud-security-client-go v0.25.2-0.20260526141350-ec9659a7fc7f
+	github.com/sap/cloud-security-client-go v0.25.2
 )
 
 replace github.com/sap/cloud-identity-authorizations-golang-library => ../
