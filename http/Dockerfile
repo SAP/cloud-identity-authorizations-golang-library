@@ -6,7 +6,7 @@ COPY . .
 
 RUN go build -o http ./cmd
 
-FROM scratch
+FROM gcr.io/distroless/static-debian13
 
 WORKDIR /app
 
