@@ -390,4 +390,45 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
 		}
 	})
+
+	t.Run("cancel context", func(t *testing.T) {
+		recordedRequests = []http.Request{}
+		ts := httptest.NewServer(serveBundle)
+		defer ts.Close()
+
+		targetURL, err := url.Parse(ts.URL)
+		if err != nil {
+			t.Fatalf("failed to parse url: %v", err)
+		}
+
+		tickerC := make(chan time.Time, 2)
+		ticker := time.Ticker{
+			C: tickerC,
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		bundleLoader := NewBundleLoader(ctx, targetURL, ts.Client(), ticker, nil)
+
+		<-bundleLoader.DCNChannel
+		<-bundleLoader.AssignmentsChannel
+		if len(recordedRequests) != 1 {
+			t.Fatalf("expected 1 request, got %d", len(recordedRequests))
+		}
+		tickerC <- time.Now()
+
+		time.Sleep(time.Millisecond)
+
+		if len(recordedRequests) != 2 {
+			t.Fatalf("expected 2 requests, got %d", len(recordedRequests))
+		}
+
+		cancel()
+
+		tickerC <- time.Now()
+		time.Sleep(time.Millisecond)
+		if len(recordedRequests) != 2 {
+			t.Fatalf("expected 2 requests, got %d", len(recordedRequests))
+		}
+
+	})
 }
