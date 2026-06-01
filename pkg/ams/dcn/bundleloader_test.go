@@ -429,6 +429,5 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 		if len(recordedRequests) != 2 {
 			t.Fatalf("expected 2 requests, got %d", len(recordedRequests))
 		}
-
 	})
 }
