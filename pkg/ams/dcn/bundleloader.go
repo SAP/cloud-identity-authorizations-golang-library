@@ -70,8 +70,8 @@ func (b *BundleLoader) start() {
 
 	for {
 		select {
-		case <-b.closed:
-			b.closed <- true
+		case <-b.ctx.Done():
+			close(b.closed)
 			return
 		case <-b.ticker.C:
 			b.bundleRequest()
@@ -84,7 +84,7 @@ func (b *BundleLoader) Close(ctx context.Context) error {
 	b.cancel()
 
 	select {
-	case b.closed <- true:
+	case <-b.closed:
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()
