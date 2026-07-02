@@ -33,50 +33,96 @@ const (
 	FALSE = Bool(false)
 )
 
-func ConstantFrom(v any) Constant {
+func ConstantFrom(v any) (Constant, error) {
 	switch v := v.(type) {
 	case string:
-		return String(v)
+		return String(v), nil
 	case float64:
-		return Number(v)
+		return Number(v), nil
 	case int:
-		return Number(v)
+		return Number(v), nil
 	case int64:
-		return Number(v)
+		return Number(v), nil
 	case uint:
-		return Number(v)
+		return Number(v), nil
 	case uint64:
-		return Number(v)
+		return Number(v), nil
 	case int8:
-		return Number(v)
+		return Number(v), nil
 	case int16:
-		return Number(v)
+		return Number(v), nil
 	case int32:
-		return Number(v)
+		return Number(v), nil
 	case uint8:
-		return Number(v)
+		return Number(v), nil
 	case uint16:
-		return Number(v)
+		return Number(v), nil
 	case uint32:
-		return Number(v)
+		return Number(v), nil
 	case bool:
-		return Bool(v)
-	case []string:
-		return ArrayFrom(v)
-	case []float64:
-		return ArrayFrom(v)
-	case []bool:
-		return ArrayFrom(v)
+		return Bool(v), nil
 	}
 	reflectV := reflect.ValueOf(v)
 	switch reflectV.Kind() { //nolint:exhaustive
 	case reflect.Interface, reflect.Pointer:
 		if reflectV.IsNil() {
-			return nil
+			return nil, fmt.Errorf("unsupported constant nil")
 		}
 		return ConstantFrom(reflectV.Elem().Interface())
+	case reflect.Slice, reflect.Array:
+		if reflectV.Len() == 0 {
+			return EmptyArray{}, nil
+		}
+		firstElement, err := ConstantFrom(reflectV.Index(0).Interface())
+		if err != nil {
+			return nil, err
+		}
+		var ok bool
+		switch firstElement.(type) {
+		case String:
+			result := make([]String, reflectV.Len())
+			for i := range reflectV.Len() {
+				element, err := ConstantFrom(reflectV.Index(i).Interface())
+				if err != nil {
+					return nil, err
+				}
+				result[i], ok = element.(String)
+				if !ok {
+					return nil, fmt.Errorf("mixed types in array: %T and %T", firstElement, element)
+				}
+			}
+			return StringArray(result), nil
+		case Number:
+			result := make([]Number, reflectV.Len())
+			for i := range reflectV.Len() {
+				element, err := ConstantFrom(reflectV.Index(i).Interface())
+				if err != nil {
+					return nil, err
+				}
+				result[i], ok = element.(Number)
+				if !ok {
+					return nil, fmt.Errorf("mixed types in array: %T and %T", firstElement, element)
+				}
+			}
+			return NumberArray(result), nil
+		case Bool:
+			result := make([]Bool, reflectV.Len())
+			for i := range reflectV.Len() {
+				element, err := ConstantFrom(reflectV.Index(i).Interface())
+				if err != nil {
+					return nil, err
+				}
+				result[i], ok = element.(Bool)
+				if !ok {
+					return nil, fmt.Errorf("mixed types in array: %T and %T", firstElement, element)
+				}
+			}
+			return BoolArray(result), nil
+		default:
+			return nil, fmt.Errorf("unsupported array element type: %T", firstElement)
+		}
 	}
-	return nil
+	return nil, fmt.Errorf("unsupported constant type: %T", v)
 }
 
 func (n Number) equals(c Constant) bool {

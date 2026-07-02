@@ -26,16 +26,24 @@ func RuleFromDCN(rawRule dcn.Rule, f *expression.FunctionRegistry) (Rule, error)
 	}
 	if len(rawRule.Actions) > 0 {
 		rule.actions = rawRule.Actions
+		actionsStringArray, err := expression.ConstantFrom(rawRule.Actions)
+		if err != nil {
+			return rule, err
+		}
 		args = append(args, expression.In(
 			expression.Ref("$dcl.action"),
-			expression.ConstantFrom(rawRule.Actions),
+			actionsStringArray,
 		))
 	}
 	if len(rawRule.Resources) > 0 {
 		rule.resources = rawRule.Resources
+		resourcesStringArray, err := expression.ConstantFrom(rawRule.Resources)
+		if err != nil {
+			return rule, err
+		}
 		args = append(args, expression.In(
 			expression.Ref("$dcl.resource"),
-			expression.ConstantFrom(rawRule.Resources),
+			resourcesStringArray,
 		))
 	}
 	rule.asExpression = expression.And(args...)

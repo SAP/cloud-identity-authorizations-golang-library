@@ -61,11 +61,11 @@ func waitForTestServer() {
 	for range tries {
 		resp, err := http.Get("http://localhost:8099/v1/health") //nolint:noctx
 		if err == nil && resp.StatusCode == http.StatusOK {
+			resp.Body.Close()
 			return
 		}
-		err = resp.Body.Close()
-		if err != nil {
-			panic(err)
+		if resp != nil {
+			resp.Body.Close()
 		}
 		time.Sleep(time.Duration(interval) * time.Millisecond)
 	}

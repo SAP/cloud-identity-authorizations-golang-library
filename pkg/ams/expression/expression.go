@@ -21,6 +21,14 @@ type (
 	}
 )
 
+func (i *Input) Copy() Input {
+	newInput := make(Input)
+	for k, v := range *i {
+		newInput[k] = v
+	}
+	return newInput
+}
+
 // represents a logic expression. Is comparable to expression.TRUE and expression.FALSE.
 //
 // And can be processed using the Visit function.
@@ -142,9 +150,10 @@ func FromDCN(e dcn.Expression, f *FunctionRegistry) (ExpressionContainer, error)
 		result.References[name] = 0
 	}
 	if e.Constant != nil {
-		result.Expression = ConstantFrom(e.Constant)
-		if result.Expression == nil {
-			return result, fmt.Errorf("unexpected constant %v", e.Constant)
+		var err error
+		result.Expression, err = ConstantFrom(e.Constant)
+		if err != nil {
+			return result, err
 		}
 	}
 	return result, nil

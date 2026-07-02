@@ -1,0 +1,76 @@
+{
+    "version": "1.0.0",
+    "resources":{
+        "*": {
+            "attributes": {
+                "$app.string": {
+                    "type": "String"
+                },
+                "$app.number": {
+                    "type": "Number"
+                },
+                "$app.boolean": {
+                    "type": "Boolean"
+                },
+                "$app.string_array": {
+                    "type": "Array",
+                    "elementType": "String"
+                },
+                "$app.number_array": {
+                    "type": "Array",
+                    "elementType": "Number"
+                },
+                "$app.boolean_array": {
+                    "type": "Array",
+                    "elementType": "Boolean"   
+                }
+            }
+        },
+        "res1": {
+            "attributes": {
+                "$resource.string": {
+                    "type": "String"
+                },
+                "$resource.number": {
+                    "type": "Number"
+                },
+                "$resource.boolean": {
+                    "type": "Boolean"
+                },
+                "$resource.string_array": {
+                    "type": "Array",
+                    "elementType": "String"
+                },
+                "$resource.number_array": {
+                    "type": "Array",
+                    "elementType": "Number"
+                },
+                "$resource.boolean_array": {
+                    "type": "Array",
+                    "elementType": "Boolean"   
+                }
+            }
+        },
+        "res2": {
+            "attributes": {
+                "$resource.name": {
+                    "type": "String"
+                },
+                "$resource.age": {
+                    "type": "Number"
+                },
+                "$resource.is_public": {
+                    "type": "Boolean"
+                },
+                "$resource.tags": {
+                    "type": "Array",
+                    "elementType": "String"
+                },
+                "$resource.scores": {
+                    "type": "Array",
+                    "elementType": "Number"
+                }
+            }
+        }
+    }
+}

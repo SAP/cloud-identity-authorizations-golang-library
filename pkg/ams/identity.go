@@ -11,6 +11,12 @@ type Identity interface {
 	Email() string
 }
 
+type Token interface {
+	AppTID() string
+	ScimID() string
+	GetAllClaimsAsMap() map[string]interface{}
+}
+
 type UserInfo struct {
 	Email    string   `ams:"email"`
 	Groups   []string `ams:"groups"`

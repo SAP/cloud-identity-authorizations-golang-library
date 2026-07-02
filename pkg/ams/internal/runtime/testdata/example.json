@@ -1,0 +1,81 @@
+{
+  "version": "1.0.0",
+  "resources": {
+    "*": {
+      "attributes": {
+        "$app.country": {
+          "type": "String"
+        },
+        "$env.$user.user_uuid": {
+          "type": "String"
+        },
+        "$env.$user.email": {
+          "type": "String"
+        },
+        "$env.$user.groups": {
+          "type": "Array",
+          "elementType": "String"
+        }
+      }
+    },
+    "my.package.Employee": {
+      "attributes": {
+        "$resource.is_public": {
+          "type": "Boolean"
+        },
+        "$resource.name": {
+          "type": "String"
+        },
+        "$resource.department.name": {
+          "type": "String"
+        },
+        "$resource.department.head.name": {
+          "type": "String"
+        }
+      }
+    }
+  },
+  "policies": {
+    "my.package.EmployeePolicy": {
+      "resources": {
+        "my.package.Employee": {
+          "conditions": {
+            "read": {"var": "$resource.is_public"},
+            "write": {"and": [
+              {"eq": [{"var": "$env.$user.user_uuid"}, {"var": "$resource.department.head.uuid"}]},
+              {"in": [{"var": "$env.$user.groups"}, {"var": "$resource.department.head.groups"}]}
+            ]}
+          }
+        }
+      }
+    },
+    "my.package.AnyActionPolicy": {
+      "resources": {
+        "my.package.Employee": {
+          "conditions": {
+            "*": {"eq":[{"var": "$resource.department.name"},"Engineering"]}
+          }
+        }
+      }
+    },
+    "my.package.GlobalReadPolicy": {
+      "resources": {
+        "*": {
+          "conditions": {
+            "read": true
+          }
+        }
+      }
+    },
+    "my.package.EmployeeDefault": {
+      "default": true,
+      "resources": {
+        "my.package.Employee": {
+          "conditions": {
+            "read": {"var": "$resource.is_public"}
+          }
+        }
+      }
+    }
+  }
+}
