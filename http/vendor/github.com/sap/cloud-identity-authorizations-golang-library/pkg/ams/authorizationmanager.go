@@ -3,6 +3,7 @@ package ams
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -27,23 +28,19 @@ type AuthorizationManager struct {
 	hasDCN            bool
 	hasAssignments    bool
 	functionContainer *expression.FunctionRegistry
-	ctx               context.Context
-	cancel            context.CancelFunc
-	closed            chan bool
-	closeBundleLoader func(context.Context) error
-	errHandlers       []func(error)
+
+	bundleLoader *dcn.BundleLoader
+	errHandlers  []func(error)
 }
 
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
 // to update its policies and assignments during runtime.
 // the instance must receive (possibly empty) data on both channels to be ready.
 func NewAuthorizationManager(
-	ctx context.Context,
 	dcnC chan dcn.DcnContainer,
 	assignmentsC chan dcn.Assignments,
 	errorCallback func(error),
 ) *AuthorizationManager {
-	ctx, cancel := context.WithCancel(ctx)
 	result := AuthorizationManager{
 		ready:              make(chan bool),
 		policies:           internal.PolicySet{},
@@ -53,16 +50,12 @@ func NewAuthorizationManager(
 		hasDCN:             false,
 		hasAssignments:     false,
 		functionContainer:  expression.NewFunctionRegistry(),
-		ctx:                ctx,
-		cancel:             cancel,
-		closed:             make(chan bool),
+		bundleLoader:       nil,
 		errHandlers:        []func(error){},
 	}
 	if errorCallback != nil {
 		result.errHandlers = append(result.errHandlers, errorCallback)
 	}
-
-	go result.start()
 
 	return &result
 }
@@ -70,12 +63,10 @@ func NewAuthorizationManager(
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
 func NewAuthorizationManagerForIASConfig(
-	ctx context.Context,
 	config IASConfig,
 	errorCallback func(error),
 ) (*AuthorizationManager, error) {
 	return NewAuthorizationManagerForIAS(
-		ctx,
 		config.GetAuthorizationBundleURL(),
 		config.GetAuthorizationInstanceID(),
 		config.GetCertificate(),
@@ -87,7 +78,6 @@ func NewAuthorizationManagerForIASConfig(
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
 func NewAuthorizationManagerForIAS(
-	ctx context.Context,
 	bundleUrl,
 	amsInstanceID,
 	cert,
@@ -120,15 +110,14 @@ func NewAuthorizationManagerForIAS(
 	}
 
 	loader := dcn.NewBundleLoader(
-		ctx,
 		parsedURL,
 		client,
 		*time.NewTicker(time.Second * 20),
 		errorCallback,
 	)
 
-	result := NewAuthorizationManager(ctx, loader.DCNChannel, loader.AssignmentsChannel, errorCallback)
-	result.closeBundleLoader = loader.Close
+	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, errorCallback)
+	result.bundleLoader = loader
 	return result, nil
 }
 
@@ -138,52 +127,83 @@ func NewAuthorizationManagerForIAS(
 // and could be omitted.
 func NewAuthorizationManagerForFs(path string, errorCallback func(error)) *AuthorizationManager {
 	loader := dcn.NewLocalLoader(path, errorCallback)
-	result := NewAuthorizationManager(context.Background(), loader.DCNChannel, loader.AssignmentsChannel, errorCallback)
+	result := NewAuthorizationManager(loader.DCNChannel, loader.AssignmentsChannel, errorCallback)
 	return result
 }
 
-func (a *AuthorizationManager) start() {
-	for {
-		select {
-		case <-a.ctx.Done():
-			close(a.closed)
-			return
-		case assignments := <-a.assignmentsChannel:
-			a.m.Lock()
-			a.Assignments = assignments
-			a.hasAssignments = true
-			if !a.IsReady() && a.hasDCN {
-				close(a.ready)
-			}
-			a.m.Unlock()
-			continue
-		case dcn := <-a.dcnChannel:
-			a.m.Lock()
-			a.schema = internal.SchemaFromDCN(dcn.Schemas)
-			for _, f := range dcn.Functions {
-				expr, err := expression.FromDCN(f.Result, a.functionContainer)
+func (a *AuthorizationManager) UpdateIASX509Certificate(ctx context.Context, cert, key string) error {
+	if a.bundleLoader == nil {
+		return fmt.Errorf("bundleLoader not initialized, cannot update certificate")
+	}
+	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
+	if err != nil {
+		return err
+	}
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				Certificates: []tls.Certificate{certificate},
+				MinVersion:   tls.VersionTLS12,
+			},
+		},
+	}
+	return a.bundleLoader.SetHttpClient(ctx, client)
+}
+
+func (a *AuthorizationManager) Run(ctx context.Context) error {
+	if a.bundleLoader != nil {
+		a.bundleLoader.Run(ctx)
+	}
+	readinessContext, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case assignments := <-a.assignmentsChannel:
+				a.m.Lock()
+				a.Assignments = assignments
+				a.hasAssignments = true
+				if !a.isReady() && a.hasDCN {
+					close(a.ready)
+				}
+				a.m.Unlock()
+				continue
+			case dcn := <-a.dcnChannel:
+				a.m.Lock()
+				a.schema = internal.SchemaFromDCN(dcn.Schemas)
+				for _, f := range dcn.Functions {
+					expr, err := expression.FromDCN(f.Result, a.functionContainer)
+					if err != nil {
+						a.notifyError(err)
+						continue
+					}
+					name := util.StringifyQualifiedName(f.QualifiedName)
+					a.functionContainer.RegisterExpressionFunction(name, expr.Expression)
+				}
+				var err error
+				a.policies, err = internal.PoliciesFromDCN(dcn.Policies, a.schema, a.functionContainer)
 				if err != nil {
 					a.notifyError(err)
-					continue
+				} else {
+					a.hasDCN = true
 				}
-				name := util.StringifyQualifiedName(f.QualifiedName)
-				a.functionContainer.RegisterExpressionFunction(name, expr.Expression)
-			}
-			var err error
-			a.policies, err = internal.PoliciesFromDCN(dcn.Policies, a.schema, a.functionContainer)
-			if err != nil {
-				a.notifyError(err)
-			} else {
-				a.hasDCN = true
-			}
 
-			a.m.Unlock()
-			if !a.IsReady() {
-				if a.hasDCN && a.hasAssignments {
-					close(a.ready)
+				a.m.Unlock()
+				if !a.isReady() {
+					if a.hasDCN && a.hasAssignments {
+						close(a.ready)
+					}
 				}
 			}
 		}
+	}()
+	select {
+	case <-readinessContext.Done():
+		return readinessContext.Err()
+	case <-a.ready:
+		return nil
 	}
 }
 
@@ -196,35 +216,12 @@ func (a *AuthorizationManager) RegisterErrorHandler(handler func(error)) {
 	a.errHandlers = append(a.errHandlers, handler)
 }
 
-// Returns a channel that will be closed when the AuthorizationManager is ready to be used.
-func (a *AuthorizationManager) WhenReady() <-chan bool {
-	return a.ready
-}
-
-// Returns true if the AuthorizationManager is ready to be used
-// This is the case when both the DCN and Assignments have been loaded.
-func (a *AuthorizationManager) IsReady() bool {
+func (a *AuthorizationManager) isReady() bool {
 	select {
 	case <-a.ready:
 		return true
 	default:
 		return false
-	}
-}
-
-func (a *AuthorizationManager) Close(ctx context.Context) error {
-	a.cancel()
-	if a.closeBundleLoader != nil {
-		err := a.closeBundleLoader(ctx)
-		if err != nil {
-			return err
-		}
-	}
-	select {
-	case <-a.closed:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
 	}
 }
 
@@ -260,11 +257,11 @@ func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizat
 // Returns Authorizations, based on the provided policy names and optionally the default policies
 // and filtered filtering out admin policies from tenants other than the provided tenant.
 // for tenant-independent queries, use "" as tenant.
-func (a *AuthorizationManager) AuthorizationsForPolicies(policyNames []string) *Authorizations {
+func (a *AuthorizationManager) AuthorizationsForPolicies(policyNames []string, tenant string) *Authorizations {
 	a.m.RLock()
 	defer a.m.RUnlock()
 	return &Authorizations{
-		policies: a.policies.GetSubset(policyNames, "-", false),
+		policies: a.policies.GetSubset(policyNames, tenant, false),
 		a:        a,
 	}
 }

@@ -28,7 +28,7 @@ func TestRun(t *testing.T) {
 		t.Run(testDir.Name(), func(t *testing.T) {
 			loader := dcn.NewLocalLoader(path.Join("scenarios", testDir.Name()), errCB)
 			tests := []dcn.Test{}
-			dcnChannel := make(chan dcn.DcnContainer)
+			dcnChannel := make(chan dcn.DcnContainer, 1)
 			go func() {
 				for {
 					dcnContainer := <-loader.DCNChannel
@@ -36,9 +36,12 @@ func TestRun(t *testing.T) {
 					dcnChannel <- dcnContainer
 				}
 			}()
-			ams := ams.NewAuthorizationManager(context.Background(), dcnChannel, loader.AssignmentsChannel, errCB)
+			ams := ams.NewAuthorizationManager(dcnChannel, loader.AssignmentsChannel, errCB)
 
-			<-ams.WhenReady()
+			err := ams.Run(context.Background())
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
 
 			for _, test := range tests {
 				t.Run(util.StringifyQualifiedName(test.Test), func(t *testing.T) {
@@ -67,9 +70,9 @@ func TestRun(t *testing.T) {
 						for _, filter := range assertion.ScopeFilter {
 							scopeFilter = append(scopeFilter, util.StringifyQualifiedName(filter))
 						}
-						authz := ams.AuthorizationsForPolicies(policies)
+						authz := ams.AuthorizationsForPolicies(policies, "")
 						if len(scopeFilter) > 0 {
-							scopeFilter := ams.AuthorizationsForPolicies(scopeFilter)
+							scopeFilter := ams.AuthorizationsForPolicies(scopeFilter, "")
 							authz = authz.AndJoin(scopeFilter)
 						}
 						t.Run(fmt.Sprintf("policies: %v, scopeFilter: %v", policies, scopeFilter), func(t *testing.T) {

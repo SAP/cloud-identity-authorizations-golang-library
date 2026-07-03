@@ -1,6 +1,7 @@
 package ams
 
 import (
+	"context"
 	"reflect"
 	"sort"
 	"testing"
@@ -55,7 +56,10 @@ func (i identity) Email() string {
 func TestSimpleScenario(t *testing.T) {
 	a := NewAuthorizationManagerForFs("test/scenarios/simple", func(err error) { t.Fatal(err) })
 
-	<-a.WhenReady()
+	err := a.Run(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	t.Run("random user on entity1", func(t *testing.T) {
 		authz := a.AuthorizationsForIdentity(identity{groups: []string{"g1", "g2"}})
 		res := authz.GetResources()

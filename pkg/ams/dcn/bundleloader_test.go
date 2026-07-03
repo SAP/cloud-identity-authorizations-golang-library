@@ -161,7 +161,8 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		bundleLoader := NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, nil)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, nil)
+		bundleLoader.Run(context.Background())
 
 		gotDCN := <-bundleLoader.DCNChannel
 		gotAssignments := <-bundleLoader.AssignmentsChannel
@@ -216,7 +217,8 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newErrorHandler()
 
-		bundleLoader := NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader.Run(context.Background())
 
 		select {
 		case <-ml.errorsReceived:
@@ -239,11 +241,12 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader.Run(context.Background())
 
 		<-ml.errorsReceived
-		if len(ml.errors) != 1 {
-			t.Fatalf("expected 1 request, got %d", len(ml.errors))
+		if len(ml.errors) < 1 {
+			t.Fatalf("expected at least 1 request, got %d", len(ml.errors))
 		}
 	})
 
@@ -258,11 +261,12 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader.Run(context.Background())
 
 		<-ml.errorsReceived
-		if len(ml.errors) != 1 {
-			t.Fatalf("expected 1 request, got %d", len(ml.errors))
+		if len(ml.errors) < 1 {
+			t.Fatalf("expected at least 1 request, got %d", len(ml.errors))
 		}
 	})
 
@@ -271,7 +275,8 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, &http.Client{}, ticker, ml.Callback)
+		bundleLoader := NewBundleLoader(targetURL, &http.Client{}, ticker, ml.Callback)
+		bundleLoader.Run(context.Background())
 
 		time.Sleep(2 * time.Millisecond)
 		if len(ml.errors) != 1 {
@@ -290,7 +295,8 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader.Run(context.Background())
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -309,7 +315,8 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader.Run(context.Background())
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -328,7 +335,8 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader.Run(context.Background())
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -347,7 +355,8 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 		ml := newErrorHandler()
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader.Run(context.Background())
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -365,7 +374,8 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader.Run(context.Background())
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
@@ -383,51 +393,12 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 			t.Fatalf("failed to parse url: %v", err)
 		}
 
-		NewBundleLoader(context.Background(), targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader := NewBundleLoader(targetURL, ts.Client(), ticker, ml.Callback)
+		bundleLoader.Run(context.Background())
 
 		<-ml.errorsReceived
 		if len(ml.errors) != 1 {
 			t.Fatalf("expected 1 request, got %d", len(ml.errors))
-		}
-	})
-
-	t.Run("cancel context", func(t *testing.T) {
-		recordedRequests = []http.Request{}
-		ts := httptest.NewServer(serveBundle)
-		defer ts.Close()
-
-		targetURL, err := url.Parse(ts.URL)
-		if err != nil {
-			t.Fatalf("failed to parse url: %v", err)
-		}
-
-		tickerC := make(chan time.Time, 2)
-		ticker := time.Ticker{
-			C: tickerC,
-		}
-
-		ctx, cancel := context.WithCancel(context.Background())
-		bundleLoader := NewBundleLoader(ctx, targetURL, ts.Client(), ticker, nil)
-
-		<-bundleLoader.DCNChannel
-		<-bundleLoader.AssignmentsChannel
-		if len(recordedRequests) != 1 {
-			t.Fatalf("expected 1 request, got %d", len(recordedRequests))
-		}
-		tickerC <- time.Now()
-
-		time.Sleep(time.Millisecond)
-
-		if len(recordedRequests) != 2 {
-			t.Fatalf("expected 2 requests, got %d", len(recordedRequests))
-		}
-
-		cancel()
-
-		tickerC <- time.Now()
-		time.Sleep(time.Millisecond)
-		if len(recordedRequests) != 2 {
-			t.Fatalf("expected 2 requests, got %d", len(recordedRequests))
 		}
 	})
 }

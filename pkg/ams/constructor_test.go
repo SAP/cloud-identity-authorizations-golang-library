@@ -1,7 +1,6 @@
 package ams
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -11,14 +10,11 @@ import (
 	"math/big"
 	"testing"
 	"time"
-
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 )
 
 func TestAuthorizationManagerforIAS(t *testing.T) {
 	t.Run("with broken cert", func(t *testing.T) {
 		_, err := NewAuthorizationManagerForIAS(
-			context.Background(),
 			"https://example.com",
 			"brokencert",
 			"test",
@@ -35,7 +31,6 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 		// create simple valid cert
 		cert, key := generateTestCert(t)
 		_, err := NewAuthorizationManagerForIAS(
-			context.Background(),
 			"nilrot://example.com ",
 			"dummy-id",
 			string(cert),
@@ -51,7 +46,6 @@ func TestAuthorizationManagerforIAS(t *testing.T) {
 		// create simple valid cert
 		cert, key := generateTestCert(t)
 		_, err := NewAuthorizationManagerForIAS(
-			context.Background(),
 			"https://example.com/v1/bundles",
 			"dummy-id",
 			string(cert),
@@ -70,31 +64,6 @@ func TestAuthorizationManagerforLocal(t *testing.T) {
 
 		if a == nil {
 			t.Errorf("Expected non-nil, got nil")
-		}
-	})
-}
-
-type mockBundleLoader struct {
-	closeCalled bool
-}
-
-func (m *mockBundleLoader) Close(ctx context.Context) error {
-	m.closeCalled = true
-	return nil
-}
-
-func TestClosingAuthorizationManager(t *testing.T) {
-	t.Run("closes bundle loader aswell", func(t *testing.T) {
-		a := NewAuthorizationManager(context.Background(), make(chan dcn.DcnContainer), make(chan dcn.Assignments), nil)
-		bundleLoader := &mockBundleLoader{}
-		a.closeBundleLoader = bundleLoader.Close
-
-		err := a.Close(context.Background())
-		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
-		}
-		if !bundleLoader.closeCalled {
-			t.Errorf("Expected bundle loader to be closed, but it was not")
 		}
 	})
 }

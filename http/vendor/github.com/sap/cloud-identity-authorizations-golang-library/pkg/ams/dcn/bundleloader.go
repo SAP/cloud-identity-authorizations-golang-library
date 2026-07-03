@@ -20,42 +20,35 @@ var version string
 const DCNVERSION = 1
 
 type BundleLoader struct {
-	ctx                context.Context
 	DCNChannel         chan DcnContainer
 	AssignmentsChannel chan Assignments
 	lastEtag           string
 	client             *http.Client
 	url                *url.URL
 	ticker             time.Ticker
-	closed             chan bool
-	cancel             context.CancelFunc
 	errorHandler       []func(error)
 }
 
 func NewBundleLoader(
-	ctx context.Context,
+
 	targetURL *url.URL,
 	client *http.Client,
 	ticker time.Ticker,
 	errorCallback func(error),
 ) *BundleLoader {
-	ctx, cancel := context.WithCancel(ctx)
+
 	result := BundleLoader{
-		ctx:                ctx,
-		cancel:             cancel,
 		DCNChannel:         make(chan DcnContainer),
 		AssignmentsChannel: make(chan Assignments),
 		client:             client,
 		url:                targetURL,
 		ticker:             ticker,
-		closed:             make(chan bool),
 		errorHandler:       []func(error){},
 	}
 	if errorCallback != nil {
 		result.errorHandler = append(result.errorHandler, errorCallback)
 	}
 
-	go result.start()
 	return &result
 }
 
@@ -65,48 +58,58 @@ func (b *BundleLoader) handleError(err error) {
 	}
 }
 
-func (b *BundleLoader) start() {
-	b.bundleRequest()
-
-	for {
-		select {
-		case <-b.closed:
-			b.closed <- true
-			return
-		case <-b.ticker.C:
-			b.bundleRequest()
+func (b *BundleLoader) Run(ctx context.Context) {
+	go func() {
+		retries := 20
+		for range retries {
+			err := b.BundleRequest(ctx, b.client)
+			if err == nil {
+				break
+			}
+			b.handleError(err)
+			time.Sleep(time.Second * 1)
 		}
-	}
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-b.ticker.C:
+				err := b.BundleRequest(ctx, b.client)
+				if err != nil {
+					b.handleError(err)
+				}
+			}
+		}
+	}()
 }
 
-func (b *BundleLoader) Close(ctx context.Context) error {
-	b.ticker.Stop()
-	b.cancel()
-
-	select {
-	case b.closed <- true:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
+func (b *BundleLoader) SetHttpClient(ctx context.Context, client *http.Client) error {
+	err := b.BundleRequest(ctx, client)
+	if err != nil {
+		return err
 	}
+	b.client = client
+	return nil
 }
-func (b *BundleLoader) bundleRequest() {
-	req := &http.Request{
-		Method: http.MethodGet,
-		URL:    b.url,
-		Header: http.Header{
-			"If-None-Match": []string{b.lastEtag},
-			"User-Agent":    []string{fmt.Sprintf("golang-dcn-%s", version)},
-		},
+
+func (b *BundleLoader) BundleRequest(ctx context.Context, client *http.Client) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, b.url.String(), nil)
+	if err != nil {
+		return err
+	}
+	req.Header = http.Header{
+		"If-None-Match": []string{b.lastEtag},
+		"User-Agent":    []string{fmt.Sprintf("golang-dcn-%s", version)},
 	}
 
-	resp, err := b.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		b.handleError(err)
-		return
+		return err
 	}
 	if resp.StatusCode == http.StatusNotModified {
-		return
+		return nil
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -122,18 +125,17 @@ func (b *BundleLoader) bundleRequest() {
 		}
 
 		b.handleError(fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, body))
-		return
+		return fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, body)
 	}
 	b.lastEtag = resp.Header.Get("ETag")
 
 	dcn, assignments, err := ReadBundleTarGz(resp.Body)
 	if err != nil {
-		b.handleError(err)
-		return
+		return err
 	}
-
 	b.DCNChannel <- dcn
 	b.AssignmentsChannel <- assignments
+	return nil
 }
 
 func ReadBundleTarGz(reader io.Reader) (DcnContainer, Assignments, error) {

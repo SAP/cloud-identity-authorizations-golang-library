@@ -63,7 +63,7 @@ func (i identity) Email() string {
 func TestSimpleScenario(t *testing.T) {
 	startTestServerContainer("simple")
 
-	defer stopTestServerContainer()
+	// defer stopTestServerContainer()
 
 	a := NewAuthorizationManager("http://localhost:8099", http.DefaultClient)
 	<-a.WhenReady(context.Background())

@@ -57,7 +57,7 @@ func (p PolicySet) GetSubset(names []string, tenant string, includeDefault bool)
 	}
 	for _, name := range names {
 		if policy, ok := p.allPolicies[name]; ok {
-			if policy.tenant == tenant || policy.tenant == "" || tenant == "-" {
+			if policy.tenant == tenant || policy.tenant == "" || tenant == "" {
 				result.allPolicies[name] = policy
 			}
 		}
