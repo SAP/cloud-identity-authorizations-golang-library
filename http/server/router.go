@@ -147,7 +147,7 @@ func (s *Router) authzForRequest(tokenStr string, policies []string) (*ams.Autho
 		if err != nil {
 			return nil, fmt.Errorf("error decoding token: %w", err)
 		}
-		return s.am.AuthorizationsForIdentity(token), nil
+		return s.am.AuthorizationsForToken(token), nil
 	} else {
 		return s.am.AuthorizationsForPolicies(policies, ""), nil
 	}

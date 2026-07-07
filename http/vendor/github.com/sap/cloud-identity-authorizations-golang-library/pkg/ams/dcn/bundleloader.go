@@ -36,7 +36,6 @@ func NewBundleLoader(
 	ticker time.Ticker,
 	errorCallback func(error),
 ) *BundleLoader {
-
 	result := BundleLoader{
 		DCNChannel:         make(chan DcnContainer),
 		AssignmentsChannel: make(chan Assignments),

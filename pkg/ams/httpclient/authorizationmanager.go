@@ -46,26 +46,26 @@ func (a *AuthorizationManager) WhenReady(ctx context.Context) <-chan bool {
 	return ch
 }
 
-func (a *AuthorizationManager) AuthorizationsForIdentity(ctx context.Context, i ams.Identity) *Authorizations {
-	if i == nil {
+func (a *AuthorizationManager) AuthorizationsForToken(ctx context.Context, t ams.Token) *Authorizations {
+	if t == nil {
 		return &Authorizations{
 			ctx:      ctx,
-			identity: nil,
+			token:    nil,
 			client:   a,
 			andJoin:  []*Authorizations{},
 			envInput: reqInput{},
 		}
 	}
+
+	input := reqInput{}
+	v := reflect.ValueOf(t.GetAllClaimsAsMap())
+	insertCustomInput(input, v, []string{"$env", "$user"})
 	return &Authorizations{
 		ctx:      ctx,
-		identity: i,
+		token:    t,
 		client:   a,
 		andJoin:  []*Authorizations{},
-		envInput: reqInput{
-			"$env.$user.email":     expression.String(i.Email()),
-			"$env.$user.user_uuid": expression.String(i.UserUUID()),
-			"$env.$user.groups":    expression.ArrayFrom(i.Groups()),
-		},
+		envInput: input,
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -60,6 +61,26 @@ func NewAuthorizationManager(
 	return &result
 }
 
+func NewOfflineAuthorizationManager(dcn dcn.DcnContainer, assignments dcn.Assignments) (*AuthorizationManager, error) {
+	var err error
+	result := &AuthorizationManager{
+		ready:             make(chan bool),
+		m:                 sync.RWMutex{},
+		hasDCN:            false,
+		hasAssignments:    false,
+		functionContainer: expression.NewFunctionRegistry(),
+		bundleLoader:      nil,
+		errHandlers:       []func(error){},
+	}
+	result.Assignments = assignments
+	result.schema = internal.SchemaFromDCN(dcn.Schemas)
+	result.policies, err = internal.PoliciesFromDCN(dcn.Policies, result.schema, result.functionContainer)
+	if err != nil {
+		return nil, err
+	}
+	return result, result.Run(context.Background())
+}
+
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
 // the provided data should be taken from the identity binding.
 func NewAuthorizationManagerForIASConfig(
@@ -90,6 +111,25 @@ func NewAuthorizationManagerForIAS(
 		return nil, err
 	}
 
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				Certificates: []tls.Certificate{certificate},
+				MinVersion:   tls.VersionTLS12,
+			},
+		},
+	}
+	return newAuthorizationManagerForIAS(bundleUrl, amsInstanceID, client, errorCallback)
+}
+
+func newAuthorizationManagerForIAS(
+	bundleUrl,
+	amsInstanceID string,
+	client *http.Client,
+	errorCallback func(error),
+) (*AuthorizationManager, error) {
+	// parse the cert and key
+
 	stringURL, err := url.JoinPath(bundleUrl, amsInstanceID+".dcn.tar.gz")
 	if err != nil {
 		return nil, err
@@ -98,15 +138,6 @@ func NewAuthorizationManagerForIAS(
 	parsedURL, err := url.Parse(stringURL)
 	if err != nil {
 		return nil, err
-	}
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				Certificates: []tls.Certificate{certificate},
-				MinVersion:   tls.VersionTLS12,
-			},
-		},
 	}
 
 	loader := dcn.NewBundleLoader(
@@ -131,14 +162,11 @@ func NewAuthorizationManagerForFs(path string, errorCallback func(error)) *Autho
 	return result
 }
 
-func (a *AuthorizationManager) UpdateIASX509Certificate(ctx context.Context, cert, key string) error {
+func (a *AuthorizationManager) UpdateIASX509Certificate(ctx context.Context, certificate tls.Certificate) error {
 	if a.bundleLoader == nil {
 		return fmt.Errorf("bundleLoader not initialized, cannot update certificate")
 	}
-	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
-	if err != nil {
-		return err
-	}
+
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -251,6 +279,34 @@ func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizat
 			"$env.$user.user_uuid": expression.String(i.UserUUID()),
 			"$env.$user.groups":    expression.ArrayFrom(i.Groups()),
 		},
+	}
+}
+
+func (a *AuthorizationManager) AuthorizationsForToken(t Token) *Authorizations {
+	a.m.RLock()
+	defer a.m.RUnlock()
+	if t == nil {
+		return &Authorizations{
+			policies: a.policies.GetSubset([]string{}, "", false),
+			a:        a,
+		}
+	}
+
+	defaultPolicyNames := a.policies.GetDefaultPolicyNames(t.AppTID())
+	assignmentPolicyNames := a.GetAssignments(t.AppTID(), t.ScimID())
+	policyNames := make([]string, 0, len(defaultPolicyNames)+len(assignmentPolicyNames))
+	policyNames = append(policyNames, defaultPolicyNames...)
+	policyNames = append(policyNames, assignmentPolicyNames...)
+
+	envInput := expression.Input{}
+	claims := t.GetAllClaimsAsMap()
+	v := reflect.ValueOf(claims)
+	a.schema.InsertCustomInput(envInput, v, []string{"$env", "$user"})
+
+	return &Authorizations{
+		policies: a.policies.GetSubset(policyNames, t.AppTID(), true),
+		a:        a,
+		envInput: envInput,
 	}
 }
 
