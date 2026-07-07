@@ -60,7 +60,7 @@ func TestSimpleScenario(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	t.Run("random user on entity1", func(t *testing.T) {
+	t.Run("random user on entity1", func(t *testing.T) { //nolint:dupl
 		authz := a.AuthorizationsForIdentity(identity{groups: []string{"g1", "g2"}})
 		res := authz.GetResources()
 		sort.Strings(res)

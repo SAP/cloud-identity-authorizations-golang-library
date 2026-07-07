@@ -17,8 +17,11 @@ func NewBundleGatewayMock() *BundleGatewayMock {
 	result := &BundleGatewayMock{}
 	result.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/gzip")
-		w.WriteHeader(200)
-		w.Write(SimpleDCN)
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write(SimpleDCN)
+		if err != nil {
+			http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		}
 	}))
 
 	return result

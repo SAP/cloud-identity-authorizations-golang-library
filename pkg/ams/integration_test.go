@@ -21,13 +21,15 @@ func TestAuthorizationManagerWithMockBundleGateway(t *testing.T) {
 			t.Fatalf("Error callback called: %v", err)
 		},
 	)
-	a.Run(context.Background())
-
 	if err != nil {
 		t.Fatalf("Failed to create AuthorizationManager: %v", err)
 	}
+	err = a.Run(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
-	t.Run("random user on entity1", func(t *testing.T) {
+	t.Run("random user on entity1", func(t *testing.T) { //nolint:dupl
 		authz := a.AuthorizationsForIdentity(identity{groups: []string{"g1", "g2"}})
 		res := authz.GetResources()
 		sort.Strings(res)
@@ -101,5 +103,4 @@ func TestAuthorizationManagerWithMockBundleGateway(t *testing.T) {
 			t.Fatalf("expected access to be granted, but was %s", d.Condition())
 		}
 	})
-
 }
