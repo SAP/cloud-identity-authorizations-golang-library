@@ -63,9 +63,11 @@ func waitForTestServer() {
 		if err == nil && resp.StatusCode == http.StatusOK {
 			return
 		}
-		err = resp.Body.Close()
-		if err != nil {
-			panic(err)
+		if err == nil {
+			err = resp.Body.Close()
+			if err != nil {
+				panic(err)
+			}
 		}
 		time.Sleep(time.Duration(interval) * time.Millisecond)
 	}

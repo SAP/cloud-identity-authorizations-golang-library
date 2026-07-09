@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
@@ -17,21 +18,26 @@ import (
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/util"
 )
 
+type authorizationState struct {
+	policies    internal.PolicySet
+	assignments dcn.Assignments
+	schema      internal.Schema
+}
+
 type AuthorizationManager struct {
 	ready              chan bool
-	policies           internal.PolicySet
-	Assignments        dcn.Assignments
-	m                  sync.RWMutex
-	schema             internal.Schema
+	readyOnce          sync.Once
+	state              atomic.Pointer[authorizationState]
 	dcnChannel         chan dcn.DcnContainer
 	assignmentsChannel chan dcn.Assignments
 	// Tests              []dcn.Test
-	hasDCN            bool
-	hasAssignments    bool
+	hasDCN            atomic.Bool
+	hasAssignments    atomic.Bool
 	functionContainer *expression.FunctionRegistry
 
-	bundleLoader *dcn.BundleLoader
-	errHandlers  []func(error)
+	bundleLoader  *dcn.BundleLoader
+	errHandlersMu sync.RWMutex
+	errHandlers   []func(error)
 }
 
 // Returns a new AuthorizationManager that listens to the provided DCN and Assignments channels,
@@ -44,16 +50,17 @@ func NewAuthorizationManager(
 ) *AuthorizationManager {
 	result := AuthorizationManager{
 		ready:              make(chan bool),
-		policies:           internal.PolicySet{},
 		dcnChannel:         dcnC,
 		assignmentsChannel: assignmentsC,
-		m:                  sync.RWMutex{},
-		hasDCN:             false,
-		hasAssignments:     false,
 		functionContainer:  expression.NewFunctionRegistry(),
 		bundleLoader:       nil,
 		errHandlers:        []func(error){},
 	}
+	result.state.Store(&authorizationState{
+		policies:    internal.PolicySet{},
+		assignments: dcn.Assignments{},
+		schema:      internal.Schema{},
+	})
 	if errorCallback != nil {
 		result.errHandlers = append(result.errHandlers, errorCallback)
 	}
@@ -65,20 +72,20 @@ func NewOfflineAuthorizationManager(dcn dcn.DcnContainer, assignments dcn.Assign
 	var err error
 	result := &AuthorizationManager{
 		ready:             make(chan bool),
-		m:                 sync.RWMutex{},
-		hasDCN:            false,
-		hasAssignments:    false,
 		functionContainer: expression.NewFunctionRegistry(),
 		bundleLoader:      nil,
 		errHandlers:       []func(error){},
 	}
-	result.Assignments = assignments
-	result.schema = internal.SchemaFromDCN(dcn.Schemas)
-	result.policies, err = internal.PoliciesFromDCN(dcn.Policies, result.schema, result.functionContainer)
+	state := &authorizationState{
+		assignments: assignments,
+		schema:      internal.SchemaFromDCN(dcn.Schemas),
+	}
+	state.policies, err = internal.PoliciesFromDCN(dcn.Policies, state.schema, result.functionContainer)
 	if err != nil {
 		return nil, err
 	}
-	return result, result.Run(context.Background())
+	result.state.Store(state)
+	return result, nil
 }
 
 // Returns a new AuthorizationManager that loads the DCN and Assignments for the given AMS instance
@@ -190,17 +197,17 @@ func (a *AuthorizationManager) Run(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case assignments := <-a.assignmentsChannel:
-				a.m.Lock()
-				a.Assignments = assignments
-				a.hasAssignments = true
-				if !a.isReady() && a.hasDCN {
-					close(a.ready)
-				}
-				a.m.Unlock()
+				current := a.getState()
+				a.state.Store(&authorizationState{
+					policies:    current.policies,
+					assignments: assignments,
+					schema:      current.schema,
+				})
+				a.hasAssignments.Store(true)
+				a.tryMarkReady()
 				continue
 			case dcn := <-a.dcnChannel:
-				a.m.Lock()
-				a.schema = internal.SchemaFromDCN(dcn.Schemas)
+				schema := internal.SchemaFromDCN(dcn.Schemas)
 				for _, f := range dcn.Functions {
 					expr, err := expression.FromDCN(f.Result, a.functionContainer)
 					if err != nil {
@@ -210,20 +217,22 @@ func (a *AuthorizationManager) Run(ctx context.Context) error {
 					name := util.StringifyQualifiedName(f.QualifiedName)
 					a.functionContainer.RegisterExpressionFunction(name, expr.Expression)
 				}
-				var err error
-				a.policies, err = internal.PoliciesFromDCN(dcn.Policies, a.schema, a.functionContainer)
+				current := a.getState()
+				next := &authorizationState{
+					policies:    current.policies,
+					assignments: current.assignments,
+					schema:      schema,
+				}
+
+				policies, err := internal.PoliciesFromDCN(dcn.Policies, schema, a.functionContainer)
 				if err != nil {
 					a.notifyError(err)
 				} else {
-					a.hasDCN = true
+					next.policies = policies
+					a.hasDCN.Store(true)
 				}
-
-				a.m.Unlock()
-				if !a.isReady() {
-					if a.hasDCN && a.hasAssignments {
-						close(a.ready)
-					}
-				}
+				a.state.Store(next)
+				a.tryMarkReady()
 			}
 		}
 	}()
@@ -239,8 +248,8 @@ func (a *AuthorizationManager) RegisterErrorHandler(handler func(error)) {
 	if handler == nil {
 		return
 	}
-	a.m.Lock()
-	defer a.m.Unlock()
+	a.errHandlersMu.Lock()
+	defer a.errHandlersMu.Unlock()
 	a.errHandlers = append(a.errHandlers, handler)
 }
 
@@ -255,24 +264,22 @@ func (a *AuthorizationManager) isReady() bool {
 
 // Returns Authorizations, based on the provided identity and the default policies.
 func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizations {
-	a.m.RLock()
-	defer a.m.RUnlock()
+	state := a.getState()
 	if i == nil {
 		return &Authorizations{
-			policies: a.policies.GetSubset([]string{}, "", false),
+			policies: state.policies.GetSubset([]string{}, "", false),
 			a:        a,
 		}
 	}
 
-	defaultPolicyNames := a.policies.GetDefaultPolicyNames(i.AppTID())
-
-	assignmentPolicyNames := a.GetAssignments(i.AppTID(), i.ScimID())
+	defaultPolicyNames := state.policies.GetDefaultPolicyNames(i.AppTID())
+	assignmentPolicyNames := getAssignments(state.assignments, i.AppTID(), i.ScimID())
 	policyNames := make([]string, 0, len(defaultPolicyNames)+len(assignmentPolicyNames))
 	policyNames = append(policyNames, defaultPolicyNames...)
 	policyNames = append(policyNames, assignmentPolicyNames...)
 
 	return &Authorizations{
-		policies: a.policies.GetSubset(policyNames, i.AppTID(), true),
+		policies: state.policies.GetSubset(policyNames, i.AppTID(), true),
 		a:        a,
 		envInput: expression.Input{
 			"$env.$user.email":     expression.String(i.Email()),
@@ -283,17 +290,16 @@ func (a *AuthorizationManager) AuthorizationsForIdentity(i Identity) *Authorizat
 }
 
 func (a *AuthorizationManager) AuthorizationsForToken(t Token) *Authorizations {
-	a.m.RLock()
-	defer a.m.RUnlock()
+	state := a.getState()
 	if t == nil {
 		return &Authorizations{
-			policies: a.policies.GetSubset([]string{}, "", false),
+			policies: state.policies.GetSubset([]string{}, "", false),
 			a:        a,
 		}
 	}
 
-	defaultPolicyNames := a.policies.GetDefaultPolicyNames(t.AppTID())
-	assignmentPolicyNames := a.GetAssignments(t.AppTID(), t.ScimID())
+	defaultPolicyNames := state.policies.GetDefaultPolicyNames(t.AppTID())
+	assignmentPolicyNames := getAssignments(state.assignments, t.AppTID(), t.ScimID())
 	policyNames := make([]string, 0, len(defaultPolicyNames)+len(assignmentPolicyNames))
 	policyNames = append(policyNames, defaultPolicyNames...)
 	policyNames = append(policyNames, assignmentPolicyNames...)
@@ -301,10 +307,10 @@ func (a *AuthorizationManager) AuthorizationsForToken(t Token) *Authorizations {
 	envInput := expression.Input{}
 	claims := t.GetAllClaimsAsMap()
 	v := reflect.ValueOf(claims)
-	a.schema.InsertCustomInput(envInput, v, []string{"$env", "$user"})
+	state.schema.InsertCustomInput(envInput, v, []string{"$env", "$user"})
 
 	return &Authorizations{
-		policies: a.policies.GetSubset(policyNames, t.AppTID(), true),
+		policies: state.policies.GetSubset(policyNames, t.AppTID(), true),
 		a:        a,
 		envInput: envInput,
 	}
@@ -314,18 +320,15 @@ func (a *AuthorizationManager) AuthorizationsForToken(t Token) *Authorizations {
 // and filtered filtering out admin policies from tenants other than the provided tenant.
 // for tenant-independent queries, use "" as tenant.
 func (a *AuthorizationManager) AuthorizationsForPolicies(policyNames []string, tenant string) *Authorizations {
-	a.m.RLock()
-	defer a.m.RUnlock()
+	state := a.getState()
 	return &Authorizations{
-		policies: a.policies.GetSubset(policyNames, tenant, false),
+		policies: state.policies.GetSubset(policyNames, tenant, false),
 		a:        a,
 	}
 }
 
 func (a *AuthorizationManager) GetUserFields() map[string]expression.Type {
-	a.m.RLock()
-	defer a.m.RUnlock()
-	allFields := a.schema.GetAllInputFields()
+	allFields := a.getState().schema.GetAllInputFields()
 	result := make(map[string]expression.Type)
 	for k, t := range allFields {
 		if !strings.HasPrefix(k, "$env.$user") {
@@ -354,16 +357,48 @@ func (a *AuthorizationManager) GetUserFields() map[string]expression.Type {
 }
 
 func (a *AuthorizationManager) GetDefaultPolicyNames(tenant string) []string {
-	a.m.RLock()
-	defer a.m.RUnlock()
-	return a.policies.GetDefaultPolicyNames(tenant)
+	return a.getState().policies.GetDefaultPolicyNames(tenant)
 }
 
 // Returns the policies that are assigned to the user in the given tenant.
 func (a *AuthorizationManager) GetAssignments(tenant, user string) []string {
-	a.m.RLock()
-	defer a.m.RUnlock()
-	t, ok := a.Assignments[tenant]
+	return getAssignments(a.getState().assignments, tenant, user)
+}
+
+func (a *AuthorizationManager) CreateInput(action, resource string, input any, env any) expression.Input {
+	return a.getState().schema.CustomInput(action, resource, input, env)
+}
+
+func (a *AuthorizationManager) ValidateInput(input expression.Input) ([]string, []string) {
+	return a.getState().schema.PurgeInvalidInput(input)
+}
+
+func (a *AuthorizationManager) notifyError(err error) {
+	a.errHandlersMu.RLock()
+	handlers := make([]func(error), len(a.errHandlers))
+	copy(handlers, a.errHandlers)
+	a.errHandlersMu.RUnlock()
+
+	for _, handler := range handlers {
+		handler(err)
+	}
+}
+
+func (a *AuthorizationManager) getState() *authorizationState {
+	return a.state.Load()
+}
+
+func (a *AuthorizationManager) tryMarkReady() {
+	if !a.hasDCN.Load() || !a.hasAssignments.Load() {
+		return
+	}
+	a.readyOnce.Do(func() {
+		close(a.ready)
+	})
+}
+
+func getAssignments(assignments dcn.Assignments, tenant, user string) []string {
+	t, ok := assignments[tenant]
 	if !ok {
 		return []string{}
 	}
@@ -372,22 +407,4 @@ func (a *AuthorizationManager) GetAssignments(tenant, user string) []string {
 		return []string{}
 	}
 	return assignment
-}
-
-func (a *AuthorizationManager) CreateInput(action, resource string, input any, env any) expression.Input {
-	a.m.RLock()
-	defer a.m.RUnlock()
-	return a.schema.CustomInput(action, resource, input, env)
-}
-
-func (a *AuthorizationManager) ValidateInput(input expression.Input) ([]string, []string) {
-	a.m.RLock()
-	defer a.m.RUnlock()
-	return a.schema.PurgeInvalidInput(input)
-}
-
-func (a *AuthorizationManager) notifyError(err error) {
-	for _, handler := range a.errHandlers {
-		handler(err)
-	}
 }
