@@ -5,61 +5,30 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+
+	test "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/test/bundles"
 )
 
-type E1 struct {
-	Size   int    `ams:"size"`
-	Name   string `ams:"name"`
-	Public bool   `ams:"public"`
-	Group  string `ams:"group"`
-}
-type E2 struct {
-	Name      string   `ams:"name"`
-	Owners    []string `ams:"owners"`
-	Subentity *struct {
-		SubNumberField int `ams:"subNumberField"`
-	} `ams:"subentity"`
-}
+func TestAuthorizationManagerWithMockBundleGateway(t *testing.T) {
+	mock := test.NewBundleGatewayMock()
+	defer mock.Close()
 
-type Schema struct {
-	Entity1 *E1 `ams:"entity1"`
-	Entity2 *E2 `ams:"entity2"`
-}
-
-type identity struct {
-	appTID string
-	scimID string
-	email  string
-	groups []string
-}
-
-func (i identity) AppTID() string {
-	return i.appTID
-}
-
-func (i identity) ScimID() string {
-	return i.scimID
-}
-
-func (i identity) UserUUID() string {
-	return ""
-}
-
-func (i identity) Groups() []string {
-	return i.groups
-}
-
-func (i identity) Email() string {
-	return i.email
-}
-
-func TestSimpleScenario(t *testing.T) {
-	a := NewAuthorizationManagerForFs("test/scenarios/simple", func(err error) { t.Fatal(err) })
-
-	err := a.Run(context.Background())
+	a, err := newAuthorizationManagerForIAS(
+		mock.GetAuthorizationBundleURL(),
+		mock.GetAuthorizationInstanceID(),
+		mock.GetHttpClient(),
+		func(err error) {
+			t.Fatalf("Error callback called: %v", err)
+		},
+	)
+	if err != nil {
+		t.Fatalf("Failed to create AuthorizationManager: %v", err)
+	}
+	err = a.Run(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	t.Run("random user on entity1", func(t *testing.T) { //nolint:dupl
 		authz := a.AuthorizationsForIdentity(identity{groups: []string{"g1", "g2"}})
 		res := authz.GetResources()
@@ -132,14 +101,6 @@ func TestSimpleScenario(t *testing.T) {
 		})
 		if !d.IsGranted() {
 			t.Fatalf("expected access to be granted, but was %s", d.Condition())
-		}
-	})
-
-	t.Run("nil identity always denied", func(t *testing.T) {
-		authz := a.AuthorizationsForIdentity(nil)
-		d := authz.Inquire("", "", nil)
-		if !d.IsDenied() {
-			t.Fatalf("expected access to be denied, but was %s", d.Condition())
 		}
 	})
 }

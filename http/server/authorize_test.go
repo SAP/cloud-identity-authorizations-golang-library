@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams"
-	"github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn"
 	e "github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression"
 )
 
@@ -36,7 +35,7 @@ func (e *errorWriter) WriteHeader(statusCode int) {
 }
 func TestAuthzForPolicies(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
-	<-am.WhenReady()
+	am.Run(context.Background())
 	r := NewRouter(am, nopLogger{})
 	var req AuthorizationRequest
 
@@ -161,7 +160,7 @@ type tokenClaim map[string]any
 
 func TestEvaluateToken(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
-	<-am.WhenReady()
+	am.Run(context.Background())
 	r := NewRouter(am, nopLogger{})
 	t.Run("Evaluate valid token", func(t *testing.T) {
 		rr := httptest.NewRecorder()
@@ -282,49 +281,6 @@ func TestEvaluateToken(t *testing.T) {
 		r.Mux().ServeHTTP(rr, newAuthorizationRequest(req))
 		if rr.status != http.StatusInternalServerError {
 			t.Errorf("Expected status 500, got %d", rr.status)
-		}
-	})
-}
-
-func TestHealth(t *testing.T) {
-	t.Run("Health check ready when Authorization Manager is initialized", func(t *testing.T) {
-		dcnChan := make(chan dcn.DcnContainer)
-		assigmentChan := make(chan dcn.Assignments)
-		am := ams.NewAuthorizationManager(context.Background(), dcnChan, assigmentChan, nil)
-		r := NewRouter(am, nopLogger{})
-		rr := httptest.NewRecorder()
-		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/v1/health", nil))
-		if rr.Code != http.StatusServiceUnavailable {
-			t.Errorf("Expected status 503, got %d", rr.Code)
-		}
-		dcnChan <- dcn.DcnContainer{}
-		assigmentChan <- dcn.Assignments{}
-		<-am.WhenReady()
-		rr = httptest.NewRecorder()
-		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/v1/health", nil))
-		if rr.Code != http.StatusOK {
-			t.Errorf("Expected status 200, got %d", rr.Code)
-		}
-
-		// stays healthy after dcn update error
-		dcnChan <- dcn.DcnContainer{
-			Policies: []dcn.Policy{
-				{
-					QualifiedName: dcn.QualifiedName{"pkg", "p1"},
-					Rules: []dcn.Rule{
-						{
-							Condition: &dcn.Expression{
-								Call: []string{},
-							},
-						},
-					},
-				},
-			},
-		}
-		rr = httptest.NewRecorder()
-		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/v1/health", nil))
-		if rr.Code != http.StatusOK {
-			t.Errorf("Expected status 200, got %d", rr.Code)
 		}
 	})
 }

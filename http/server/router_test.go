@@ -24,7 +24,7 @@ func (n nopLogger) Debugf(ctx context.Context, msg string, args ...interface{}) 
 
 func TestRouter(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
-	<-am.WhenReady()
+	am.Run(context.Background())
 	r := NewRouter(am, nopLogger{})
 
 	t.Run("get resources for token", func(t *testing.T) {
@@ -87,7 +87,7 @@ func TestRouter(t *testing.T) {
 
 func TestInputEndpoint(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
-	<-am.WhenReady()
+	am.Run(context.Background())
 	r := NewRouter(am, nopLogger{})
 
 	t.Run("removes undefined input fields with warnings", func(t *testing.T) {

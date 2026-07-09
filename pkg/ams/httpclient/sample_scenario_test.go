@@ -60,16 +60,25 @@ func (i identity) Email() string {
 	return i.email
 }
 
+func (i identity) GetAllClaimsAsMap() map[string]interface{} {
+	return map[string]interface{}{
+		"app_tid": i.appTID,
+		"scim_id": i.scimID,
+		"email":   i.email,
+		"groups":  i.groups,
+	}
+}
+
 func TestSimpleScenario(t *testing.T) {
 	startTestServerContainer("simple")
 
-	defer stopTestServerContainer()
+	// defer stopTestServerContainer()
 
 	a := NewAuthorizationManager("http://localhost:8099", http.DefaultClient)
 	<-a.WhenReady(context.Background())
 	t.Run("random user on entity1", func(t *testing.T) {
 		ctx := context.Background()
-		authz := a.AuthorizationsForIdentity(
+		authz := a.AuthorizationsForToken(
 			ctx,
 			identity{groups: []string{"g1", "g2"}})
 		res, err := authz.GetResources(ctx)
@@ -179,7 +188,7 @@ func TestSimpleScenario(t *testing.T) {
 	})
 
 	t.Run("nil identity always denied", func(t *testing.T) {
-		authz := a.AuthorizationsForIdentity(context.Background(), nil)
+		authz := a.AuthorizationsForToken(context.Background(), nil)
 		d, err := authz.Inquire(context.Background(), "", "", nil)
 		if err != nil {
 			t.Fatalf("failed to inquire: %v", err)

@@ -29,11 +29,12 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		am, err = ams.NewAuthorizationManagerForIASConfig(context.Background(), creds, errHandler)
+		am, err = ams.NewAuthorizationManagerForIASConfig(creds, errHandler)
 		if err != nil {
 			panic(err)
 		}
 	}
+	am.Run(context.Background())
 	router := server.NewRouter(am, l)
 
 	srv := &http.Server{
