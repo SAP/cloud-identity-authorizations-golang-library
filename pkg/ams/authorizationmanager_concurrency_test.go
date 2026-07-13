@@ -59,7 +59,6 @@ func (t concurrencyToken) GetAllClaimsAsMap() map[string]interface{} {
 }
 
 func makeValidDCN(version int) dcn.DcnContainer {
-
 	return dcn.DcnContainer{
 		Version: version,
 		Policies: []dcn.Policy{
@@ -113,11 +112,13 @@ func makeValidDCN(version int) dcn.DcnContainer {
 
 func makeBrokenFunctionDCN(version int) dcn.DcnContainer {
 	return dcn.DcnContainer{
-		Version:   version,
-		Policies:  []dcn.Policy{},
-		Functions: []dcn.Function{{QualifiedName: []string{fmt.Sprintf("func_%d", version)}, Result: dcn.Expression{Call: []string{"func_missing"}}}},
-		Schemas:   []dcn.Schema{},
-		Tests:     []dcn.Test{},
+		Version:  version,
+		Policies: []dcn.Policy{},
+		Functions: []dcn.Function{{
+			QualifiedName: []string{fmt.Sprintf("func_%d", version)},
+			Result:        dcn.Expression{Call: []string{"func_missing"}}}},
+		Schemas: []dcn.Schema{},
+		Tests:   []dcn.Test{},
 	}
 }
 
@@ -146,10 +147,10 @@ func TestAuthorizationManagerConcurrency_ReadsWithStreamingUpdates(t *testing.T)
 
 	var readersWG sync.WaitGroup
 	readersWG.Add(readerCount)
-	for i := 0; i < readerCount; i++ {
+	for range readerCount {
 		go func() {
 			defer readersWG.Done()
-			for j := 0; j < iterationsPerReader; j++ {
+			for range iterationsPerReader {
 				authzPolicies := am.AuthorizationsForPolicies([]string{"pkg.policy_0"}, "tenant1")
 				_ = authzPolicies.GetResources()
 
@@ -243,7 +244,7 @@ func TestAuthorizationManagerConcurrency_RegisterErrorHandlersDuringErrors(t *te
 
 	go func() {
 		defer wg.Done()
-		for i := 0; i < registerIterations; i++ {
+		for range registerIterations {
 			am.RegisterErrorHandler(func(err error) {
 				if err != nil {
 					registeredHandlersCalled.Add(1)
@@ -309,10 +310,10 @@ func TestAuthorizationManagerConcurrency_ReadAPIsWithNilInputs(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(goroutines)
 
-	for i := 0; i < goroutines; i++ {
+	for range goroutines {
 		go func() {
 			defer wg.Done()
-			for j := 0; j < iterations; j++ {
+			for range iterations {
 				_ = am.AuthorizationsForIdentity(nil)
 				_ = am.AuthorizationsForToken(nil)
 				_ = am.AuthorizationsForPolicies([]string{}, "")
@@ -376,10 +377,10 @@ func TestAuthorizationManagerConcurrency_IdentityAndTokenReads(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(goroutines)
 
-	for i := 0; i < goroutines; i++ {
+	for range goroutines {
 		go func() {
 			defer wg.Done()
-			for j := 0; j < iterations; j++ {
+			for range iterations {
 				authzIdentity := am.AuthorizationsForIdentity(identity)
 				_ = authzIdentity.GetResources()
 
