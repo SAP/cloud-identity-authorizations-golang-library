@@ -85,6 +85,9 @@ func NewOfflineAuthorizationManager(dcn dcn.DcnContainer, assignments dcn.Assign
 		return nil, err
 	}
 	result.state.Store(state)
+	result.hasDCN.Store(true)
+	result.hasAssignments.Store(true)
+	result.tryMarkReady()
 	return result, nil
 }
 
