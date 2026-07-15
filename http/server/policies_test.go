@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +14,7 @@ import (
 
 func TestPolicyEndpoints(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
-	<-am.WhenReady()
+	am.Run(context.Background())
 	r := NewRouter(am, nopLogger{})
 	t.Run("Get assigned policies of user1", func(t *testing.T) {
 		req := AssignedPoliciesRequest{

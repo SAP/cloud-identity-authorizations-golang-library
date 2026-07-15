@@ -2,6 +2,7 @@ package ams
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -52,12 +53,12 @@ func (i TestIdentity) Email() string {
 
 func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	t.Run("is ready after receiving DCN", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
+		dcnChannel := make(chan dcn.DcnContainer, 1)
+		assignmentsChannel := make(chan dcn.Assignments, 1)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
 		assignmentsChannel <- dcn.Assignments{}
 
-		if am.IsReady() {
+		if am.isReady() {
 			t.Error("is ready before receiving DCN")
 		}
 		dcnChannel <- dcn.DcnContainer{
@@ -66,7 +67,10 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			Functions: []dcn.Function{},
 		}
 
-		<-am.WhenReady()
+		err := am.Run(context.Background())
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		// update again
 		dcnChannel <- dcn.DcnContainer{
@@ -75,7 +79,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			Functions: []dcn.Function{},
 		}
 
-		if !am.IsReady() {
+		if !am.isReady() {
 			t.Error("is not ready after receiving DCN")
 		}
 
@@ -86,15 +90,15 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			Functions: []dcn.Function{},
 		}
 
-		if !am.IsReady() {
+		if !am.isReady() {
 			t.Error("is not ready after receiving DCN")
 		}
 	})
 
 	t.Run("with functions", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
+		dcnChannel := make(chan dcn.DcnContainer, 1)
+		assignmentsChannel := make(chan dcn.Assignments, 1)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
 		assignmentsChannel <- dcn.Assignments{}
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -120,9 +124,12 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 				},
 			},
 		}
-		<-am.WhenReady()
+		err := am.Run(context.Background())
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
-		a := am.AuthorizationsForPolicies([]string{"pkg.policy1"})
+		a := am.AuthorizationsForPolicies([]string{"pkg.policy1"}, "")
 		got := a.Evaluate(expression.Input{}).Condition()
 		want := expression.Ref("x")
 		if !reflect.DeepEqual(got, want) {
@@ -131,11 +138,17 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	})
 
 	t.Run("error in functions", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
+		dcnChannel := make(chan dcn.DcnContainer, 1)
+		assignmentsChannel := make(chan dcn.Assignments, 1)
 		ml := createErrorHandler()
 
-		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml.Callback)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, ml.Callback)
+		go func() {
+			err := am.Run(context.Background())
+			if err != nil {
+				panic(fmt.Sprintf("unexpected error: %v", err))
+			}
+		}()
 		assignmentsChannel <- dcn.Assignments{}
 
 		if len(ml.errors) != 0 {
@@ -160,10 +173,16 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	})
 
 	t.Run("error in policies", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
+		dcnChannel := make(chan dcn.DcnContainer, 1)
+		assignmentsChannel := make(chan dcn.Assignments, 1)
 		ml := createErrorHandler()
-		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml.Callback)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, ml.Callback)
+		go func() {
+			err := am.Run(context.Background())
+			if err != nil {
+				panic(fmt.Sprintf("unexpected error: %v", err))
+			}
+		}()
 		assignmentsChannel <- dcn.Assignments{}
 
 		if len(ml.errors) != 0 {
@@ -193,9 +212,9 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	})
 
 	t.Run("get Authorizations", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
+		dcnChannel := make(chan dcn.DcnContainer, 1)
+		assignmentsChannel := make(chan dcn.Assignments, 1)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
 		assignmentsChannel <- dcn.Assignments{}
 
 		dcnChannel <- dcn.DcnContainer{
@@ -230,16 +249,19 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			},
 			Schemas: []dcn.Schema{
 				{
-					QualifiedName: []string{"pkg", "schema1"},
+					QualifiedName: []string{"pkg", "tenant", "schema1"},
 					Tenant:        "tenant1",
 				},
 			},
 			Functions: []dcn.Function{},
 		}
 
-		<-am.WhenReady()
+		err := am.Run(context.Background())
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
-		auths := am.AuthorizationsForPolicies([]string{"pkg.policy1"})
+		auths := am.AuthorizationsForPolicies([]string{"pkg.policy1"}, "")
 
 		r := auths.Evaluate(expression.Input{
 			DCL_RESOURCE: expression.String("resource1"),
@@ -256,7 +278,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			t.Errorf("expected false, got %v", r)
 		}
 
-		auth2 := am.AuthorizationsForPolicies([]string{"pkg.policy2"})
+		auth2 := am.AuthorizationsForPolicies([]string{"pkg.policy2"}, "")
 
 		r = auth2.Evaluate(expression.Input{
 			DCL_RESOURCE: expression.String("resource1"),
@@ -297,7 +319,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			t.Errorf("expected false, got %v", r)
 		}
 
-		auth3 := am.AuthorizationsForPolicies([]string{"pkg.policy3"})
+		auth3 := am.AuthorizationsForPolicies([]string{"pkg.policy3"}, "")
 
 		andJoined = auth2.AndJoin(auth3)
 		r = andJoined.Evaluate(expression.Input{
@@ -314,9 +336,9 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	})
 
 	t.Run("get assignments", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
+		dcnChannel := make(chan dcn.DcnContainer, 1)
+		assignmentsChannel := make(chan dcn.Assignments, 1)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -333,7 +355,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			Functions: []dcn.Function{},
 		}
 
-		if am.IsReady() {
+		if am.isReady() {
 			t.Error("is ready before receiving DCN")
 		}
 
@@ -343,7 +365,10 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			},
 		}
 
-		<-am.WhenReady()
+		err := am.Run(context.Background())
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		r := am.GetAssignments("tenant1", "user1")
 		expected := []string{"pkg.policy1"}
@@ -363,9 +388,9 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	})
 
 	t.Run("Authorizations for identity with user attribues", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
+		dcnChannel := make(chan dcn.DcnContainer, 1)
+		assignmentsChannel := make(chan dcn.Assignments, 1)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -394,7 +419,10 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			},
 		}
 
-		<-am.WhenReady()
+		err := am.Run(context.Background())
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		authz := am.AuthorizationsForIdentity(TestIdentity{
 			email:    "user1@example.com",
@@ -411,9 +439,9 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	})
 
 	t.Run("get default policy names", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
-		am := NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, nil)
+		dcnChannel := make(chan dcn.DcnContainer, 1)
+		assignmentsChannel := make(chan dcn.Assignments, 1)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
 
 		dcnChannel <- dcn.DcnContainer{
 			Policies: []dcn.Policy{
@@ -434,13 +462,16 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			Functions: []dcn.Function{},
 		}
 
-		if am.IsReady() {
+		if am.isReady() {
 			t.Error("is ready before receiving DCN")
 		}
 
 		assignmentsChannel <- dcn.Assignments{}
 
-		<-am.WhenReady()
+		err := am.Run(context.Background())
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		r := am.GetDefaultPolicyNames("")
 		expected := []string{"pkg.policy1"}
@@ -456,10 +487,16 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 	})
 
 	t.Run("error on load dcn", func(t *testing.T) {
-		dcnChannel := make(chan dcn.DcnContainer)
-		assignmentsChannel := make(chan dcn.Assignments)
+		dcnChannel := make(chan dcn.DcnContainer, 1)
+		assignmentsChannel := make(chan dcn.Assignments, 1)
 		ml := createErrorHandler()
-		NewAuthorizationManager(context.Background(), dcnChannel, assignmentsChannel, ml.Callback)
+		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, ml.Callback)
+		go func() {
+			err := am.Run(context.Background())
+			if err != nil {
+				panic(fmt.Sprintf("unexpected error: %v", err))
+			}
+		}()
 
 		assignmentsChannel <- dcn.Assignments{}
 		dcnChannel <- dcn.DcnContainer{

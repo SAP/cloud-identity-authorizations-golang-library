@@ -64,8 +64,12 @@ func waitForTestServer() {
 			resp.Body.Close()
 			return
 		}
-		if resp != nil {
-			resp.Body.Close()
+
+		if err == nil {
+			err = resp.Body.Close()
+			if err != nil {
+				panic(err)
+			}
 		}
 		time.Sleep(time.Duration(interval) * time.Millisecond)
 	}

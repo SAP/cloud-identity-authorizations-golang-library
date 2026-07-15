@@ -11,7 +11,7 @@ import (
 
 type Authorizations struct {
 	ctx      context.Context
-	identity ams.Identity
+	token    ams.Token
 	policies []string
 	andJoin  []*Authorizations
 	envInput reqInput
@@ -44,10 +44,10 @@ func (a *Authorizations) evaluate(ctx context.Context, action, resource string, 
 	for k, v := range a.envInput {
 		reqInput[k] = v
 	}
-	if a.identity != nil {
+	if a.token != nil {
 		token = newToken(tokenClaim{
-			"scim_id": a.identity.ScimID(),
-			"app_tid": a.identity.AppTID(),
+			"scim_id": a.token.ScimID(),
+			"app_tid": a.token.AppTID(),
 		})
 	}
 	req := AuthorizationRequest{
@@ -91,10 +91,10 @@ func (a *Authorizations) AndJoin(other *Authorizations) *Authorizations {
 
 func (a *Authorizations) GetActions(ctx context.Context, resource string) ([]string, error) {
 	token := ""
-	if a.identity != nil {
+	if a.token != nil {
 		token = newToken(tokenClaim{
-			"scim_id": a.identity.ScimID(),
-			"app_tid": a.identity.AppTID(),
+			"scim_id": a.token.ScimID(),
+			"app_tid": a.token.AppTID(),
 		})
 	}
 	req := ActionsRequest{
@@ -112,10 +112,10 @@ func (a *Authorizations) GetActions(ctx context.Context, resource string) ([]str
 
 func (a *Authorizations) GetResources(ctx context.Context) ([]string, error) {
 	token := ""
-	if a.identity != nil {
+	if a.token != nil {
 		token = newToken(tokenClaim{
-			"scim_id": a.identity.ScimID(),
-			"app_tid": a.identity.AppTID(),
+			"scim_id": a.token.ScimID(),
+			"app_tid": a.token.AppTID(),
 		})
 	}
 	req := ResourcesRequest{

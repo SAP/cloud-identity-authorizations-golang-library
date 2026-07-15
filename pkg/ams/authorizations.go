@@ -26,7 +26,7 @@ const (
 //   - a struct, thats fields are tagged with 'ams:"<fieldname>"' where the field name corresponds to the schema
 //     name or the fields name is EXACTLY the same as the schema name
 func (a *Authorizations) Inquire(action, resource string, app any) Decision {
-	i := a.a.schema.CustomInput(action, resource, app, nil)
+	i := a.a.getState().schema.CustomInput(action, resource, app, nil)
 	for k, v := range a.envInput {
 		i[k] = v
 	}
@@ -36,7 +36,7 @@ func (a *Authorizations) Inquire(action, resource string, app any) Decision {
 
 func (a *Authorizations) SetEnvInput(env any) {
 	a.envInput = expression.Input{}
-	a.a.schema.InsertCustomInput(a.envInput, reflect.ValueOf(env), []string{"$env"})
+	a.a.getState().schema.InsertCustomInput(a.envInput, reflect.ValueOf(env), []string{"$env"})
 }
 
 func (a *Authorizations) GetResources() []string {
@@ -97,7 +97,7 @@ func (a *Authorizations) decision(condition expression.Expression) Decision {
 		condition: condition,
 		inputConverter: func(app any) expression.Input {
 			result := expression.Input{}
-			a.a.schema.InsertCustomInput(result, reflect.ValueOf(app), []string{"$app"})
+			a.a.getState().schema.InsertCustomInput(result, reflect.ValueOf(app), []string{"$app"})
 			return result
 		},
 	}

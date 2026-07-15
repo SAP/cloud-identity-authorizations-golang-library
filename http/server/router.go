@@ -135,11 +135,7 @@ func (s *Router) HandleActions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Router) HandleHealth(w http.ResponseWriter, r *http.Request) {
-	if s.am.IsReady() {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		w.WriteHeader(http.StatusServiceUnavailable)
-	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Router) authzForRequest(tokenStr string, policies []string) (*ams.Authorizations, error) {
@@ -151,9 +147,9 @@ func (s *Router) authzForRequest(tokenStr string, policies []string) (*ams.Autho
 		if err != nil {
 			return nil, fmt.Errorf("error decoding token: %w", err)
 		}
-		return s.am.AuthorizationsForIdentity(token), nil
+		return s.am.AuthorizationsForToken(token), nil
 	} else {
-		return s.am.AuthorizationsForPolicies(policies), nil
+		return s.am.AuthorizationsForPolicies(policies, ""), nil
 	}
 }
 
