@@ -62,7 +62,7 @@ github.com/pkg/errors
 github.com/pquerna/cachecontrol
 github.com/pquerna/cachecontrol/cacheobject
 # github.com/sap/cloud-identity-authorizations-golang-library v0.0.0 => ../
-## explicit; go 1.25.5
+## explicit; go 1.23
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/dcn
 github.com/sap/cloud-identity-authorizations-golang-library/pkg/ams/expression
