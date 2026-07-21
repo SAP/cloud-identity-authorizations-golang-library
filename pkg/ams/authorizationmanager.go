@@ -322,10 +322,10 @@ func (a *AuthorizationManager) AuthorizationsForToken(t Token) *Authorizations {
 // Returns Authorizations, based on the provided policy names and optionally the default policies
 // and filtered filtering out admin policies from tenants other than the provided tenant.
 // for tenant-independent queries, use "" as tenant.
-func (a *AuthorizationManager) AuthorizationsForPolicies(policyNames []string, tenant string) *Authorizations {
+func (a *AuthorizationManager) AuthorizationsForPolicies(policyNames []string) *Authorizations {
 	state := a.getState()
 	return &Authorizations{
-		policies: state.policies.GetSubset(policyNames, tenant, false),
+		policies: state.policies.GetSubset(policyNames, "", false),
 		a:        a,
 	}
 }
@@ -368,8 +368,8 @@ func (a *AuthorizationManager) GetAssignments(tenant, user string) []string {
 	return getAssignments(a.getState().assignments, tenant, user)
 }
 
-func (a *AuthorizationManager) CreateInput(action, resource string, input any, env any) expression.Input {
-	return a.getState().schema.CustomInput(action, resource, input, env)
+func (a *AuthorizationManager) InsertInput(result expression.Input, input any, path []string) {
+	a.getState().schema.InsertCustomInput(result, reflect.ValueOf(input), path)
 }
 
 func (a *AuthorizationManager) ValidateInput(input expression.Input) ([]string, []string) {

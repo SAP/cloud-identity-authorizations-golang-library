@@ -31,7 +31,6 @@ func (a *Authorizations) Evaluate(ctx context.Context, input expression.Input) (
 	if r, ok := input["$dcl.resource"]; ok {
 		resource = r.String()
 	}
-
 	return a.evaluate(ctx, action, resource, reqInput)
 }
 

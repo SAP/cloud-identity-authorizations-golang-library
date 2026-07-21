@@ -149,7 +149,7 @@ func (s *Router) authzForRequest(tokenStr string, policies []string) (*ams.Autho
 		}
 		return s.am.AuthorizationsForToken(token), nil
 	} else {
-		return s.am.AuthorizationsForPolicies(policies, ""), nil
+		return s.am.AuthorizationsForPolicies(policies), nil
 	}
 }
 

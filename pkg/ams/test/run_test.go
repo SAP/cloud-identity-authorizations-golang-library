@@ -70,9 +70,9 @@ func TestRun(t *testing.T) {
 						for _, filter := range assertion.ScopeFilter {
 							scopeFilter = append(scopeFilter, util.StringifyQualifiedName(filter))
 						}
-						authz := ams.AuthorizationsForPolicies(policies, "")
+						authz := ams.AuthorizationsForPolicies(policies)
 						if len(scopeFilter) > 0 {
-							scopeFilter := ams.AuthorizationsForPolicies(scopeFilter, "")
+							scopeFilter := ams.AuthorizationsForPolicies(scopeFilter)
 							authz = authz.AndJoin(scopeFilter)
 						}
 						t.Run(fmt.Sprintf("policies: %v, scopeFilter: %v", policies, scopeFilter), func(t *testing.T) {
@@ -82,7 +82,7 @@ func TestRun(t *testing.T) {
 										t.Run(assertionCaption(action, resource, tInput), func(t *testing.T) {
 											input := createInput(ams, tInput, action, resource)
 
-											result := authz.Evaluate(input).Condition()
+											result := authz.Evaluate(action, resource, input).Condition()
 											result = unsetIgnore(result, tInput)
 											result = NormalizeExpression(result)
 											expectedContainer, err := expression.FromDCN(assertion.Expect, &expression.FunctionRegistry{})
@@ -91,7 +91,7 @@ func TestRun(t *testing.T) {
 												t.Fatalf("error in expected expression: %v", err)
 											}
 											if !reflect.DeepEqual(result, expected) {
-												authz.Evaluate(input)
+												authz.Evaluate(action, resource, input)
 												t.Errorf("expected %v, got %v", expected, result)
 											}
 										})
@@ -123,15 +123,18 @@ func unsetIgnore(e expression.Expression, input dcn.Input) expression.Expression
 }
 
 func createInput(am *ams.AuthorizationManager, input dcn.Input, action, resource string) expression.Input {
+	result := expression.Input{
+		"$dcl.action":   expression.String(action),
+		"$dcl.resource": expression.String(resource),
+	}
 	app, ok := input.Input["$app"]
-	if !ok {
-		app = nil
+	if ok {
+		am.InsertInput(result, app, []string{"$app"})
 	}
 	env, ok := input.Input["$env"]
-	if !ok {
-		env = nil
+	if ok {
+		am.InsertInput(result, env, []string{"$env"})
 	}
-	result := am.CreateInput(action, resource, app, env)
 
 	return result
 }
