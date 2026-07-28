@@ -72,7 +72,7 @@ func (s *Router) HandleAuthorize(w http.ResponseWriter, r *http.Request) {
 
 	undefinedFields, wrongTypedFields := s.am.ValidateInput(input)
 
-	result := a.Evaluate(input)
+	result := a.Evaluate(req.Action, req.Resource, input)
 	condition := result.Condition()
 	if len(req.NullifyExcept) > 0 {
 		keepRefs := make(map[string]bool)

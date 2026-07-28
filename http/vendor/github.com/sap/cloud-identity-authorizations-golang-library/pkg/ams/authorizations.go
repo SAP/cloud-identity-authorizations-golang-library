@@ -31,7 +31,7 @@ func (a *Authorizations) Inquire(action, resource string, app any) Decision {
 		i[k] = v
 	}
 
-	return a.Evaluate(i)
+	return a.Evaluate(action, resource, i)
 }
 
 func (a *Authorizations) SetEnvInput(env any) {
@@ -56,12 +56,14 @@ func (a *Authorizations) GetActions(resource string) []string {
 //   - the evaluation will panic if the input is wrongly typed
 //
 // the input can savely created/purged by the Schema.
-func (a *Authorizations) Evaluate(input expression.Input) Decision {
+func (a *Authorizations) Evaluate(action, resource string, input expression.Input) Decision {
 	for k, v := range a.envInput {
 		if _, ok := input[k]; !ok {
 			input[k] = v
 		}
 	}
+	input[DCL_ACTION] = expression.String(action)
+	input[DCL_RESOURCE] = expression.String(resource)
 	r := a.policies.Evaluate(input)
 	if r == expression.FALSE {
 		return a.decision(r)
@@ -71,7 +73,7 @@ func (a *Authorizations) Evaluate(input expression.Input) Decision {
 		results = append(results, r)
 	}
 	for _, aa := range a.andJoined {
-		r := aa.Evaluate(input).Condition()
+		r := aa.Evaluate(action, resource, input).Condition()
 		if r == expression.Bool(false) {
 			return a.decision(r)
 		}

@@ -156,7 +156,6 @@ func TestAuthorizationManagerConcurrency_ReadsWithStreamingUpdates(t *testing.T)
 
 				_ = am.GetAssignments("tenant1", "user1")
 				_ = am.GetDefaultPolicyNames("tenant1")
-				_ = am.GetUserFields()
 				input := expression.Input{
 					"$dcl.action":       expression.String("read"),
 					"$dcl.resource":     expression.String("resource1"),
