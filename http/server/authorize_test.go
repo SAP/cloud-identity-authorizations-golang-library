@@ -35,7 +35,10 @@ func (e *errorWriter) WriteHeader(statusCode int) {
 }
 func TestAuthzForPolicies(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
-	am.Run(context.Background())
+	err := am.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to run AuthorizationManager: %v", err)
+	}
 	r := NewRouter(am, nopLogger{})
 	var req AuthorizationRequest
 
@@ -149,7 +152,7 @@ func TestAuthzForPolicies(t *testing.T) {
 
 	t.Run("Edge-case: no req body", func(t *testing.T) {
 		rr := httptest.NewRecorder()
-		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodPost, "/v1/authorize", nil))
+		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodPost, "/v1/authorize", nil)) //nolint:noctx
 		if rr.Code != http.StatusBadRequest {
 			t.Errorf("Expected status 400, got %d", rr.Code)
 		}
@@ -160,7 +163,11 @@ type tokenClaim map[string]any
 
 func TestEvaluateToken(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
-	am.Run(context.Background())
+	err := am.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to run AuthorizationManager: %v", err)
+	}
+
 	r := NewRouter(am, nopLogger{})
 	t.Run("Evaluate valid token", func(t *testing.T) {
 		rr := httptest.NewRecorder()

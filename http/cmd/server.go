@@ -34,7 +34,9 @@ func main() {
 			panic(err)
 		}
 	}
-	am.Run(context.Background())
+	if err := am.Run(context.Background()); err != nil {
+		panic(err)
+	}
 	router := server.NewRouter(am, l)
 
 	srv := &http.Server{

@@ -225,6 +225,13 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 						{
 							Actions:   []string{"action1"},
 							Resources: []string{"resource1"},
+							Condition: &dcn.Expression{
+								Call: []string{"eq"},
+								Args: []dcn.Expression{
+									{Ref: []string{"field1"}},
+									{Constant: "value1"},
+								},
+							},
 						},
 					},
 				},
@@ -234,6 +241,13 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 						{
 							Actions:   []string{"action2"},
 							Resources: []string{"resource2"},
+							Condition: &dcn.Expression{
+								Call: []string{"eq"},
+								Args: []dcn.Expression{
+									{Ref: []string{"field2"}},
+									{Constant: "value2"},
+								},
+							},
 						},
 					},
 				},
@@ -241,8 +255,15 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 					QualifiedName: []string{"pkg", "policy3"},
 					Rules: []dcn.Rule{
 						{
-							Actions:   []string{"action3"},
+							Actions:   []string{"action3", "action2"},
 							Resources: []string{"resource2"},
+							Condition: &dcn.Expression{
+								Call: []string{"eq"},
+								Args: []dcn.Expression{
+									{Ref: []string{"field3"}},
+									{Constant: "value3"},
+								},
+							},
 						},
 					},
 				},
@@ -263,7 +284,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 
 		auths := am.AuthorizationsForPolicies([]string{"pkg.policy1"})
 
-		r := auths.Evaluate("action1", "resource1", expression.Input{})
+		r := auths.Evaluate("action1", "resource1", expression.Input{"field1": expression.String("value1")})
 		if !r.IsGranted() {
 			t.Errorf("expected true, got %v", r)
 		}
@@ -278,7 +299,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		if !r.IsDenied() {
 			t.Errorf("expected false, got %v", r)
 		}
-		r = auth2.Evaluate("action2", "resource2", expression.Input{})
+		r = auth2.Evaluate("action2", "resource2", expression.Input{"field2": expression.String("value2")})
 		if !r.IsGranted() {
 			t.Errorf("expected true, got %v", r)
 		}
@@ -302,14 +323,20 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		auth3 := am.AuthorizationsForPolicies([]string{"pkg.policy3"})
 
 		andJoined = auth2.AndJoin(auth3)
-		r = andJoined.Evaluate("action3", "resource2", expression.Input{})
+		r = andJoined.Evaluate("action2", "resource2", expression.Input{})
 
-		in1 := expression.In(expression.Ref(DCL_ACTION), expression.StringArray{"action2"})
-		in2 := expression.In(expression.Ref(DCL_ACTION), expression.StringArray{"action3"})
-
-		expected := expression.And(in1, in2)
+		expected := expression.And(
+			expression.Eq(
+				expression.Ref("field2"),
+				expression.String("value2"),
+			),
+			expression.Eq(
+				expression.Ref("field3"),
+				expression.String("value3"),
+			),
+		)
 		if !reflect.DeepEqual(r.Condition(), expected) {
-			t.Errorf("expected %+v, got %+v", expected, r)
+			t.Errorf("expected %+v, got %+v", expected, r.condition)
 		}
 	})
 

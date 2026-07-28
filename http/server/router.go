@@ -14,9 +14,8 @@ import (
 )
 
 type Router struct {
-	am        *ams.AuthorizationManager
-	l         logging.Logger
-	lastError error
+	am *ams.AuthorizationManager
+	l  logging.Logger
 }
 
 func NewRouter(am *ams.AuthorizationManager, l logging.Logger) *Router {
@@ -41,7 +40,7 @@ func (s *Router) withRecovery(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
-				s.l.Errorf(r.Context(), "panic recovered while handling %s %s: %v\n%s", r.Method, r.URL.Path, rec, string(debug.Stack()))
+				s.l.Errorf(r.Context(), "panic recovered while handling %s %s: %v\n%s", r.Method, r.URL.Path, rec, string(debug.Stack())) //nolint:lll
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 			}
 		}()
