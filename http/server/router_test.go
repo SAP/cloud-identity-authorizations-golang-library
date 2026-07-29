@@ -24,7 +24,9 @@ func (n nopLogger) Debugf(ctx context.Context, msg string, args ...interface{}) 
 
 func TestRouter(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
-	am.Run(context.Background())
+	if err := am.Run(context.Background()); err != nil {
+		t.Fatalf("Failed to run AuthorizationManager: %v", err)
+	}
 	r := NewRouter(am, nopLogger{})
 
 	t.Run("get resources for token", func(t *testing.T) {
@@ -87,7 +89,9 @@ func TestRouter(t *testing.T) {
 
 func TestInputEndpoint(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
-	am.Run(context.Background())
+	if err := am.Run(context.Background()); err != nil {
+		t.Fatalf("Failed to run AuthorizationManager: %v", err)
+	}
 	r := NewRouter(am, nopLogger{})
 
 	t.Run("removes undefined input fields with warnings", func(t *testing.T) {
@@ -163,7 +167,7 @@ func TestMuxRecoversPanic(t *testing.T) {
 
 	handler := r.withRecovery(mux)
 	rr := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/panic", nil)
+	req := httptest.NewRequest(http.MethodGet, "/panic", nil) //nolint:noctx
 
 	handler.ServeHTTP(rr, req)
 

@@ -151,19 +151,18 @@ func TestAuthorizationManagerConcurrency_ReadsWithStreamingUpdates(t *testing.T)
 		go func() {
 			defer readersWG.Done()
 			for range iterationsPerReader {
-				authzPolicies := am.AuthorizationsForPolicies([]string{"pkg.policy_0"}, "tenant1")
+				authzPolicies := am.AuthorizationsForPolicies([]string{"pkg.policy_0"})
 				_ = authzPolicies.GetResources()
 
 				_ = am.GetAssignments("tenant1", "user1")
 				_ = am.GetDefaultPolicyNames("tenant1")
-				_ = am.GetUserFields()
-
-				input := am.CreateInput("read", "resource1", map[string]any{"field": "x"}, DefaultEnvironmentInput{
-					UserInfo: UserInfo{
-						Email:  "user1@example.com",
-						Groups: []string{"g1"},
-					},
-				})
+				input := expression.Input{
+					"$dcl.action":       expression.String("read"),
+					"$dcl.resource":     expression.String("resource1"),
+					"$app.field":        expression.String("x"),
+					"$env.$user.email":  expression.String("user1@example.com"),
+					"$env.$user.groups": expression.ArrayFrom([]string{"g1"}),
+				}
 				am.ValidateInput(input)
 			}
 		}()
@@ -316,7 +315,7 @@ func TestAuthorizationManagerConcurrency_ReadAPIsWithNilInputs(t *testing.T) {
 			for range iterations {
 				_ = am.AuthorizationsForIdentity(nil)
 				_ = am.AuthorizationsForToken(nil)
-				_ = am.AuthorizationsForPolicies([]string{}, "")
+				_ = am.AuthorizationsForPolicies([]string{})
 				_ = am.GetAssignments("unknown", "unknown")
 				am.ValidateInput(expression.Input{})
 			}

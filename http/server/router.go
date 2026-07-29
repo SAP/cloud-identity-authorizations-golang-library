@@ -14,9 +14,8 @@ import (
 )
 
 type Router struct {
-	am        *ams.AuthorizationManager
-	l         logging.Logger
-	lastError error
+	am *ams.AuthorizationManager
+	l  logging.Logger
 }
 
 func NewRouter(am *ams.AuthorizationManager, l logging.Logger) *Router {
@@ -41,7 +40,7 @@ func (s *Router) withRecovery(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
-				s.l.Errorf(r.Context(), "panic recovered while handling %s %s: %v\n%s", r.Method, r.URL.Path, rec, string(debug.Stack()))
+				s.l.Errorf(r.Context(), "panic recovered while handling %s %s: %v\n%s", r.Method, r.URL.Path, rec, string(debug.Stack())) //nolint:lll
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 			}
 		}()
@@ -72,7 +71,7 @@ func (s *Router) HandleAuthorize(w http.ResponseWriter, r *http.Request) {
 
 	undefinedFields, wrongTypedFields := s.am.ValidateInput(input)
 
-	result := a.Evaluate(input)
+	result := a.Evaluate(req.Action, req.Resource, input)
 	condition := result.Condition()
 	if len(req.NullifyExcept) > 0 {
 		keepRefs := make(map[string]bool)
@@ -149,7 +148,7 @@ func (s *Router) authzForRequest(tokenStr string, policies []string) (*ams.Autho
 		}
 		return s.am.AuthorizationsForToken(token), nil
 	} else {
-		return s.am.AuthorizationsForPolicies(policies, ""), nil
+		return s.am.AuthorizationsForPolicies(policies), nil
 	}
 }
 

@@ -14,7 +14,10 @@ import (
 
 func TestPolicyEndpoints(t *testing.T) {
 	am := ams.NewAuthorizationManagerForFs("../../pkg/ams/test/scenarios/simple", nil)
-	am.Run(context.Background())
+	err := am.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to run AuthorizationManager: %v", err)
+	}
 	r := NewRouter(am, nopLogger{})
 	t.Run("Get assigned policies of user1", func(t *testing.T) {
 		req := AssignedPoliciesRequest{
@@ -41,7 +44,7 @@ func TestPolicyEndpoints(t *testing.T) {
 
 	t.Run("Get default policies for tenant1", func(t *testing.T) {
 		rr := httptest.NewRecorder()
-		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/v1/policies/default/tenant1", nil))
+		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/v1/policies/default/tenant1", nil)) //nolint:noctx
 		if rr.Code != http.StatusOK {
 			t.Errorf("Expected status 200, got %d", rr.Code)
 		}
@@ -58,7 +61,7 @@ func TestPolicyEndpoints(t *testing.T) {
 
 	t.Run("Get not-tenant specific default policies", func(t *testing.T) {
 		rr := httptest.NewRecorder()
-		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/v1/policies/default", nil))
+		r.Mux().ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/v1/policies/default", nil)) //nolint:noctx
 		if rr.Code != http.StatusOK {
 			t.Errorf("Expected status 200, got %d", rr.Code)
 		}
@@ -80,7 +83,7 @@ func newAssignedPoliciesRequest(req AssignedPoliciesRequest) *http.Request {
 		panic(err)
 	}
 	n := bytes.NewReader(bodyBytes)
-	r := httptest.NewRequest(http.MethodPost, "/v1/policies/assigned", n)
+	r := httptest.NewRequest(http.MethodPost, "/v1/policies/assigned", n) //nolint:noctx
 	r.Header.Set("Content-Type", "application/json")
 	return r
 }
