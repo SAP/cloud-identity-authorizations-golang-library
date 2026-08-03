@@ -58,7 +58,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, nil)
 		assignmentsChannel <- dcn.Assignments{}
 
-		if am.isReady() {
+		if am.IsReady() {
 			t.Error("is ready before receiving DCN")
 		}
 		dcnChannel <- dcn.DcnContainer{
@@ -79,7 +79,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			Functions: []dcn.Function{},
 		}
 
-		if !am.isReady() {
+		if !am.IsReady() {
 			t.Error("is not ready after receiving DCN")
 		}
 
@@ -90,7 +90,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			Functions: []dcn.Function{},
 		}
 
-		if !am.isReady() {
+		if !am.IsReady() {
 			t.Error("is not ready after receiving DCN")
 		}
 	})
@@ -360,7 +360,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			Functions: []dcn.Function{},
 		}
 
-		if am.isReady() {
+		if am.IsReady() {
 			t.Error("is ready before receiving DCN")
 		}
 
@@ -467,7 +467,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 			Functions: []dcn.Function{},
 		}
 
-		if am.isReady() {
+		if am.IsReady() {
 			t.Error("is ready before receiving DCN")
 		}
 

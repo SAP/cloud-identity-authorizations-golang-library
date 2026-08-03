@@ -255,7 +255,7 @@ func (a *AuthorizationManager) RegisterErrorHandler(handler func(error)) {
 	a.errHandlers = append(a.errHandlers, handler)
 }
 
-func (a *AuthorizationManager) isReady() bool {
+func (a *AuthorizationManager) IsReady() bool {
 	select {
 	case <-a.ready:
 		return true
