@@ -177,10 +177,11 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		assignmentsChannel := make(chan dcn.Assignments, 1)
 		ml := createErrorHandler()
 		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, ml.Callback)
+		ctx, cancel := context.WithCancel(context.Background())
 		go func() {
-			err := am.Run(context.Background())
-			if err != nil {
-				panic(fmt.Sprintf("unexpected error: %v", err))
+			err := am.Run(ctx)
+			if err == nil {
+				panic("expected error")
 			}
 		}()
 		assignmentsChannel <- dcn.Assignments{}
@@ -206,6 +207,7 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		}
 
 		<-ml.errorsReceived
+		cancel()
 		if len(ml.errors) != 1 {
 			t.Errorf("expected 1 error, got %v", ml.errors)
 		}
@@ -496,10 +498,11 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		assignmentsChannel := make(chan dcn.Assignments, 1)
 		ml := createErrorHandler()
 		am := NewAuthorizationManager(dcnChannel, assignmentsChannel, ml.Callback)
+		ctx, cancel := context.WithCancel(context.Background())
 		go func() {
-			err := am.Run(context.Background())
-			if err != nil {
-				panic(fmt.Sprintf("unexpected error: %v", err))
+			err := am.Run(ctx)
+			if err == nil {
+				panic("expected error")
 			}
 		}()
 
@@ -520,6 +523,8 @@ func TestAuthorizationManager(t *testing.T) { //nolint:maintidx
 		}
 
 		<-ml.errorsReceived
+		cancel()
+
 		if len(ml.errors) != 1 {
 			t.Errorf("expected 1 error, got %d", len(ml.errors))
 		}
