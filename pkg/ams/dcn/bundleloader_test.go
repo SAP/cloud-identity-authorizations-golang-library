@@ -27,7 +27,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 	serveBundle := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedRequests = append(recordedRequests, *r)
-		w.Header().Set("Etag", testetag)
+		w.Header().Set("ETag", testetag)
 		if r.Header.Get("If-None-Match") == testetag {
 			w.WriteHeader(http.StatusNotModified)
 			return
@@ -39,7 +39,7 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 	serveBigDataJSONBundle := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedRequests = append(recordedRequests, *r)
-		w.Header().Set("Etag", testetag)
+		w.Header().Set("ETag", testetag)
 		if r.Header.Get("If-None-Match") == testetag {
 			w.WriteHeader(http.StatusNotModified)
 			return
@@ -63,13 +63,13 @@ func TestBundleLoader(t *testing.T) { //nolint:maintidx
 
 	serveNonGzip := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedRequests = append(recordedRequests, *r)
-		w.Header().Set("Etag", testetag)
+		w.Header().Set("ETag", testetag)
 		w.Write([]byte("asdf")) //nolint:errcheck
 	})
 
 	serveNonTar := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedRequests = append(recordedRequests, *r)
-		w.Header().Set("Etag", "test-etag")
+		w.Header().Set("ETag", "test-etag")
 		gzip.NewWriter(w).Write([]byte("asdf")) //nolint:errcheck
 	})
 

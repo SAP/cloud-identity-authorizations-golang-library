@@ -348,11 +348,9 @@ func (a *AuthorizationManager) ValidateInput(input expression.Input) ([]string, 
 
 func (a *AuthorizationManager) notifyError(err error) {
 	a.errHandlersMu.RLock()
-	handlers := make([]func(error), len(a.errHandlers))
-	copy(handlers, a.errHandlers)
-	a.errHandlersMu.RUnlock()
+	defer a.errHandlersMu.RUnlock()
 
-	for _, handler := range handlers {
+	for _, handler := range a.errHandlers {
 		handler(err)
 	}
 }
