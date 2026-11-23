@@ -114,7 +114,7 @@ func (b *BundleLoader) BundleRequest(ctx context.Context, client *http.Client) e
 	if resp.StatusCode != http.StatusOK {
 		var body string
 		bodylen := 1024
-		if resp.ContentLength < 1024 {
+		if resp.ContentLength < 1024 && resp.ContentLength > 0 {
 			bodylen = int(resp.ContentLength)
 		}
 		bodyBytes := make([]byte, bodylen)
